@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "GLcubUG8SpM=",
+  "success": true,
+  "projectFilePath": "C:\\Data\\Dev\\Max\\Projects\\WAPIDocManager\\WAPIIdentity.Application\\WAPIIdentity.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\massimiliano.callea\\.nuget\\packages\\fluentvalidation\\8.6.3\\fluentvalidation.8.6.3.nupkg.sha512",
+    "C:\\Users\\massimiliano.callea\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\8.6.3\\fluentvalidation.dependencyinjectionextensions.8.6.3.nupkg.sha512",
+    "C:\\Users\\massimiliano.callea\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\massimiliano.callea\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.3\\microsoft.extensions.logging.abstractions.8.0.3.nupkg.sha512",
+    "C:\\Users\\massimiliano.callea\\.nuget\\packages\\system.componentmodel.annotations\\4.4.1\\system.componentmodel.annotations.4.4.1.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,6 @@
+@WAPIDocument_HostAddress = http://localhost:5184
+
+GET {{WAPIDocument_HostAddress}}/api/documents/
+Accept: application/json
+
+###

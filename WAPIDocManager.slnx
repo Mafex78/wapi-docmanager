@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Services/">
+    <Project Path="Shared.Application/Shared.Application.csproj" />
+    <Project Path="Shared.Domain/Shared.Domain.csproj" />
+    <Project Path="Shared.Infrastructure/Shared.Infrastructure.csproj" />
+    <Project Path="WAPIDocument.Application/WAPIDocument.Application.csproj" />
+    <Project Path="WAPIDocument.Domain/WAPIDocument.Domain.csproj" />
+    <Project Path="WAPIDocument.Infrastructure/WAPIDocument.Infrastructure.csproj" />
+    <Project Path="WAPIDocument/WAPIDocument.csproj" />
+    <Project Path="WAPIIdentity.Application/WAPIIdentity.Application.csproj" />
+    <Project Path="WAPIIdentity.Domain/WAPIIdentity.Domain.csproj" />
+    <Project Path="WAPIIdentity.Infrastructure/WAPIIdentity.Infrastructure.csproj" />
+    <Project Path="WAPIIdentity/WAPIIdentity.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/WAPIDocument.Application.Tests/WAPIDocument.Application.Tests.csproj" />
+    <Project Path="Tests/WAPIDocument.Api.Tests/WAPIDocument.Api.Tests.csproj" />
+    <Project Path="Tests/WAPIIdentity.Application.Tests/WAPIIdentity.Application.Tests.csproj" />
+    <Project Path="Tests/WAPIIdentity.Api.Tests/WAPIIdentity.Api.Tests.csproj" />
+  </Folder>
+</Solution>
