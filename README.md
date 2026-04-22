@@ -149,6 +149,14 @@ Il versioning è gestito tramite **Asp.Versioning (Microsoft.AspNetCore.Mvc.Vers
 ### 3. Modellazione dati (MongoDB)
 
 La persistenza è affidata a **MongoDB** tramite il provider **MongoDB.EntityFrameworkCore** (8.4.1).
+Per l'esecuzione delle applicazioni occorre configurare 3 database con le relative collection:
+
+- database `identity`
+  - collection `users` (per `WAPIIdentity`).
+- database `documents`
+  - collection `documents` (per `WAPIDocument`).
+- database `logs`
+  - collection `logevents` (per i log di Serilog).
 
 #### Modelli principali
 
