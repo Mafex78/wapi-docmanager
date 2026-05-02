@@ -4,7 +4,7 @@ using Shared.Domain;
 
 namespace Shared.Infrastructure;
 
-public class GenericRepository<T, TKey> : IGenericRepository<T, TKey>
+public abstract class GenericRepository<T, TKey> : IGenericRepository<T, TKey>
     where T : class, IEntity<TKey>
 {
     private readonly DbContext _dbContext;
@@ -56,7 +56,7 @@ public class GenericRepository<T, TKey> : IGenericRepository<T, TKey>
         await _dbSet.AddAsync(item,  cancellationToken);
     }
 
-    public Task UpdateAsync(T? item)
+    public Task UpdateAsync(T? item, CancellationToken cancellationToken = default)
     {
         if (item == null)
             return Task.CompletedTask;
@@ -65,7 +65,7 @@ public class GenericRepository<T, TKey> : IGenericRepository<T, TKey>
         return Task.CompletedTask;
     }
 
-    public Task DeleteAsync(T? item)
+    public Task DeleteAsync(T? item, CancellationToken cancellationToken = default)
     {
         if (item == null)
             return Task.CompletedTask;
@@ -77,6 +77,6 @@ public class GenericRepository<T, TKey> : IGenericRepository<T, TKey>
     public async Task DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default)
     {
         var entity = await GetByIdAsync(id,  cancellationToken);
-        await DeleteAsync(entity);
+        await DeleteAsync(entity, cancellationToken);
     }
 }

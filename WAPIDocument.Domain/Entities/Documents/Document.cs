@@ -3,11 +3,11 @@ using WAPIDocument.Domain.Entities.TaxEntities;
 
 namespace WAPIDocument.Domain.Entities.Documents;
 
-public class Document : IEntity<string>, IDocument
+public class Document : IEntity<string>, IDocument, IAudit
 {
     public string Id { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-    public DateTime? UpdatedAtUtc { get; set; }
+    public DateTime CreatedAtUtc { get; private set; }
+    public DateTime? UpdatedAtUtc { get; private set; }
     public long Version { get; set; }
     public string? Number { get; set; }
     public DateTime Date { get; set; }
@@ -32,7 +32,6 @@ public class Document : IEntity<string>, IDocument
     
     public void Setup(DocumentType documentType)
     {
-        Id = Guid.NewGuid().ToString();
         Number = Guid.NewGuid().ToString();
         Type = documentType;
         Status = DocumentStatus.Draft;
@@ -64,6 +63,14 @@ public class Document : IEntity<string>, IDocument
             // Se la modifica viene fatta su un documento Ready
             // allora il documento deve rimanere valido
             Validate(Status);
+        }
+    }
+
+    public void Delete()
+    {
+        if(!CanDelete())
+        {
+            throw new InvalidOperationException($"Cannot delete a document in status {Status}.");
         }
     }
 
@@ -200,6 +207,12 @@ public class Document : IEntity<string>, IDocument
     }
     
     private bool CanUpdate()
+    {
+        return Status == DocumentStatus.Draft ||
+               Status == DocumentStatus.Ready;
+    }
+
+    private bool CanDelete()
     {
         return Status == DocumentStatus.Draft ||
                Status == DocumentStatus.Ready;

@@ -29,9 +29,9 @@ public interface IGenericRepository<T, TKey>
 
     Task InsertAsync(T? item, CancellationToken cancellationToken = default);
 
-    Task UpdateAsync(T? item);
+    Task UpdateAsync(T? item, CancellationToken cancellationToken = default);
 
-    Task DeleteAsync(T? item);
+    Task DeleteAsync(T? item, CancellationToken cancellationToken = default);
 
     Task DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default);
 }

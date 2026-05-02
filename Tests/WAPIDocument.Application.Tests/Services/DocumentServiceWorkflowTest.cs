@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Moq;
-using Shared.Domain;
 using WAPIDocument.Application.Dto;
 using WAPIDocument.Application.Dto.Document;
 using WAPIDocument.Application.Services;
@@ -13,7 +12,6 @@ namespace WAPIDocument.Application.Tests.Services;
 public class DocumentServiceWorkflowTest
 {
     private readonly Mock<IDocumentRepository> _repository = new();
-    private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IValidator<DocumentCreateRequest>> _documentCreateRequestValidator = new();
     private readonly Mock<IValidator<DocumentUpdateRequest>> _documentUpdateRequestValidator = new();
     private readonly Mock<IValidator<DocumentChangeStatusContext>> _documentChangeStatusValidator = new();
@@ -70,12 +68,8 @@ public class DocumentServiceWorkflowTest
             .Returns(Task.CompletedTask);
 
         _repository
-            .Setup(r => r.UpdateAsync(It.IsAny<Document>()))
+            .Setup(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-
-        _unitOfWork
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
 
         var service = CreateService();
 
@@ -86,7 +80,6 @@ public class DocumentServiceWorkflowTest
 
         // ASSERT 1: il service ha prodotto un nuovo aggregato in Draft con tutti gli invarianti.
         Assert.NotNull(createResponse);
-        Assert.False(string.IsNullOrWhiteSpace(createResponse.Id));
         Assert.NotNull(persisted);
         Assert.Equal(createResponse.Id, persisted!.Id);
         Assert.Equal(DocumentStatus.Draft, persisted.Status);
@@ -101,9 +94,6 @@ public class DocumentServiceWorkflowTest
         // Dopo la create il service deve aver chiamato Insert + Save una volta sola.
         _repository.Verify(
             r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()),
-            Times.Once);
-        _unitOfWork.Verify(
-            u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Once);
 
         // Da qui in avanti, GetByIdAsync deve restituire la stessa istanza "persistita":
@@ -140,11 +130,8 @@ public class DocumentServiceWorkflowTest
             r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()),
             Times.Once);
         _repository.Verify(
-            r => r.UpdateAsync(persisted),
+            r => r.UpdateAsync(persisted, It.IsAny<CancellationToken>()),
             Times.Exactly(2));
-        _unitOfWork.Verify(
-            u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Exactly(3));
 
         // Invarianti del documento intatte dopo l'intero workflow.
         Assert.Equal("EUR", persisted.Currency);
@@ -186,10 +173,6 @@ public class DocumentServiceWorkflowTest
             .Callback<Document, CancellationToken>((d, _) => persisted = d)
             .Returns(Task.CompletedTask);
 
-        _unitOfWork
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-
         var service = CreateService();
 
         // ---------------------------------------------------------------------
@@ -199,7 +182,6 @@ public class DocumentServiceWorkflowTest
 
         // ASSERT 1: il service ha prodotto un nuovo aggregato in Draft con tutti gli invarianti.
         Assert.NotNull(createResponse);
-        Assert.False(string.IsNullOrWhiteSpace(createResponse.Id));
         Assert.NotNull(persisted);
         Assert.Equal(createResponse.Id, persisted!.Id);
         Assert.Equal(DocumentStatus.Draft, persisted.Status);
@@ -215,9 +197,6 @@ public class DocumentServiceWorkflowTest
         _repository.Verify(
             r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()),
             Times.Once);
-        _unitOfWork.Verify(
-            u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Once);
 
         // Da qui in avanti, GetByIdAsync deve restituire la stessa istanza "persistita":
         // stiamo simulando il repository che ri-legge l'aggregato appena salvato.
@@ -231,10 +210,6 @@ public class DocumentServiceWorkflowTest
             .Callback<Document, CancellationToken>((d, _) => newPersisted = d)
             .Returns(Task.CompletedTask);
         
-        _unitOfWork
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-        
         var responseGenerateFrom = await service.GenerateFromAsync(
             createResponse.Id!, 
             new DocumentGenerateFromRequest(DocumentType.Proforma), 
@@ -242,7 +217,6 @@ public class DocumentServiceWorkflowTest
 
         // ASSERT 1: il service ha prodotto un nuovo aggregato in Draft con tutti gli invarianti.
         Assert.NotNull(responseGenerateFrom);
-        Assert.False(string.IsNullOrWhiteSpace(responseGenerateFrom.Id));
         Assert.NotNull(newPersisted);
         Assert.Equal(responseGenerateFrom.Id, newPersisted!.Id);
         Assert.Equal(DocumentStatus.Draft, newPersisted.Status);
@@ -257,9 +231,6 @@ public class DocumentServiceWorkflowTest
         // Dopo la GenerateFrom il service deve aver chiamato Insert + Save una volta sola.
         _repository.Verify(
             r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()),
-            Times.Exactly(2)); // Create + GenerateFrom
-        _unitOfWork.Verify(
-            u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Exactly(2)); // Create + GenerateFrom
     }
 
@@ -295,12 +266,8 @@ public class DocumentServiceWorkflowTest
             .Returns(Task.CompletedTask);
 
         _repository
-            .Setup(r => r.UpdateAsync(It.IsAny<Document>()))
+            .Setup(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-
-        _unitOfWork
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
 
         var service = CreateService();
 
@@ -311,7 +278,6 @@ public class DocumentServiceWorkflowTest
 
         // ASSERT 1: il service ha prodotto un nuovo aggregato in Draft con tutti gli invarianti.
         Assert.NotNull(createResponse);
-        Assert.False(string.IsNullOrWhiteSpace(createResponse.Id));
         Assert.NotNull(persisted);
         Assert.Equal(createResponse.Id, persisted!.Id);
         Assert.Equal(DocumentStatus.Draft, persisted.Status);
@@ -326,9 +292,6 @@ public class DocumentServiceWorkflowTest
         // Dopo la create il service deve aver chiamato Insert + Save una volta sola.
         _repository.Verify(
             r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()),
-            Times.Once);
-        _unitOfWork.Verify(
-            u => u.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Once);
 
         // Da qui in avanti, GetByIdAsync deve restituire la stessa istanza "persistita":
@@ -345,15 +308,13 @@ public class DocumentServiceWorkflowTest
             () => service.UpdateStatusAsync(createResponse.Id!, DocumentStatus.Sent, CancellationToken.None));
         
         Assert.Equal(DocumentStatus.Draft, persisted.Status);
-        _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>()), Times.Never);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Never);
     }
     
     #region Private methods
     
     private DocumentService CreateService() => new(
         _repository.Object, 
-        _unitOfWork.Object,
         _documentCreateRequestValidator.Object,
         _documentUpdateRequestValidator.Object,
         _documentChangeStatusValidator.Object,
