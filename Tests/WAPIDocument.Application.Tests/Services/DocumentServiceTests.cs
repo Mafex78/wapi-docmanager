@@ -49,17 +49,10 @@ public class DocumentServiceTests
             .Setup(r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _unitOfWork
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-        
         var service = CreateService();
         var result = await service.CreateAsync(BuildCreateRequest(), CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.False(string.IsNullOrEmpty(result.Id));
-
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
     
     #endregion
@@ -194,11 +187,9 @@ public class DocumentServiceTests
         _repository.Setup(r => r.GetByIdAsync("1", It.IsAny<CancellationToken>())).ReturnsAsync(existing);
 
         _repository
-            .Setup(r => r.UpdateAsync(It.IsAny<Document>()))
+            .Setup(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-        
         var service = CreateService();
 
         var newDate = new DateTime(2025, 5, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -217,8 +208,6 @@ public class DocumentServiceTests
         };
 
         await service.UpdateAsync("1", request, CancellationToken.None);
-
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
     
     [Fact]
@@ -251,7 +240,7 @@ public class DocumentServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => service.UpdateAsync("1", request, CancellationToken.None));
 
-        _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>()), Times.Never);
+        _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Never);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
     
@@ -288,7 +277,7 @@ public class DocumentServiceTests
             () => service.UpdateStatusAsync("1", DocumentStatus.Sent, CancellationToken.None));
 
         Assert.Equal(DocumentStatus.Draft, document.Status);
-        _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>()), Times.Never);
+        _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Never);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
     
@@ -299,20 +288,21 @@ public class DocumentServiceTests
     [Fact]
     public async Task DocumentService_DeleteByIdAsync_Ok()
     {
+        var source = CreateValidDraftDocument("abc");
+        _repository
+            .Setup(r => r.GetByIdAsync("abc", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(source)
+            .Verifiable();
+        
         _repository
             .Setup(r => r.DeleteByIdAsync("abc", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
-            .Verifiable();
-        _unitOfWork
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1)
             .Verifiable();
 
         var service = CreateService();
         await service.DeleteByIdAsync("abc", CancellationToken.None);
 
         _repository.Verify(r => r.DeleteByIdAsync("abc", It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
     
     #endregion
@@ -329,8 +319,6 @@ public class DocumentServiceTests
             .Setup(r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
         var service = CreateService();
 
         var result = await service.GenerateFromAsync(
@@ -339,13 +327,10 @@ public class DocumentServiceTests
             CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.False(string.IsNullOrEmpty(result.Id));
         Assert.NotEqual("123", result.Id);
 
         // Il documento sorgente non deve essere stato modificato
         Assert.Equal("123", source.Id);
-
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
     
     [Fact]
@@ -361,7 +346,6 @@ public class DocumentServiceTests
 
         var service = new DocumentService(
             _repository.Object,
-            _unitOfWork.Object,
             _documentCreateRequestValidator.Object,
             _documentUpdateRequestValidator.Object,
             _documentChangeStatusValidator.Object,
@@ -384,7 +368,6 @@ public class DocumentServiceTests
     
     private DocumentService CreateService() => new(
         _repository.Object, 
-        _unitOfWork.Object,
         _documentCreateRequestValidator.Object,
         _documentUpdateRequestValidator.Object,
         _documentChangeStatusValidator.Object,

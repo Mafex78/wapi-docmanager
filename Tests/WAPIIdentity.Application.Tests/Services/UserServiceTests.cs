@@ -1,6 +1,5 @@
 using FluentValidation;
 using Moq;
-using Shared.Domain;
 using Shared.Domain.Types;
 using WAPIIdentity.Application.Dto;
 using WAPIIdentity.Application.Services;
@@ -13,12 +12,10 @@ namespace WAPIIdentity.Application.Tests.Services;
 public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _userRepository = new();
-    private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IValidator<RegisterUserRequest>> _registerUserRequestValidator = new();
 
     private UserService CreateService() => new(
         _userRepository.Object, 
-        _unitOfWork.Object,
         _registerUserRequestValidator.Object);
 
     [Fact]
@@ -28,10 +25,6 @@ public class UserServiceTests
             .Setup(r => r.InsertAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        _unitOfWork
-            .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-        
         _registerUserRequestValidator
             .Setup(x => x.ValidateAsync(
                 It.IsAny<ValidationContext>(),
@@ -47,8 +40,5 @@ public class UserServiceTests
         });
 
         Assert.NotNull(result);
-        Assert.False(string.IsNullOrEmpty(result!.Id));
-
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -14,7 +14,6 @@ namespace WAPIDocument.Application.Services;
 public class DocumentService : IDocumentService
 {
     private readonly IDocumentRepository _documentRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IValidator<DocumentCreateRequest> _documentCreateRequestValidator;
     private readonly IValidator<DocumentUpdateRequest> _documentUpdateRequestValidator;
     private readonly IValidator<DocumentChangeStatusContext> _documentChangeStatusValidator;
@@ -22,14 +21,12 @@ public class DocumentService : IDocumentService
 
     public DocumentService(
         IDocumentRepository documentRepository,
-        IUnitOfWork unitOfWork,
         IValidator<DocumentCreateRequest> documentCreateRequestValidator,
         IValidator<DocumentUpdateRequest> documentUpdateRequestValidator,
         IValidator<DocumentChangeStatusContext> documentChangeStatusValidator,
         IValidator<DocumentGenerateFromRequest> documentGenerateFromRequestValidator)
     {
         _documentRepository = documentRepository;
-        _unitOfWork = unitOfWork;
         _documentCreateRequestValidator = documentCreateRequestValidator;
         _documentUpdateRequestValidator = documentUpdateRequestValidator;
         _documentChangeStatusValidator = documentChangeStatusValidator;
@@ -49,7 +46,6 @@ public class DocumentService : IDocumentService
         document.Setup(model.Type);
         
         await _documentRepository.InsertAsync(document, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         return new DocumentCreateResponse()
         {
@@ -119,7 +115,6 @@ public class DocumentService : IDocumentService
                 : null);
 
         await _documentRepository.UpdateAsync(document);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateStatusAsync(string id, DocumentStatus newStatus, CancellationToken cancellationToken)
@@ -141,13 +136,19 @@ public class DocumentService : IDocumentService
         document.UpdateStatus(newStatus);
         
         await _documentRepository.UpdateAsync(document);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
     
     public async Task DeleteByIdAsync(string id, CancellationToken cancellationToken)
     {
+        Document? document = await _documentRepository.GetByIdAsync(id, cancellationToken);
+        
+        if (document == null)
+        {
+            throw new KeyNotFoundException();
+        }   
+        
+        document.Delete();
         await _documentRepository.DeleteByIdAsync(id, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<DocumentGenerateFromResponse> GenerateFromAsync(
@@ -169,7 +170,6 @@ public class DocumentService : IDocumentService
         Document newDocumentToGenerate = document.GenerateFrom(model.DocumentType);
         
         await _documentRepository.InsertAsync(newDocumentToGenerate, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new DocumentGenerateFromResponse(newDocumentToGenerate.Id);
     }
@@ -204,7 +204,6 @@ public class DocumentService : IDocumentService
         
         document.Attach(attachment.Id, attachment.Type);
         await _documentRepository.UpdateAsync(document);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
     
     #region Private methods

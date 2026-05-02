@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Domain;
+using MongoDB.Driver;
 using Shared.Infrastructure;
 using WAPIIdentity.Application.Services;
 using WAPIIdentity.Domain.Repositories;
@@ -24,12 +23,17 @@ public static class ServiceCollectionExtensions
         
         ArgumentNullException.ThrowIfNull(mongoOptions);
         
-        services.AddDbContext<IdentityDbContext>(opts => opts
-            .UseMongoDB(mongoOptions.ConnectionString!, mongoOptions.Database!));
+        // Register mongoDb configuration as a singleton object
+        services.AddSingleton<IMongoDatabase>(options =>
+        {
+            var client = new MongoClient(mongoOptions.ConnectionString);
+            return client.GetDatabase(mongoOptions.Database);
+        });
         
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUserRepository, UserMongoRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        
+        UserMap.Register();
         
         return services;
     }
