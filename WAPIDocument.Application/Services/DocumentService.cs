@@ -47,10 +47,7 @@ public class DocumentService : IDocumentService
         
         await _documentRepository.InsertAsync(document, cancellationToken);
         
-        return new DocumentCreateResponse()
-        {
-            Id = document.Id,
-        };
+        return (DocumentCreateResponse)document;
     }
     
     public async Task<DocumentReadResponse?> GetByIdAsync(string id, CancellationToken cancellationToken)
@@ -88,7 +85,7 @@ public class DocumentService : IDocumentService
         };
     }
 
-    public async Task UpdateAsync(
+    public async Task<DocumentUpdateResponse> UpdateAsync(
         string id,
         DocumentUpdateRequest model, 
         CancellationToken cancellationToken)
@@ -114,10 +111,11 @@ public class DocumentService : IDocumentService
                 ? model.DocumentLines.Select(x => (DocumentLine)x).ToList() 
                 : null);
 
-        await _documentRepository.UpdateAsync(document);
+        await _documentRepository.UpdateAsync(document, cancellationToken);
+        return (DocumentUpdateResponse)document;
     }
 
-    public async Task UpdateStatusAsync(string id, DocumentStatus newStatus, CancellationToken cancellationToken)
+    public async Task<DocumentUpdateStatusResponse> UpdateStatusAsync(string id, DocumentStatus newStatus, CancellationToken cancellationToken)
     {
         await _documentChangeStatusValidator.ValidateAndThrowAsync(
             new DocumentChangeStatusContext()
@@ -135,7 +133,8 @@ public class DocumentService : IDocumentService
 
         document.UpdateStatus(newStatus);
         
-        await _documentRepository.UpdateAsync(document);
+        await _documentRepository.UpdateAsync(document, cancellationToken);
+        return (DocumentUpdateStatusResponse)document;
     }
     
     public async Task DeleteByIdAsync(string id, CancellationToken cancellationToken)
@@ -171,7 +170,7 @@ public class DocumentService : IDocumentService
         
         await _documentRepository.InsertAsync(newDocumentToGenerate, cancellationToken);
 
-        return new DocumentGenerateFromResponse(newDocumentToGenerate.Id);
+        return (DocumentGenerateFromResponse)newDocumentToGenerate;
     }
 
     public async Task AttachAsync(string id, DocumentAttachRequest model, CancellationToken cancellationToken)

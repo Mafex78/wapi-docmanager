@@ -2,7 +2,7 @@
 
 namespace WAPIDocument.Application.Dto.Document;
 
-public record DocumentUpdateResponse
+public record DocumentUpdateStatusResponse()
 {
     public required string Id { get; init; }
     public required string? Number { get; init; }
@@ -15,9 +15,9 @@ public record DocumentUpdateResponse
     public required decimal Total { get; init; }
     public required IList<DocumentLinkDto> LinkedDocuments { get; init; }
 
-    public static explicit operator DocumentUpdateResponse(Domain.Entities.Documents.Document entity)
+    public static explicit operator DocumentUpdateStatusResponse(Domain.Entities.Documents.Document entity)
     {
-        return new DocumentUpdateResponse()
+        return new DocumentUpdateStatusResponse()
         {
             Id = entity.Id,
             Number = entity.Number,

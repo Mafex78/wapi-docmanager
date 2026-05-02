@@ -62,7 +62,7 @@ namespace WAPIDocument.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = $"{nameof(RoleType.Editor)},{nameof(RoleType.Admin)}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(DocumentUpdateResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateAsync(
@@ -70,17 +70,17 @@ namespace WAPIDocument.Controllers
             [FromBody] DocumentUpdateRequest model, 
             CancellationToken cancellationToken)
         {
-            await _documentService.UpdateAsync(
+            var result = await _documentService.UpdateAsync(
                 id, 
                 model, 
                 cancellationToken);
             
-            return NoContent();
+            return Ok(result);
         }
         
         [HttpPut("{id}/status")]
         [Authorize(Roles = $"{nameof(RoleType.Editor)},{nameof(RoleType.Admin)}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(DocumentUpdateStatusResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateStatusAsync(
@@ -88,12 +88,12 @@ namespace WAPIDocument.Controllers
             [FromBody] DocumentStatus newStatus, 
             CancellationToken cancellationToken)
         {
-            await _documentService.UpdateStatusAsync(
+            var result = await _documentService.UpdateStatusAsync(
                 id, 
                 newStatus, 
                 cancellationToken);
             
-            return NoContent();
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]

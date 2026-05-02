@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Shared.Application.Dto;
+using WAPIDocument.Application.Dto;
 using WAPIDocument.Application.Dto.Document;
 using WAPIDocument.Application.Services;
 using WAPIDocument.Controllers;
@@ -18,7 +19,19 @@ public class DocumentsControllerTests
     public async Task Post_Returns_Ok_With_Create_Response()
     {
         var request = new DocumentCreateRequest { Currency = "EUR" };
-        var response = new DocumentCreateResponse { Id = "new-id" };
+        var response = new DocumentCreateResponse
+        {
+            Id = "new-id",
+            Currency = "EUR",
+            Customer = new CustomerDto { Name = "Customer Name" },
+            Date = DateTime.UtcNow,
+            DocumentLines = new List<DocumentLineDto>(),
+            LinkedDocuments = new List<DocumentLinkDto>(),
+            Number = "DOC-001",
+            Status = Domain.Entities.Documents.DocumentStatus.Draft,
+            Total = 0,
+            Type = Domain.Entities.Documents.DocumentType.Proforma
+        };
         _service.Setup(s => s.CreateAsync(request, It.IsAny<CancellationToken>())).ReturnsAsync(response);
 
         var result = await CreateSut().CreateAsync(request, CancellationToken.None);
@@ -61,16 +74,31 @@ public class DocumentsControllerTests
     }
 
     [Fact]
-    public async Task Put_Returns_NoContent()
+    public async Task Put_Returns_Ok_With_Update_Response()
     {
+        var response = new DocumentUpdateResponse
+        {
+            Id = "new-id",
+            Currency = "EUR",
+            Customer = new CustomerDto { Name = "Customer Name" },
+            Date = DateTime.UtcNow,
+            DocumentLines = new List<DocumentLineDto>(),
+            LinkedDocuments = new List<DocumentLinkDto>(),
+            Number = "DOC-001",
+            Status = Domain.Entities.Documents.DocumentStatus.Draft,
+            Total = 0,
+            Type = Domain.Entities.Documents.DocumentType.Proforma
+        };
+        
         _service
             .Setup(s => s.UpdateAsync("1", It.IsAny<DocumentUpdateRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
+            .ReturnsAsync(response)
             .Verifiable();
 
         var result = await CreateSut().UpdateAsync("1", new DocumentUpdateRequest(), CancellationToken.None);
 
-        Assert.IsType<NoContentResult>(result);
+        var ok = Assert.IsType<OkObjectResult>(result);
+        Assert.Same(response, ok.Value);
         _service.Verify();
     }
 

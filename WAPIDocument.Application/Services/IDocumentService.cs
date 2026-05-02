@@ -14,9 +14,9 @@ public interface IDocumentService
         DocumentFindPagedByFilterRequest filterPagingDto, 
         CancellationToken cancellationToken);
     
-    Task UpdateAsync(string id, DocumentUpdateRequest model, CancellationToken cancellationToken);
+    Task<DocumentUpdateResponse> UpdateAsync(string id, DocumentUpdateRequest model, CancellationToken cancellationToken);
     
-    Task UpdateStatusAsync(string id, DocumentStatus newStatus, CancellationToken cancellationToken);
+    Task<DocumentUpdateStatusResponse> UpdateStatusAsync(string id, DocumentStatus newStatus, CancellationToken cancellationToken);
     
     Task DeleteByIdAsync(string id, CancellationToken cancellationToken);
     Task<DocumentGenerateFromResponse> GenerateFromAsync(
