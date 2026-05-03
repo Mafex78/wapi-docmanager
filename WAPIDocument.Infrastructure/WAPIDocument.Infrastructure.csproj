@@ -20,7 +20,6 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-      <PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.4.1" />
     </ItemGroup>
 
 </Project>

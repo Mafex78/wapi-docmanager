@@ -127,15 +127,15 @@ namespace WAPIDocument.Controllers
         
         [HttpPost("{id}/attachments")]
         [Authorize(Roles = $"{nameof(RoleType.Editor)},{nameof(RoleType.Admin)}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(DocumentAttachResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AttachAsync(
             [FromRoute] string id,
             [FromBody] DocumentAttachRequest model, 
             CancellationToken cancellationToken)
         {
-            await _documentService.AttachAsync(id, model, cancellationToken);
-            return NoContent();
+            var result = await _documentService.AttachAsync(id, model, cancellationToken);
+            return Ok(result);
         }
     }
 }

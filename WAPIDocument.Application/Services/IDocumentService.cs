@@ -24,5 +24,5 @@ public interface IDocumentService
         DocumentGenerateFromRequest model,
         CancellationToken cancellationToken);
 
-    Task AttachAsync(string id, DocumentAttachRequest model, CancellationToken cancellationToken);
+    Task<DocumentAttachResponse> AttachAsync(string id, DocumentAttachRequest model, CancellationToken cancellationToken);
 }

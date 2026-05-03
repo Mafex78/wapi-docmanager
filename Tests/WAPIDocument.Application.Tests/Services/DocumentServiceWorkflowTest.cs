@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Moq;
+using Shared.Domain;
 using WAPIDocument.Application.Dto;
 using WAPIDocument.Application.Dto.Document;
 using WAPIDocument.Application.Services;
@@ -12,6 +13,7 @@ namespace WAPIDocument.Application.Tests.Services;
 public class DocumentServiceWorkflowTest
 {
     private readonly Mock<IDocumentRepository> _repository = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IValidator<DocumentCreateRequest>> _documentCreateRequestValidator = new();
     private readonly Mock<IValidator<DocumentUpdateRequest>> _documentUpdateRequestValidator = new();
     private readonly Mock<IValidator<DocumentChangeStatusContext>> _documentChangeStatusValidator = new();
@@ -315,6 +317,7 @@ public class DocumentServiceWorkflowTest
     
     private DocumentService CreateService() => new(
         _repository.Object, 
+        _unitOfWork.Object,
         _documentCreateRequestValidator.Object,
         _documentUpdateRequestValidator.Object,
         _documentChangeStatusValidator.Object,

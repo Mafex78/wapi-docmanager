@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.Logging;
 using WAPIIdentity.Application.Dto;
 using WAPIIdentity.Domain.Entities;

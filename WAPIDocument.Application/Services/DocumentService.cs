@@ -14,6 +14,7 @@ namespace WAPIDocument.Application.Services;
 public class DocumentService : IDocumentService
 {
     private readonly IDocumentRepository _documentRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IValidator<DocumentCreateRequest> _documentCreateRequestValidator;
     private readonly IValidator<DocumentUpdateRequest> _documentUpdateRequestValidator;
     private readonly IValidator<DocumentChangeStatusContext> _documentChangeStatusValidator;
@@ -21,12 +22,14 @@ public class DocumentService : IDocumentService
 
     public DocumentService(
         IDocumentRepository documentRepository,
+        IUnitOfWork unitOfWork,
         IValidator<DocumentCreateRequest> documentCreateRequestValidator,
         IValidator<DocumentUpdateRequest> documentUpdateRequestValidator,
         IValidator<DocumentChangeStatusContext> documentChangeStatusValidator,
         IValidator<DocumentGenerateFromRequest> documentGenerateFromRequestValidator)
     {
         _documentRepository = documentRepository;
+        _unitOfWork = unitOfWork;
         _documentCreateRequestValidator = documentCreateRequestValidator;
         _documentUpdateRequestValidator = documentUpdateRequestValidator;
         _documentChangeStatusValidator = documentChangeStatusValidator;
@@ -43,7 +46,7 @@ public class DocumentService : IDocumentService
         
         Document document = (Document)model;
 
-        document.Setup(model.Type);
+        document.Create(model.Type);
         
         await _documentRepository.InsertAsync(document, cancellationToken);
         
@@ -147,7 +150,71 @@ public class DocumentService : IDocumentService
         }   
         
         document.Delete();
-        await _documentRepository.DeleteByIdAsync(id, cancellationToken);
+
+        IList<Document> linkedDocuments = await GetLinkedDocumentsAsync(
+            id, 
+            cancellationToken);
+
+        foreach (Document linkedDocument in linkedDocuments)
+        {
+            DocumentLink documentLinkToRemove = linkedDocument.LinkedDocuments
+                .First(item => item.TargetDocumentId == id);
+            
+            linkedDocument.LinkedDocuments.Remove(documentLinkToRemove);
+        }
+
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        
+        try
+        {
+            await _documentRepository.DeleteByIdAsync(id, cancellationToken);
+
+            foreach (Document linkedDocument in linkedDocuments)
+            {
+                await _documentRepository.UpdateAsync(
+                    linkedDocument,
+                    cancellationToken);
+            }
+        
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private async Task<IList<Document>> GetLinkedDocumentsAsync(
+        string id, 
+        CancellationToken cancellationToken)
+    {
+        int pageSize = 20;
+        FilterPagingDto filterPaging = new FilterPagingDto()
+        {
+            PageSize = pageSize,
+            Page = 1,
+        };
+        
+        Expression<Func<Document,bool>> filter = x => x.LinkedDocuments
+            .Any(item => item.TargetDocumentId == id);
+
+        IPagedList<Document> documents;
+        
+        do
+        {
+            documents = await _documentRepository
+                .FindPagedByFilterAsync(
+                    filter,
+                    filterPaging,
+                    cancellationToken);
+            
+            filterPaging.Page += 1;
+            
+        } while (documents.Items is not null && 
+                 documents.Items.Count() == pageSize);
+        
+        return documents.Items?.ToList() ?? new List<Document>();
     }
 
     public async Task<DocumentGenerateFromResponse> GenerateFromAsync(
@@ -159,21 +226,35 @@ public class DocumentService : IDocumentService
             model, 
             cancellationToken: cancellationToken);
         
-        Document? document = await _documentRepository.GetByIdAsync(id, cancellationToken);
+        Document? documentSource = await _documentRepository.GetByIdAsync(id, cancellationToken);
 
-        if (document == null)
+        if (documentSource == null)
         {
             throw new KeyNotFoundException();
         }
         
-        Document newDocumentToGenerate = document.GenerateFrom(model.DocumentType);
+        Document newDocumentToGenerate = documentSource.GenerateFrom(model.DocumentType);
+
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
         
-        await _documentRepository.InsertAsync(newDocumentToGenerate, cancellationToken);
+        try
+        {
+            await _documentRepository.InsertAsync(newDocumentToGenerate, cancellationToken);
+            documentSource.Attach(newDocumentToGenerate.Id, DocumentLinkType.System);
+            await _documentRepository.UpdateAsync(documentSource, cancellationToken);
+        
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
 
         return (DocumentGenerateFromResponse)newDocumentToGenerate;
     }
 
-    public async Task AttachAsync(string id, DocumentAttachRequest model, CancellationToken cancellationToken)
+    public async Task<DocumentAttachResponse> AttachAsync(string id, DocumentAttachRequest model, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(model.Id))
         {
@@ -201,8 +282,25 @@ public class DocumentService : IDocumentService
         Document document = documents.Items.Where(x => x.Id == id).First();
         Document attachment = documents.Items.Where(x => x.Id == model.Id).First();
         
-        document.Attach(attachment.Id, attachment.Type);
-        await _documentRepository.UpdateAsync(document);
+        document.Attach(attachment.Id, DocumentLinkType.User);
+        attachment.Attach(document.Id, DocumentLinkType.User);
+        
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        
+        try
+        {
+            await _documentRepository.UpdateAsync(document, cancellationToken);
+            await _documentRepository.UpdateAsync(attachment, cancellationToken);
+        
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+        
+        return (DocumentAttachResponse)document.LinkedDocuments;
     }
     
     #region Private methods

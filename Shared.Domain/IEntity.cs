@@ -2,6 +2,6 @@
 
 public interface IEntity<T>
 {
-    T Id { get; set; }
+    T Id { get; }
     long Version { get; set; }
 }

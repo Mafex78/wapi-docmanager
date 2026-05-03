@@ -5,7 +5,7 @@ namespace WAPIDocument.Domain.Entities.Documents;
 
 public class Document : IEntity<string>, IDocument, IAudit
 {
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; private set; } = string.Empty;
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime? UpdatedAtUtc { get; private set; }
     public long Version { get; set; }
@@ -30,7 +30,7 @@ public class Document : IEntity<string>, IDocument, IAudit
     public decimal Total { get; private set; }
     public IList<DocumentLink> LinkedDocuments { get; private set; } = new List<DocumentLink>();
     
-    public void Setup(DocumentType documentType)
+    public void Create(DocumentType documentType)
     {
         Number = Guid.NewGuid().ToString();
         Type = documentType;
@@ -77,14 +77,9 @@ public class Document : IEntity<string>, IDocument, IAudit
     public Document GenerateFrom(DocumentType targetDocumentType)
     {
         Document newDocument = Clone();
-        newDocument.Setup(targetDocumentType);
+        newDocument.Create(targetDocumentType);
 
-        newDocument.LinkedDocuments.Add(new DocumentLink
-        {
-            TargetDocumentId = Id,
-            Type = DocumentLinkType.System, 
-            DocumentType = Type
-        });
+        newDocument.Attach(Id, DocumentLinkType.System);
         
         return newDocument;
     }
@@ -109,13 +104,20 @@ public class Document : IEntity<string>, IDocument, IAudit
         }
     }
 
-    public void Attach(string idToAttach, DocumentType typeToAttach)
+    public void Attach(string idToAttach, DocumentLinkType linkType)
     {
+        DocumentLink? attachment = LinkedDocuments
+            .FirstOrDefault(l => l.TargetDocumentId == idToAttach);
+
+        if (attachment is not null)
+        {
+            throw new InvalidOperationException($"Document already attached.");
+        }
+        
         LinkedDocuments.Add(new DocumentLink()
         {
             TargetDocumentId = idToAttach,
-            Type = DocumentLinkType.User,
-            DocumentType = typeToAttach,
+            Type = linkType,
         });
     }
 

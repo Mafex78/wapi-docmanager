@@ -76,7 +76,6 @@ public class DocumentServiceTests
     {
         var document = new Document
         {
-            Id = "1",
             Number = "N1",
             Date = DateTime.UtcNow,
             Currency = "EUR",
@@ -97,7 +96,6 @@ public class DocumentServiceTests
         var result = await service.GetByIdAsync("1", CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.Equal("1", result.Id);
         Assert.Equal("N1", result.Number);
         Assert.Equal(10M, result.Total);
         Assert.NotNull(result.Customer);
@@ -137,7 +135,7 @@ public class DocumentServiceTests
             {
                 Items = new List<Document>
                 {
-                    new() { Id = "1", Number = "Q-2026", Date = new DateTime(2026, 4, 19, 0, 0, 0, DateTimeKind.Utc) }
+                    new() { Number = "Q-2026", Date = new DateTime(2026, 4, 19, 0, 0, 0, DateTimeKind.Utc) }
                 },
                 PageSize = 10,
                 CurrentPage = 1,
@@ -180,7 +178,6 @@ public class DocumentServiceTests
     {
         var existing = new Document
         {
-            Id = "1",
             Number = "N",
             Currency = "EUR",
         };
@@ -241,7 +238,6 @@ public class DocumentServiceTests
             () => service.UpdateAsync("1", request, CancellationToken.None));
 
         _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Never);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
     
     [Fact]
@@ -262,7 +258,6 @@ public class DocumentServiceTests
             () => service.UpdateStatusAsync("1", DocumentStatus.Ready, CancellationToken.None));
 
         Assert.Contains("lines", ex.Message, StringComparison.OrdinalIgnoreCase);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
     
     [Fact]
@@ -278,7 +273,6 @@ public class DocumentServiceTests
 
         Assert.Equal(DocumentStatus.Draft, document.Status);
         _repository.Verify(r => r.UpdateAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Never);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
     
     #endregion
@@ -297,6 +291,14 @@ public class DocumentServiceTests
         _repository
             .Setup(r => r.DeleteByIdAsync("abc", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
+            .Verifiable();
+        
+        _repository
+            .Setup(r => r.FindPagedByFilterAsync(
+                It.IsAny<Expression<Func<Document, bool>>?>(),
+                It.IsAny<IFilterPaging>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedList<Document>())
             .Verifiable();
 
         var service = CreateService();
@@ -327,10 +329,6 @@ public class DocumentServiceTests
             CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.NotEqual("123", result.Id);
-
-        // Il documento sorgente non deve essere stato modificato
-        Assert.Equal("123", source.Id);
     }
     
     [Fact]
@@ -346,6 +344,7 @@ public class DocumentServiceTests
 
         var service = new DocumentService(
             _repository.Object,
+            _unitOfWork.Object,
             _documentCreateRequestValidator.Object,
             _documentUpdateRequestValidator.Object,
             _documentChangeStatusValidator.Object,
@@ -359,7 +358,7 @@ public class DocumentServiceTests
 
         _repository.Verify(r => r.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         _repository.Verify(r => r.InsertAsync(It.IsAny<Document>(), It.IsAny<CancellationToken>()), Times.Never);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWork.Verify(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
     
     #endregion
@@ -368,6 +367,7 @@ public class DocumentServiceTests
     
     private DocumentService CreateService() => new(
         _repository.Object, 
+        _unitOfWork.Object,
         _documentCreateRequestValidator.Object,
         _documentUpdateRequestValidator.Object,
         _documentChangeStatusValidator.Object,
@@ -394,7 +394,6 @@ public class DocumentServiceTests
     {
         return new Document
         {
-            Id = id,
             Number = "N-" + id,
             Date = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             Currency = "EUR",

@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using Shared.Domain;
 using Shared.Infrastructure;
 using WAPIIdentity.Domain.Entities;
 using WAPIIdentity.Domain.Repositories;
@@ -7,8 +8,8 @@ namespace WAPIIdentity.Infrastructure.Repositories;
 
 public class UserMongoRepository : MongoGenericRepository<User>, IUserRepository
 {
-    public UserMongoRepository(IMongoDatabase mongoDatabase) 
-        : base(mongoDatabase, "users")
+    public UserMongoRepository(IMongoDatabase mongoDatabase, IUnitOfWork unitOfWork) 
+        : base(mongoDatabase, unitOfWork, "users")
     {
     }
 
