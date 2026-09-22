@@ -1,0 +1,8 @@
+@* Mostrato da App.razor quando l'utente è autenticato ma non ha i ruoli richiesti dalla pagina. *@
+<PageTitle>@L["AccessDenied_Title"] · @L["App_Name"]</PageTitle>
+
+<section class="app-card app-empty">
+    <h1 class="app-title">@L["AccessDenied_Title"]</h1>
+    <p class="app-subtitle">@L["AccessDenied_Message"]</p>
+    <a class="btn btn-primary mt-3" href="@AppRoutes.Documents">@L["Nav_Documents"]</a>
+</section>

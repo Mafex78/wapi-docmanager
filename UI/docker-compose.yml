@@ -1,0 +1,23 @@
+# Avvio del solo client Blazor in Docker Desktop (dalla cartella UI/):
+#   docker compose up --build -d     ->  http://localhost:8080
+#   docker compose logs -f ui
+#   docker compose down
+#
+# Le API restano in esecuzione sulla macchina (dotnet run o IDE). Perché il client funzioni servono due cose:
+#   1. http://localhost:8080 aggiunto a Cors:AllowedOrigins in WAPIIdentity/appsettings.json e WAPIDocument/appsettings.json;
+#   2. il certificato di sviluppo ASP.NET fidato nel browser (le API rispondono in https).
+
+services:
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wapidocmanager-ui:latest
+    container_name: wapidocmanager-ui
+    ports:
+      - "8080:80"
+    environment:
+      # indirizzi usati dal browser: cambiarli qui basta, l'immagine non va ricompilata
+      API_IDENTITY_BASE_URL: "https://localhost:7205/"
+      API_DOCUMENT_BASE_URL: "https://localhost:7273/"
+    restart: unless-stopped

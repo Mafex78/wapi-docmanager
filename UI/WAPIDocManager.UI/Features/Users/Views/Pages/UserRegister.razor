@@ -1,0 +1,113 @@
+@attribute [Route(AppRoutes.Templates.UserRegister)]
+@attribute [Authorize(Roles = AppRoles.Admin)]
+@using WAPIDocManager.UI.Features.Users.Services
+@inject IUserService UserService
+
+@*
+    Registrazione utente: POST api/v1/users/register su WAPIIdentity (solo ruolo Admin).
+    - Ruoli come checkbox legate manualmente a RegisterUserModel.Roles (Blazor non ha un InputCheckbox per le liste).
+    - @key="_model" sull'EditForm: dopo la registrazione si crea un nuovo modello e il form riparte pulito (anche la validazione).
+    - Email già esistente: 400 dal server, messaggio mostrato in ApiErrorAlert.
+*@
+
+<PageTitle>@L["UserRegister_Title"] · @L["App_Name"]</PageTitle>
+
+<div class="app-page-header">
+    <div>
+        <h1 class="app-title">@L["UserRegister_Title"]</h1>
+        <p class="app-subtitle">@L["UserRegister_Subtitle"]</p>
+    </div>
+</div>
+
+<div class="app-narrow">
+    <ApiErrorAlert Error="_error" OnDismiss="() => _error = null" />
+
+    @if (_registeredId is not null)
+    {
+        <div class="alert alert-success app-alert" role="status">
+            @L["UserRegister_Success", _registeredId]
+            <button type="button" class="btn-close" aria-label="@L["Action_Close"]" @onclick="() => _registeredId = null"></button>
+        </div>
+    }
+
+    <section class="app-card">
+        <EditForm @key="_model" Model="_model" OnValidSubmit="RegisterAsync">
+            <ModelGraphValidator />
+
+            <div class="mb-3">
+                <label class="form-label" for="user-email">@L["Field_Email"]</label>
+                <InputText id="user-email" type="email" class="form-control" autocomplete="off" @bind-Value="_model.Email" />
+                <FieldValidationMessage For="() => _model.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="user-password">@L["Field_Password"]</label>
+                <InputText id="user-password" type="password" class="form-control" autocomplete="new-password" @bind-Value="_model.Password" />
+                <FieldValidationMessage For="() => _model.Password" />
+            </div>
+
+            <fieldset class="mb-2">
+                <legend class="form-label">@L["Field_Roles"]</legend>
+                @foreach (RoleType role in Enum.GetValues<RoleType>())
+                {
+                    string inputId = $"user-role-{role}";
+                    <div class="form-check form-check-inline">
+                        <input id="@inputId" class="form-check-input" type="checkbox" checked="@_model.Roles.Contains(role)" @onchange="args => ToggleRole(role, args.Value is true)" />
+                        <label class="form-check-label" for="@inputId">@L.Label(role)</label>
+                    </div>
+                }
+                <div class="form-text">@L["UserRegister_RolesHint"]</div>
+            </fieldset>
+
+            <div class="app-form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@_busy">
+                    @if (_busy)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    }
+                    @L["Action_Register"]
+                </button>
+            </div>
+        </EditForm>
+    </section>
+</div>
+
+@code {
+    private RegisterUserModel _model = new();
+    private Exception? _error;
+    private string? _registeredId;
+    private bool _busy;
+
+    private void ToggleRole(RoleType role, bool selected)
+    {
+        if (selected && !_model.Roles.Contains(role))
+        {
+            _model.Roles.Add(role);
+        }
+        else if (!selected)
+        {
+            _model.Roles.Remove(role);
+        }
+    }
+
+    private async Task RegisterAsync()
+    {
+        _busy = true;
+        _error = null;
+        _registeredId = null;
+
+        try
+        {
+            _registeredId = await UserService.RegisterAsync(_model) ?? string.Empty;
+            _model = new RegisterUserModel();
+        }
+        catch (Exception ex) when (ex is ApiException or HttpRequestException)
+        {
+            _error = ex;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

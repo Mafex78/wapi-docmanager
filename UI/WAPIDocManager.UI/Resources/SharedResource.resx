@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!--
+    Italiano (lingua predefinita): risorse neutre, usate per ogni cultura che non ha un file dedicato.
+    Convenzioni delle chiavi:
+      Area_Nome                  testi di pagine e componenti (es. Documents_Title, Action_Save, Field_Email)
+      DocumentType_{Valore}, DocumentStatus_{Valore}, RoleType_{Valore}, SortDirection_{Valore}
+                                 etichette degli enum (Shared/Localization/LocalizerExtensions.Label)
+      StatusAction_{Valore}      pulsante che porta il documento nello stato indicato
+      Sort_{Campo}               campi di ordinamento (DocumentSortFields senza punti)
+      Validation_*               messaggi di validazione (Shared/Validation/ValidationKeys)
+      Error_*                    titoli degli errori API per status code (Shared/Components/ApiErrorAlert)
+                                 e dell'ErrorBoundary (Layout/MainLayout)
+    {0} = segnaposto valorizzato con L["Chiave", valore].
+    Ogni chiave va mantenuta allineata in SharedResource.en.resx: una chiave mancante viene mostrata così com'è.
+  -->
+  <data name="Action_Retry" xml:space="preserve"><value>Riprova</value></data>
+  <data name="Error_UnexpectedHint" xml:space="preserve"><value>Si è verificato un problema in questa pagina: riprova oppure apri un'altra sezione dal menu.</value></data>
+  <data name="App_Name" xml:space="preserve"><value>WAPIDocManager</value></data>
+  <data name="Nav_Documents" xml:space="preserve"><value>Documenti</value></data>
+  <data name="Nav_NewDocument" xml:space="preserve"><value>Nuovo documento</value></data>
+  <data name="Nav_RegisterUser" xml:space="preserve"><value>Registra utente</value></data>
+  <data name="Nav_Toggle" xml:space="preserve"><value>Apri o chiudi il menu</value></data>
+  <data name="Nav_Section_Documents" xml:space="preserve"><value>Documenti commerciali</value></data>
+  <data name="Nav_Section_Admin" xml:space="preserve"><value>Amministrazione</value></data>
+  <data name="Auth_Logout" xml:space="preserve"><value>Esci</value></data>
+  <data name="Theme_ToDark" xml:space="preserve"><value>Passa al tema scuro</value></data>
+  <data name="Theme_ToLight" xml:space="preserve"><value>Passa al tema chiaro</value></data>
+  <data name="Culture_Label" xml:space="preserve"><value>Lingua</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>Accedi</value></data>
+  <data name="Login_Subtitle" xml:space="preserve"><value>Inserisci le tue credenziali per gestire i documenti commerciali.</value></data>
+  <data name="Login_Submit" xml:space="preserve"><value>Accedi</value></data>
+  <data name="Login_InvalidCredentials" xml:space="preserve"><value>Email o password non corrette.</value></data>
+  <data name="Field_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Field_Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Field_Type" xml:space="preserve"><value>Tipologia</value></data>
+  <data name="Field_Date" xml:space="preserve"><value>Data</value></data>
+  <data name="Field_Currency" xml:space="preserve"><value>Valuta</value></data>
+  <data name="Field_Number" xml:space="preserve"><value>Numero</value></data>
+  <data name="Field_Customer" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Field_CustomerName" xml:space="preserve"><value>Ragione sociale</value></data>
+  <data name="Field_VatNumber" xml:space="preserve"><value>Partita IVA</value></data>
+  <data name="Field_Address" xml:space="preserve"><value>Indirizzo</value></data>
+  <data name="Field_Status" xml:space="preserve"><value>Stato</value></data>
+  <data name="Field_Total" xml:space="preserve"><value>Totale</value></data>
+  <data name="Field_Description" xml:space="preserve"><value>Descrizione</value></data>
+  <data name="Field_Quantity" xml:space="preserve"><value>Quantità</value></data>
+  <data name="Field_UnitPrice" xml:space="preserve"><value>Prezzo unitario</value></data>
+  <data name="Field_DocumentTotal" xml:space="preserve"><value>Totale documento</value></data>
+  <data name="Field_Roles" xml:space="preserve"><value>Ruoli</value></data>
+  <data name="Field_Actions" xml:space="preserve"><value>Azioni</value></data>
+  <data name="Action_Save" xml:space="preserve"><value>Salva</value></data>
+  <data name="Action_Cancel" xml:space="preserve"><value>Annulla</value></data>
+  <data name="Action_Close" xml:space="preserve"><value>Chiudi</value></data>
+  <data name="Action_Search" xml:space="preserve"><value>Cerca</value></data>
+  <data name="Action_Reset" xml:space="preserve"><value>Azzera filtri</value></data>
+  <data name="Action_Edit" xml:space="preserve"><value>Modifica</value></data>
+  <data name="Action_View" xml:space="preserve"><value>Apri</value></data>
+  <data name="Action_Delete" xml:space="preserve"><value>Elimina</value></data>
+  <data name="Action_Generate" xml:space="preserve"><value>Genera documento</value></data>
+  <data name="Action_Attach" xml:space="preserve"><value>Collega documento</value></data>
+  <data name="Action_Link" xml:space="preserve"><value>Collega</value></data>
+  <data name="Action_Back" xml:space="preserve"><value>Torna indietro</value></data>
+  <data name="Action_Register" xml:space="preserve"><value>Registra</value></data>
+  <data name="Common_Loading" xml:space="preserve"><value>Caricamento…</value></data>
+  <data name="Common_NotAvailable" xml:space="preserve"><value>Documento non disponibile</value></data>
+  <data name="Common_CurrencyValue" xml:space="preserve"><value>Euro (€)</value></data>
+  <data name="Documents_Title" xml:space="preserve"><value>Documenti</value></data>
+  <data name="Documents_Subtitle" xml:space="preserve"><value>Preventivi, proforme e ordini di vendita.</value></data>
+  <data name="Documents_Empty" xml:space="preserve"><value>Nessun documento trovato con i filtri impostati.</value></data>
+  <data name="Documents_Found" xml:space="preserve"><value>{0} documenti trovati</value></data>
+  <data name="Filter_PlainText" xml:space="preserve"><value>Numero o data</value></data>
+  <data name="Filter_PlainText_Placeholder" xml:space="preserve"><value>es. 3F2A oppure 2026-09-14</value></data>
+  <data name="Filter_Customer" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Filter_SortBy" xml:space="preserve"><value>Ordina per</value></data>
+  <data name="Filter_Direction" xml:space="preserve"><value>Direzione</value></data>
+  <data name="Filter_PageSize" xml:space="preserve"><value>Per pagina</value></data>
+  <data name="Filter_Types" xml:space="preserve"><value>Tipologie</value></data>
+  <data name="Filter_Statuses" xml:space="preserve"><value>Stati</value></data>
+  <data name="Sort_Date" xml:space="preserve"><value>Data</value></data>
+  <data name="Sort_Number" xml:space="preserve"><value>Numero</value></data>
+  <data name="Sort_CustomerName" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Sort_Type" xml:space="preserve"><value>Tipologia</value></data>
+  <data name="Sort_Status" xml:space="preserve"><value>Stato</value></data>
+  <data name="Sort_Total" xml:space="preserve"><value>Totale</value></data>
+  <data name="SortDirection_Asc" xml:space="preserve"><value>Crescente</value></data>
+  <data name="SortDirection_Desc" xml:space="preserve"><value>Decrescente</value></data>
+  <data name="Pager_Label" xml:space="preserve"><value>Paginazione</value></data>
+  <data name="Pager_Previous" xml:space="preserve"><value>Precedente</value></data>
+  <data name="Pager_Next" xml:space="preserve"><value>Successiva</value></data>
+  <data name="DocumentType_Quote" xml:space="preserve"><value>Preventivo</value></data>
+  <data name="DocumentType_Proforma" xml:space="preserve"><value>Proforma</value></data>
+  <data name="DocumentType_SalesOrder" xml:space="preserve"><value>Ordine di vendita</value></data>
+  <data name="DocumentStatus_Draft" xml:space="preserve"><value>Bozza</value></data>
+  <data name="DocumentStatus_Ready" xml:space="preserve"><value>Pronto</value></data>
+  <data name="DocumentStatus_Sent" xml:space="preserve"><value>Inviato</value></data>
+  <data name="DocumentStatus_Approved" xml:space="preserve"><value>Approvato</value></data>
+  <data name="DocumentStatus_Rejected" xml:space="preserve"><value>Rifiutato</value></data>
+  <data name="StatusAction_Ready" xml:space="preserve"><value>Segna come pronto</value></data>
+  <data name="StatusAction_Sent" xml:space="preserve"><value>Segna come inviato</value></data>
+  <data name="StatusAction_Approved" xml:space="preserve"><value>Approva</value></data>
+  <data name="StatusAction_Rejected" xml:space="preserve"><value>Rifiuta</value></data>
+  <data name="RoleType_Admin" xml:space="preserve"><value>Amministratore</value></data>
+  <data name="RoleType_Editor" xml:space="preserve"><value>Editor</value></data>
+  <data name="RoleType_Viewer" xml:space="preserve"><value>Lettore</value></data>
+  <data name="DocumentCreate_Title" xml:space="preserve"><value>Nuovo documento</value></data>
+  <data name="DocumentCreate_Subtitle" xml:space="preserve"><value>Il documento viene creato in stato Bozza con la data odierna.</value></data>
+  <data name="DocumentEdit_Title" xml:space="preserve"><value>Modifica documento</value></data>
+  <data name="DocumentEdit_NotEditable" xml:space="preserve"><value>Il documento è in stato {0} e non può più essere modificato.</value></data>
+  <data name="Document_General" xml:space="preserve"><value>Dati generali</value></data>
+  <data name="Document_Customer" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Document_CustomerHint" xml:space="preserve"><value>Ragione sociale e partita IVA sono obbligatorie per portare il documento in stato Pronto.</value></data>
+  <data name="Document_Lines" xml:space="preserve"><value>Righe</value></data>
+  <data name="Document_LinkedDocuments" xml:space="preserve"><value>Documenti collegati</value></data>
+  <data name="Document_LinkedEmpty" xml:space="preserve"><value>Nessun documento collegato.</value></data>
+  <data name="Document_Details" xml:space="preserve"><value>Dettaglio documento</value></data>
+  <data name="Document_Workflow" xml:space="preserve"><value>Avanzamento stato</value></data>
+  <data name="Document_WorkflowHint" xml:space="preserve"><value>Scegli il prossimo stato del documento.</value></data>
+  <data name="Document_IncompleteWarning" xml:space="preserve"><value>Per segnare il documento come pronto servono ragione sociale, partita IVA e almeno una riga valida.</value></data>
+  <data name="Lines_Add" xml:space="preserve"><value>Aggiungi riga</value></data>
+  <data name="Lines_Empty" xml:space="preserve"><value>Nessuna riga inserita.</value></data>
+  <data name="Lines_Remove" xml:space="preserve"><value>Rimuovi riga</value></data>
+  <data name="Delete_Title" xml:space="preserve"><value>Elimina documento</value></data>
+  <data name="Delete_Message" xml:space="preserve"><value>Il documento {0} verrà eliminato definitivamente e rimosso dai documenti collegati. Vuoi continuare?</value></data>
+  <data name="Generate_Title" xml:space="preserve"><value>Genera documento</value></data>
+  <data name="Generate_Message" xml:space="preserve"><value>Verrà creato un nuovo documento in bozza con cliente e righe copiati da questo, collegato automaticamente.</value></data>
+  <data name="Generate_TargetType" xml:space="preserve"><value>Tipologia del nuovo documento</value></data>
+  <data name="Attach_Title" xml:space="preserve"><value>Collega documento</value></data>
+  <data name="Attach_Message" xml:space="preserve"><value>Il collegamento è bidirezionale: viene registrato su entrambi i documenti.</value></data>
+  <data name="Attach_SearchNumber" xml:space="preserve"><value>Numero o data</value></data>
+  <data name="Attach_SearchCustomer" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Attach_NoResults" xml:space="preserve"><value>Nessun documento collegabile trovato.</value></data>
+  <data name="Detail_StatusUpdated" xml:space="preserve"><value>Stato aggiornato: {0}.</value></data>
+  <data name="Detail_Attached" xml:space="preserve"><value>Documento collegato correttamente.</value></data>
+  <data name="UserRegister_Title" xml:space="preserve"><value>Registra utente</value></data>
+  <data name="UserRegister_Subtitle" xml:space="preserve"><value>Crea un nuovo account per accedere a WAPIDocManager.</value></data>
+  <data name="UserRegister_Success" xml:space="preserve"><value>Utente registrato correttamente (Id: {0}).</value></data>
+  <data name="UserRegister_RolesHint" xml:space="preserve"><value>Lettore: consultazione. Editor: creazione e modifica. Amministratore: accesso completo e gestione utenti.</value></data>
+  <data name="Error_BadRequest" xml:space="preserve"><value>Operazione non consentita o dati non validi.</value></data>
+  <data name="Error_Unauthorized" xml:space="preserve"><value>Sessione scaduta o non valida: accedi di nuovo.</value></data>
+  <data name="Error_Forbidden" xml:space="preserve"><value>Non hai i permessi necessari per questa operazione.</value></data>
+  <data name="Error_NotFound" xml:space="preserve"><value>Elemento non trovato.</value></data>
+  <data name="Error_Network" xml:space="preserve"><value>Servizio non raggiungibile. Verifica che le API siano avviate.</value></data>
+  <data name="Error_Unexpected" xml:space="preserve"><value>Si è verificato un errore imprevisto.</value></data>
+  <data name="Permission_ReadOnlyRole" xml:space="preserve"><value>Il tuo ruolo consente solo la consultazione.</value></data>
+  <data name="Permission_EditInvalidStatus" xml:space="preserve"><value>Modificabile solo in stato Bozza o Pronto (stato attuale: {0}).</value></data>
+  <data name="Permission_DeleteInvalidStatus" xml:space="preserve"><value>Eliminabile solo in stato Bozza o Pronto (stato attuale: {0}).</value></data>
+  <data name="AccessDenied_Title" xml:space="preserve"><value>Accesso negato</value></data>
+  <data name="AccessDenied_Message" xml:space="preserve"><value>Il tuo profilo non ha i permessi per visualizzare questa pagina.</value></data>
+  <data name="NotFound_Title" xml:space="preserve"><value>Pagina non trovata</value></data>
+  <data name="NotFound_Message" xml:space="preserve"><value>L'indirizzo richiesto non esiste.</value></data>
+  <data name="Validation_Invalid" xml:space="preserve"><value>Valore non valido.</value></data>
+  <data name="Validation_Required" xml:space="preserve"><value>Campo obbligatorio.</value></data>
+  <data name="Validation_EmailInvalid" xml:space="preserve"><value>Formato email non valido.</value></data>
+  <data name="Validation_GreaterThanZero" xml:space="preserve"><value>Il valore deve essere maggiore di zero.</value></data>
+  <data name="Validation_QuantityPrecision" xml:space="preserve"><value>Massimo 7 cifre intere e 2 decimali.</value></data>
+  <data name="Validation_UnitPricePrecision" xml:space="preserve"><value>Massimo 10 cifre intere e 2 decimali.</value></data>
+  <data name="Validation_PageSizeRange" xml:space="preserve"><value>Massimo 20 elementi per pagina.</value></data>
+</root>

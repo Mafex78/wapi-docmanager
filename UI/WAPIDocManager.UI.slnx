@@ -1,0 +1,34 @@
+<Solution>
+  <!--
+    Solution del client web Blazor WebAssembly Standalone (.NET 8), separata da ../WAPIDocManager.slnx.
+
+    Struttura a vertical slice: UN SOLO progetto sorgente, organizzato per funzionalità.
+      WAPIDocManager.UI/Features/<Area>/   Views (Pages, Components), ViewModels, Entities, Models, Services,
+                                           Contracts: tutto ciò che riguarda la funzionalità
+      WAPIDocManager.UI/Shared/            solo ciò che due o più funzionalità usano davvero
+    Per capire una funzionalità si parte dal commento della sua classe di registrazione
+    (es. Features/Documents/DocumentsFeatureRegistration.cs), richiamata da Program.cs.
+
+    Nota: la CLI dell'SDK .NET 8 non compila i file .slnx (errore MSB4068); da riga di comando
+    compilare/testare i singoli .csproj, dall'IDE la solution si apre normalmente.
+    Configurazione comune in Directory.Build.props (proprietà di build e analizzatori), Directory.Packages.props
+    (versioni dei pacchetti) e .editorconfig (stile), tutti nella cartella Solution Items qui sotto.
+  -->
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path=".editorconfig" />
+    <File Path="Dockerfile" />
+    <File Path="nginx.conf" />
+    <File Path="docker-entrypoint.sh" />
+    <File Path="docker-compose.yml" />
+    <File Path=".dockerignore" />
+    <File Path=".gitattributes" />
+  </Folder>
+  <Folder Name="/UI/">
+    <Project Path="WAPIDocManager.UI/WAPIDocManager.UI.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/WAPIDocManager.UI.Tests/WAPIDocManager.UI.Tests.csproj" />
+  </Folder>
+</Solution>

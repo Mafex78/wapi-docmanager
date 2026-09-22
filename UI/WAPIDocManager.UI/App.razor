@@ -1,0 +1,38 @@
+@*
+    Routing e autorizzazione delle pagine.
+    - AuthorizeRouteView applica gli attributi [Authorize] delle pagine usando lo stato cascaded
+      (AddCascadingAuthenticationState in Program.cs, fornito da JwtAuthenticationStateProvider).
+    - NotAuthorized: utente anonimo → RedirectToLogin (conserva returnUrl); autenticato senza ruolo → AccessDenied.
+    - Layout predefinito MainLayout; le pagine possono sovrascriverlo con @layout (Login usa AuthLayout).
+    - FocusOnNavigate porta il focus sul primo h1 dopo ogni navigazione (accessibilità).
+*@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <NotAuthorized>
+                @if (context.User.Identity?.IsAuthenticated == true)
+                {
+                    <AccessDenied />
+                }
+                else
+                {
+                    <RedirectToLogin />
+                }
+            </NotAuthorized>
+            <Authorizing>
+                <LoadingSpinner />
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>@L["NotFound_Title"] · @L["App_Name"]</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <section class="app-card app-empty">
+                <h1 class="app-title">@L["NotFound_Title"]</h1>
+                <p class="app-subtitle">@L["NotFound_Message"]</p>
+                <a class="btn btn-primary mt-3" href="@AppRoutes.Documents">@L["Nav_Documents"]</a>
+            </section>
+        </LayoutView>
+    </NotFound>
+</Router>

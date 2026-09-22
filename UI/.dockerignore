@@ -1,0 +1,11 @@
+# Fuori dal contesto di build: output di compilazione, file dell'IDE e i file Docker stessi.
+# Senza questo, bin/ e obj/ della macchina finirebbero nell'immagine e invaliderebbero la cache a ogni build locale.
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/*.user
+Dockerfile
+.dockerignore
+docker-compose.yml
+Tests/

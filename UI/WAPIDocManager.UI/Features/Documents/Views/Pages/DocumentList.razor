@@ -1,0 +1,188 @@
+@attribute [Route(AppRoutes.Templates.Documents)]
+@attribute [Authorize(Roles = AppRoles.Readers)]
+
+@*
+    Lista documenti: GET api/v1/documents (ruoli Viewer, Editor, Admin).
+    - Logica in DocumentListViewModel (stessa cartella della view): ricerca, filtri, paginazione, eliminazione.
+      Qui restano markup, permessi e testi.
+    - Filtri: il form è legato a Vm.Filter, che è l'istanza condivisa di DocumentListState, quindi i filtri restano
+      tornando dal dettaglio. "Cerca" riparte da pagina 1, "Azzera filtri" sostituisce l'istanza.
+    - Tipologie e stati sono chip (pulsanti toggle) che aggiungono o rimuovono valori dalle liste del filtro.
+    - Azioni per riga secondo DocumentPermissions (ruoli dell'utente × stato del documento): Modifica ed Elimina sono
+      sempre presenti; se non consentite sono disabilitate e il motivo (ruolo di sola lettura o stato diverso da Bozza/Pronto)
+      compare nel tooltip. Il title sta sul wrapper .app-disabled-action perché i pulsanti disabilitati non ricevono
+      eventi del mouse; Modifica disabilitata è un <button> e non un link (un <a> non è disabilitabile).
+    - Eliminazione con modale di conferma; dopo l'eliminazione, se la pagina corrente resta vuota si torna all'ultima disponibile.
+    - Numero documento abbreviato (GUID): valore completo nel title del link.
+    - Route e link da AppRoutes (Shared/Navigation).
+    - Codice del componente (ruoli e tooltip) in DocumentList.razor.cs.
+*@
+
+<PageTitle>@L["Documents_Title"] · @L["App_Name"]</PageTitle>
+
+<div class="app-page-header">
+    <div>
+        <h1 class="app-title">@L["Documents_Title"]</h1>
+        <p class="app-subtitle">@L["Documents_Subtitle"]</p>
+    </div>
+    @if (DocumentPermissions.CanWrite(_roles))
+    {
+        <a class="btn btn-primary" href="@AppRoutes.DocumentNew">+ @L["Nav_NewDocument"]</a>
+    }
+</div>
+
+<section class="app-card">
+    <EditForm Model="Vm.Filter" OnValidSubmit="Vm.SearchAsync">
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label" for="filter-text">@L["Filter_PlainText"]</label>
+                <InputText id="filter-text" class="form-control" placeholder="@L["Filter_PlainText_Placeholder"]" @bind-Value="Vm.Filter.PlainText" />
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label" for="filter-customer">@L["Filter_Customer"]</label>
+                <InputText id="filter-customer" class="form-control" @bind-Value="Vm.Filter.CustomerName" />
+            </div>
+            <div class="col-sm-4 col-lg-2">
+                <label class="form-label" for="filter-sort">@L["Filter_SortBy"]</label>
+                <InputSelect id="filter-sort" class="form-select" @bind-Value="Vm.Filter.SortBy">
+                    @foreach (string field in DocumentSortFields.All)
+                    {
+                        <option value="@field">@L.SortFieldLabel(field)</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-sm-4 col-lg-2">
+                <label class="form-label" for="filter-direction">@L["Filter_Direction"]</label>
+                <InputSelect id="filter-direction" class="form-select" @bind-Value="Vm.Filter.SortDirection">
+                    @foreach (SortDirection direction in Enum.GetValues<SortDirection>())
+                    {
+                        <option value="@direction">@L.Label(direction)</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-sm-4 col-lg-2">
+                <label class="form-label" for="filter-page-size">@L["Filter_PageSize"]</label>
+                <InputSelect id="filter-page-size" class="form-select" @bind-Value="Vm.Filter.PageSize">
+                    <option value="10">10</option>
+                    <option value="@DocumentFilter.MaxPageSize">@DocumentFilter.MaxPageSize</option>
+                </InputSelect>
+            </div>
+
+            <div class="col-lg-6">
+                <span class="form-label d-block">@L["Filter_Types"]</span>
+                <div class="app-chips">
+                    @foreach (DocumentType type in Enum.GetValues<DocumentType>())
+                    {
+                        bool active = Vm.Filter.Types.Contains(type);
+                        <button type="button" class="btn btn-sm app-chip @(active ? "active" : null)" aria-pressed="@(active ? "true" : "false")" @onclick="() => Vm.ToggleType(type)">
+                            @L.Label(type)
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <span class="form-label d-block">@L["Filter_Statuses"]</span>
+                <div class="app-chips">
+                    @foreach (DocumentStatus status in Enum.GetValues<DocumentStatus>())
+                    {
+                        bool active = Vm.Filter.Statuses.Contains(status);
+                        <button type="button" class="btn btn-sm app-chip @(active ? "active" : null)" aria-pressed="@(active ? "true" : "false")" @onclick="() => Vm.ToggleStatus(status)">
+                            @L.Label(status)
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="app-form-actions">
+            <button type="button" class="btn btn-outline-secondary" @onclick="Vm.ResetAsync">@L["Action_Reset"]</button>
+            <button type="submit" class="btn btn-primary">@L["Action_Search"]</button>
+        </div>
+    </EditForm>
+</section>
+
+<ApiErrorAlert Error="Vm.Error" OnDismiss="() => Vm.Error = null" />
+
+<section class="app-card app-card-flush">
+    @if (Vm.IsLoading)
+    {
+        <LoadingSpinner />
+    }
+    else if (Vm.Result.Items.Count == 0)
+    {
+        <div class="app-empty">@L["Documents_Empty"]</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table app-table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">@L["Field_Number"]</th>
+                        <th scope="col">@L["Field_Type"]</th>
+                        <th scope="col">@L["Field_Date"]</th>
+                        <th scope="col">@L["Field_Customer"]</th>
+                        <th scope="col">@L["Field_Status"]</th>
+                        <th scope="col" class="text-end">@L["Field_Total"]</th>
+                        <th scope="col" class="text-end"><span class="visually-hidden">@L["Field_Actions"]</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Document document in Vm.Result.Items)
+                    {
+                        PermissionDenialReason editDenial = DocumentPermissions.GetEditDenialReason(_roles, document.Status);
+                        PermissionDenialReason deleteDenial = DocumentPermissions.GetDeleteDenialReason(_roles, document.Status);
+
+                        <tr @key="document.Id">
+                            <td><a class="app-mono fw-semibold" href="@AppRoutes.DocumentDetail(document.Id)" title="@document.Number">@DisplayFormat.ShortNumber(document.Number)</a></td>
+                            <td>@L.Label(document.Type)</td>
+                            <td class="text-nowrap">@DisplayFormat.Date(document.Date)</td>
+                            <td>@DisplayFormat.OrDash(document.Customer.Name)</td>
+                            <td><StatusBadge Status="document.Status" /></td>
+                            <td class="text-end text-nowrap">@DisplayFormat.Money(document.Total)</td>
+                            <td class="text-end">
+                                <div class="app-row-actions">
+                                    <a class="btn btn-sm btn-outline-secondary" href="@AppRoutes.DocumentDetail(document.Id)">@L["Action_View"]</a>
+                                    @if (editDenial == PermissionDenialReason.None)
+                                    {
+                                        <a class="btn btn-sm btn-outline-primary" href="@AppRoutes.DocumentEdit(document.Id)">@L["Action_Edit"]</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="app-disabled-action" title="@EditDenialMessage(editDenial, document.Status)">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" disabled>@L["Action_Edit"]</button>
+                                        </span>
+                                    }
+                                    @if (deleteDenial == PermissionDenialReason.None)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => Vm.DocumentToDelete = document">@L["Action_Delete"]</button>
+                                    }
+                                    else
+                                    {
+                                        <span class="app-disabled-action" title="@DeleteDenialMessage(deleteDenial, document.Status)">
+                                            <button type="button" class="btn btn-sm btn-outline-danger" disabled>@L["Action_Delete"]</button>
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="app-table-footer">
+            <span>@L["Documents_Found", Vm.Result.TotalItems]</span>
+            <Pager CurrentPage="Vm.Result.CurrentPage" TotalPages="Vm.Result.TotalPages" OnPageChanged="Vm.GoToPageAsync" />
+        </div>
+    }
+</section>
+
+<ModalDialog IsOpen="Vm.DocumentToDelete is not null" Title="@L["Delete_Title"]" OnClose="() => Vm.DocumentToDelete = null">
+    <ChildContent>
+        <p class="mb-0">@L["Delete_Message", DisplayFormat.ShortNumber(Vm.DocumentToDelete?.Number)]</p>
+    </ChildContent>
+    <FooterContent>
+        <button type="button" class="btn btn-outline-secondary" @onclick="() => Vm.DocumentToDelete = null">@L["Action_Cancel"]</button>
+        <button type="button" class="btn btn-danger" disabled="@Vm.IsDeleting" @onclick="Vm.DeleteAsync">@L["Action_Delete"]</button>
+    </FooterContent>
+</ModalDialog>

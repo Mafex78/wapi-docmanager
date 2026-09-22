@@ -1,0 +1,16 @@
+@inject NavigationManager Navigation
+
+@*
+    Reindirizza l'utente anonimo alla pagina di login (usato in App.razor, NotAuthorized).
+    Passa l'URL corrente come returnUrl, che Login.razor valida prima di usarlo.
+    replace: true evita che il tasto Indietro riporti alla pagina protetta e quindi di nuovo al login.
+*@
+
+@code {
+    protected override void OnInitialized()
+    {
+        string returnUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+
+        Navigation.NavigateTo(AppRoutes.LoginWithReturnUrl(returnUrl), replace: true);
+    }
+}

@@ -1,0 +1,60 @@
+<Project>
+
+    <!--
+        Gestione centralizzata dei pacchetti NuGet (Central Package Management) per la sola solution client.
+        Con ManagePackageVersionsCentrally i .csproj dichiarano SOLO <PackageReference Include="..." />:
+        la versione sta qui. Una versione lasciata in un .csproj produce l'errore NU1008.
+
+        Come aggiungere un pacchetto:
+        1. <PackageVersion Include="Nome" Version="x.y.z" /> in questo file;
+        2. <PackageReference Include="Nome" /> (senza Version) nel .csproj che lo usa.
+        "dotnet add package Nome" (NuGet 6.11) e le versioni recenti di Rider/Visual Studio conoscono la gestione
+        centralizzata e scrivono già le due righe nei posti giusti; gli strumenti più vecchi mettono la versione nel
+        .csproj e va spostata qui a mano. Il restore fa da rete di sicurezza: NU1008 se una versione resta in un
+        .csproj, NU1010 se un PackageReference non ha il PackageVersion corrispondente.
+        Aggiornare un pacchetto = cambiare la versione qui, una volta per tutta la solution.
+        PrivateAssets/IncludeAssets restano invece nel .csproj, accanto al PackageReference.
+
+        Versioni allineate a .NET 8 (8.0.x): il client è Blazor WebAssembly su net8.0 e le versioni dei pacchetti
+        di test sono le stesse usate dai test del backend.
+    -->
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup Label="Blazor / ASP.NET Core">
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.31" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.31" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.31" />
+        <PackageVersion Include="Microsoft.Extensions.Localization" Version="8.0.31" />
+    </ItemGroup>
+
+    <ItemGroup Label="HTTP, configurazione e interop JS (Shared/Api e Services degli slice)">
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />
+        <PackageVersion Include="Microsoft.JSInterop" Version="8.0.31" />
+    </ItemGroup>
+
+    <ItemGroup Label="Test">
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+        <!-- il metapacchetto xunit porta con sé xunit.analyzers (regole xUnit1xxx/xUnit2xxx) -->
+        <PackageVersion Include="xunit" Version="2.9.2" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+        <PackageVersion Include="Moq" Version="4.20.72" />
+        <!-- regole Moq1xxx: setup su membri non virtuali, Verify su metodi mai configurati, ecc. -->
+        <PackageVersion Include="Moq.Analyzers" Version="0.4.2" />
+        <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    </ItemGroup>
+
+    <ItemGroup Label="Analisi statica">
+        <!--
+            GlobalPackageReference: pacchetto iniettato in TUTTI i progetti della solution (sorgenti e test),
+            con PrivateAssets=all implicito. È la forma prevista dalla gestione centralizzata dei pacchetti
+            per gli analizzatori, così non va ripetuto in ogni .csproj.
+            Le altre proprietà dell'analisi statica (analizzatori .NET, stile in build) stanno in Directory.Build.props.
+        -->
+        <GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.34.0.3385" />
+    </ItemGroup>
+
+</Project>

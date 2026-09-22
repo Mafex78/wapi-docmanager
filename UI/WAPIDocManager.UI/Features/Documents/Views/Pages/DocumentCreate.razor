@@ -1,0 +1,57 @@
+@attribute [Route(AppRoutes.Templates.DocumentNew)]
+@attribute [Authorize(Roles = AppRoles.Writers)]
+@inject IDocumentService DocumentService
+@inject NavigationManager Navigation
+
+@*
+    Creazione documento: POST api/v1/documents (ruoli Editor, Admin).
+    Parte senza righe (una riga vuota bloccherebbe il salvataggio per validazione).
+    Il server crea il documento in Draft con data odierna; a salvataggio riuscito si apre il dettaglio del nuovo documento.
+    Route e link da AppRoutes (Shared/Navigation): /documents/new ha la precedenza su /documents/{Id} perché è un segmento fisso.
+*@
+
+<PageTitle>@L["DocumentCreate_Title"] · @L["App_Name"]</PageTitle>
+
+<div class="app-back"><a href="@AppRoutes.Documents">← @L["Action_Back"]</a></div>
+
+<div class="app-page-header">
+    <div>
+        <h1 class="app-title">@L["DocumentCreate_Title"]</h1>
+        <p class="app-subtitle">@L["DocumentCreate_Subtitle"]</p>
+    </div>
+</div>
+
+<ApiErrorAlert Error="_error" OnDismiss="() => _error = null" />
+
+<DocumentForm Model="_model" Busy="_busy" OnValidSubmit="SaveAsync" OnCancel="Cancel" />
+
+@code {
+    private readonly DocumentEditModel _model = new();
+    private Exception? _error;
+    private bool _busy;
+
+    private async Task SaveAsync()
+    {
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            Document created = await DocumentService.CreateAsync(_model);
+            Navigation.NavigateTo(AppRoutes.DocumentDetail(created.Id));
+        }
+        catch (Exception ex) when (ex is ApiException or HttpRequestException)
+        {
+            _error = ex;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(AppRoutes.Documents);
+    }
+}

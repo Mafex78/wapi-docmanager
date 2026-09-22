@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!--
+        Unico progetto sorgente del client Blazor WebAssembly Standalone, organizzato a vertical slice:
+
+          Features/<Area>/   tutto ciò che serve a una funzionalità: Views/Pages e Views/Components (markup e
+                             code-behind), ViewModels (logica delle pagine che ne hanno), Entities (ciò che torna
+                             dalle API), Models (form e filtri), Services (chiamate HTTP), Contracts (DTO wire),
+                             più i file di area (permessi, stato, etichette) e la sua registrazione DI.
+          Shared/            solo ciò che DUE O PIÙ funzionalità usano davvero: Api (HTTP, opzioni, eccezioni),
+                             Authentication (sessione, ruoli, stato di autenticazione), Validation, Components,
+                             Formatting, Forms, Localization, Navigation.
+          Layout/            layout e menu.  Resources/  risorse localizzate.  wwwroot/  asset statici.
+
+        Il punto di ingresso per capire una funzionalità è il commento in testa alla sua classe di registrazione
+        (es. Features/Documents/DocumentsFeatureRegistration.cs), richiamata da Program.cs.
+
+        Avvio in sviluppo: profilo "https" su https://localhost:7150, origine da autorizzare in Cors:AllowedOrigins delle API.
+        Avvio in container: vedi ../Dockerfile (publish statico servito da nginx).
+
+        TargetFramework, Nullable, ImplicitUsings e analizzatori arrivano da ../Directory.Build.props.
+        Le versioni dei pacchetti stanno in ../Directory.Packages.props.
+    -->
+
+    <PropertyGroup>
+        <!-- Formati data/numero di tutte le culture (localizzazione IT/EN) -->
+        <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+        <!-- Satellite assembly incluse nel bundle: aggiungere qui ogni nuova lingua (vedi Shared/Localization/AppCultures.cs) -->
+        <SatelliteResourceLanguages>it;en</SatelliteResourceLanguages>
+        <!-- Design system: un unico stylesheet globale (wwwroot/css/app.css), nessun CSS isolato per componente -->
+        <ScopedCssEnabled>false</ScopedCssEnabled>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- AuthenticationStateProvider, AuthorizeView, AuthorizeRouteView, CascadingAuthenticationState -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+        <!-- server di sviluppo usato da dotnet run (non incluso nel publish) -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+        <!-- IStringLocalizer basato su file .resx -->
+        <PackageReference Include="Microsoft.Extensions.Localization" />
+        <!-- binding della sezione "Api" della configurazione in ApiOptions (Shared/Api) -->
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+        <!-- IHttpClientFactory / typed HttpClient / DelegatingHandler (Shared/Api, Services degli slice) -->
+        <PackageReference Include="Microsoft.Extensions.Http" />
+        <!-- IJSRuntime per sessionStorage e tema (Shared/Authentication, wwwroot/js/app.js) -->
+        <PackageReference Include="Microsoft.JSInterop" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- ModelValidator (Shared/Validation) usa la reflection sui modelli di form: evita che il trimming rimuova le proprietà -->
+        <TrimmerRootAssembly Include="WAPIDocManager.UI" />
+    </ItemGroup>
+
+</Project>

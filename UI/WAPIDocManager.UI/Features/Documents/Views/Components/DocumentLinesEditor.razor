@@ -1,0 +1,65 @@
+@*
+    Editor delle righe documento (aggiunta, rimozione, modifica inline) usato da DocumentForm.
+    - Va usato dentro un EditForm con ModelGraphValidator: FieldValidationMessage richiede l'EditContext cascaded.
+    - Lines è la lista del modello, modificata direttamente (nessun callback di notifica).
+    - @key = istanza della riga: mantiene lo stato degli input quando si rimuove una riga intermedia.
+    - InputNumber usa sempre il punto come separatore decimale (cultura invariante), a prescindere dalla lingua.
+    - I totali sono un'anteprima: il valore definitivo lo calcola il server.
+*@
+<div class="table-responsive">
+    <table class="table app-table app-lines-table align-middle">
+        <thead>
+            <tr>
+                <th scope="col">@L["Field_Description"]</th>
+                <th scope="col" class="app-col-num text-end">@L["Field_Quantity"]</th>
+                <th scope="col" class="app-col-num text-end">@L["Field_UnitPrice"]</th>
+                <th scope="col" class="app-col-total text-end">@L["Field_Total"]</th>
+                <th scope="col" class="app-col-actions"><span class="visually-hidden">@L["Field_Actions"]</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Lines.Count == 0)
+            {
+                <tr>
+                    <td colspan="5" class="app-empty">@L["Lines_Empty"]</td>
+                </tr>
+            }
+            @foreach (DocumentLineEditModel line in Lines)
+            {
+                <tr @key="line">
+                    <td>
+                        <InputText class="form-control form-control-sm" aria-label="@L["Field_Description"]" @bind-Value="line.Description" />
+                        <FieldValidationMessage For="() => line.Description" />
+                    </td>
+                    <td>
+                        <InputNumber class="form-control form-control-sm text-end" aria-label="@L["Field_Quantity"]" step="0.01" min="0" @bind-Value="line.Quantity" />
+                        <FieldValidationMessage For="() => line.Quantity" />
+                    </td>
+                    <td>
+                        <InputNumber class="form-control form-control-sm text-end" aria-label="@L["Field_UnitPrice"]" step="0.01" min="0" @bind-Value="line.UnitPrice" />
+                        <FieldValidationMessage For="() => line.UnitPrice" />
+                    </td>
+                    <td class="text-end text-nowrap">@DisplayFormat.Money(line.Total)</td>
+                    <td class="app-col-actions text-end">
+                        <button type="button" class="btn btn-sm btn-outline-danger" aria-label="@L["Lines_Remove"]" title="@L["Lines_Remove"]" @onclick="() => Lines.Remove(line)">✕</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th scope="row" colspan="3" class="text-end">@L["Field_DocumentTotal"]</th>
+                <th class="text-end text-nowrap">@DisplayFormat.Money(Math.Round(Lines.Sum(line => line.Total), 2))</th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<button type="button" class="btn btn-sm btn-outline-primary mt-3" @onclick="() => Lines.Add(new DocumentLineEditModel())">
+    + @L["Lines_Add"]
+</button>
+
+@code {
+    [Parameter, EditorRequired] public List<DocumentLineEditModel> Lines { get; set; } = new();
+}

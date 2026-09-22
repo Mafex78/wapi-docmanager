@@ -1,0 +1,56 @@
+@*
+    Finestra modale con il markup di Bootstrap ma senza bootstrap.js (non incluso): la visibilità è gestita
+    interamente dal chiamante con IsOpen, che deve rimetterlo a false in OnClose.
+    ChildContent = corpo, FooterContent = pulsanti (opzionale). Escape e la X chiamano OnClose.
+    Limiti: nessun focus trap e nessun blocco dello scroll della pagina sottostante.
+*@
+@if (IsOpen)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show app-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="@_titleId" @onkeydown="OnKeyDown">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable @(Size is null ? null : $"modal-{Size}")">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="@_titleId">@Title</h2>
+                    <button type="button" class="btn-close" aria-label="@L["Action_Close"]" @onclick="OnClose"></button>
+                </div>
+                <div class="modal-body">
+                    @ChildContent
+                </div>
+                @if (FooterContent is not null)
+                {
+                    <div class="modal-footer">
+                        @FooterContent
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly string _titleId = $"modal-title-{Guid.NewGuid():N}";
+
+    [Parameter] public bool IsOpen { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// Dimensione Bootstrap opzionale: sm, lg, xl
+    /// </summary>
+    [Parameter] public string? Size { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}

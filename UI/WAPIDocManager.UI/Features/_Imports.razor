@@ -1,0 +1,8 @@
+@*
+    Tutte le pagine sotto Features/ richiedono un utente autenticato.
+    Eccezioni: [AllowAnonymous] (Auth/Views/Pages/Login.razor). Ruoli specifici: [Authorize(Roles = AppRoles.*)] nella singola pagina.
+    L'attributo viene applicato anche ai componenti non routabili di Features (es. Documents/Views/Components): lì non ha effetto,
+    perché AuthorizeRouteView controlla solo le pagine. Non va messo nel _Imports.razor della root, che vale anche per
+    App, Layout e Shared (per questo RedirectToLogin sta in Shared/Authentication).
+*@
+@attribute [Authorize]

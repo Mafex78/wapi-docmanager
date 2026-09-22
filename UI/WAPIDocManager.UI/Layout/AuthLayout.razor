@@ -1,0 +1,16 @@
+@inherits LayoutComponentBase
+
+@*
+    Layout minimale per le pagine senza autenticazione (Login.razor lo seleziona con @layout AuthLayout):
+    nessuna sidebar, solo selettore lingua e tema in alto a destra e contenuto centrato.
+*@
+
+<div class="app-auth">
+    <div class="app-auth-toolbar">
+        <CultureSelector />
+        <ThemeToggle />
+    </div>
+    <main class="app-auth-content">
+        @Body
+    </main>
+</div>

@@ -1,0 +1,117 @@
+@attribute [Route(AppRoutes.Templates.Login)]
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@using System.Net
+@using WAPIDocManager.UI.Features.Auth.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+@*
+    Pagina di login (anonima, layout AuthLayout).
+    - Se l'utente è già autenticato va subito a returnUrl (o alla lista documenti).
+    - Login riuscito: AuthService salva la sessione → SessionChanged aggiorna lo stato di autenticazione → navigazione a returnUrl.
+    - 401 = credenziali errate o utente non attivo (messaggio dedicato); altri errori tramite ApiErrorAlert.
+    - returnUrl arriva da query string (RedirectToLogin, AppRoutes.LoginWithReturnUrl): si accettano solo percorsi relativi
+      all'app (protezione open redirect).
+*@
+
+<PageTitle>@L["Login_Title"] · @L["App_Name"]</PageTitle>
+
+<section class="app-card app-auth-card">
+    <div class="app-brand app-brand-lg">
+        <span class="app-brand-mark" aria-hidden="true">W</span>
+        <span>@L["App_Name"]</span>
+    </div>
+
+    <h1 class="app-title">@L["Login_Title"]</h1>
+    <p class="app-subtitle mb-4">@L["Login_Subtitle"]</p>
+
+    <ApiErrorAlert Error="_error" Message="@_errorMessage" />
+
+    <EditForm Model="_model" OnValidSubmit="LoginAsync">
+        <ModelGraphValidator />
+
+        <div class="mb-3">
+            <label class="form-label" for="login-email">@L["Field_Email"]</label>
+            <InputText id="login-email" type="email" class="form-control" autocomplete="username" @bind-Value="_model.Email" />
+            <FieldValidationMessage For="() => _model.Email" />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label" for="login-password">@L["Field_Password"]</label>
+            <InputText id="login-password" type="password" class="form-control" autocomplete="current-password" @bind-Value="_model.Password" />
+            <FieldValidationMessage For="() => _model.Password" />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" disabled="@_busy">
+            @if (_busy)
+            {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            }
+            @L["Login_Submit"]
+        </button>
+    </EditForm>
+</section>
+
+@code {
+    private const string DefaultReturnUrl = AppRoutes.Documents;
+
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    private readonly LoginModel _model = new();
+    private Exception? _error;
+    private string? _errorMessage;
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState state = await AuthenticationStateTask;
+
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo(GetSafeReturnUrl(), replace: true);
+        }
+    }
+
+    private async Task LoginAsync()
+    {
+        _busy = true;
+        _error = null;
+        _errorMessage = null;
+
+        try
+        {
+            await AuthService.LoginAsync(_model);
+            Navigation.NavigateTo(GetSafeReturnUrl());
+        }
+        catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            _errorMessage = L["Login_InvalidCredentials"];
+        }
+        catch (Exception ex) when (ex is ApiException or HttpRequestException)
+        {
+            _error = ex;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    // accetta solo percorsi relativi all'applicazione (evita open redirect)
+    private string GetSafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl) ||
+            ReturnUrl.StartsWith('/') ||
+            ReturnUrl.StartsWith('\\') ||
+            ReturnUrl.StartsWith(AppRoutes.Login, StringComparison.OrdinalIgnoreCase) ||
+            !Uri.IsWellFormedUriString(ReturnUrl, UriKind.Relative))
+        {
+            return DefaultReturnUrl;
+        }
+
+        return ReturnUrl;
+    }
+}

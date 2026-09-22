@@ -1,0 +1,63 @@
+@using System.Net
+
+@*
+    Messaggio di errore standard per le chiamate API.
+    - Error: il titolo localizzato dipende dal tipo di errore (ApiException per status code, HttpRequestException
+      = API spente o chiamata bloccata da CORS) e sotto viene mostrato il detail del server così com'è (in inglese).
+    - Message: testo personalizzato che sostituisce titolo e detail (es. credenziali errate nel login).
+    - OnDismiss: se valorizzato mostra il pulsante di chiusura (la pagina azzera il proprio errore).
+    Non renderizza nulla se Error e Message sono vuoti.
+*@
+
+@if (Error is not null || !string.IsNullOrWhiteSpace(Message))
+{
+    <div class="alert alert-danger app-alert" role="alert">
+        <div class="fw-semibold">@Title</div>
+        @if (Detail is not null)
+        {
+            <div class="app-alert-detail">@Detail</div>
+        }
+        @if (OnDismiss.HasDelegate)
+        {
+            <button type="button" class="btn-close" aria-label="@L["Action_Close"]" @onclick="OnDismiss"></button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Errore da mostrare (ApiException, HttpRequestException, ...)
+    /// </summary>
+    [Parameter] public Exception? Error { get; set; }
+
+    /// <summary>
+    /// Messaggio che sostituisce il titolo ricavato dall'errore
+    /// </summary>
+    [Parameter] public string? Message { get; set; }
+
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    private string Title
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(Message))
+            {
+                return Message;
+            }
+
+            return Error switch
+            {
+                ApiException { StatusCode: HttpStatusCode.BadRequest } => L["Error_BadRequest"].Value,
+                ApiException { StatusCode: HttpStatusCode.Unauthorized } => L["Error_Unauthorized"].Value,
+                ApiException { StatusCode: HttpStatusCode.Forbidden } => L["Error_Forbidden"].Value,
+                ApiException { StatusCode: HttpStatusCode.NotFound } => L["Error_NotFound"].Value,
+                HttpRequestException => L["Error_Network"].Value,
+                _ => L["Error_Unexpected"].Value
+            };
+        }
+    }
+
+    // il detail restituito dalle API (in inglese) viene mostrato così come arriva
+    private string? Detail => string.IsNullOrWhiteSpace(Message) ? (Error as ApiException)?.Detail : null;
+}

@@ -1,0 +1,102 @@
+@inherits LayoutComponentBase
+@* il logout è l'unico punto in cui il layout usa un servizio di uno slice: using locale, non in _Imports *@
+@using WAPIDocManager.UI.Features.Auth.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+@*
+    Layout delle pagine autenticate (DefaultLayout di AuthorizeRouteView in App.razor).
+    - Sidebar con NavMenu: fissa su desktop, a scomparsa sotto 992px tramite la classe "nav-open" su .app-shell
+      (stili in wwwroot/css/app.css, sezione 4); il backdrop e la navigazione la richiudono.
+    - Top bar: lingua, tema, utente corrente (claim Name = email) e logout.
+    - Logout: pulisce la sessione locale e naviga subito al login.
+    - ErrorBoundary attorno a @Body: un'eccezione non gestita di una pagina (rendering, lifecycle o handler di evento)
+      mostra un messaggio al posto della pagina invece della barra gialla di Blazor, lasciando funzionanti menu e top bar.
+      Si azzera con "Riprova" e a ogni navigazione (OnParametersSet). Non riguarda gli errori API, che le pagine
+      gestiscono con ApiErrorAlert, né i task avviati senza await. L'eccezione resta registrata nella console del browser.
+*@
+
+<div class="app-shell @(_navOpen ? "nav-open" : null)">
+    <aside class="app-sidebar" id="app-sidebar">
+        <a class="app-brand" href="@AppRoutes.Documents">
+            <span class="app-brand-mark" aria-hidden="true">W</span>
+            <span>@L["App_Name"]</span>
+        </a>
+        <NavMenu OnNavigate="CloseNav" />
+    </aside>
+    <div class="app-sidebar-backdrop" @onclick="CloseNav"></div>
+
+    <div class="app-main">
+        <header class="app-topbar">
+            <button type="button"
+                    class="app-icon-btn app-nav-toggle"
+                    aria-controls="app-sidebar"
+                    aria-expanded="@(_navOpen ? "true" : "false")"
+                    aria-label="@L["Nav_Toggle"]"
+                    @onclick="ToggleNav">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <div class="app-topbar-spacer"></div>
+            <CultureSelector />
+            <ThemeToggle />
+            <AuthorizeView>
+                <Authorized>
+                    <div class="app-user">
+                        <span class="app-avatar" aria-hidden="true">@Initial(context.User.Identity?.Name)</span>
+                        <span class="app-user-email">@context.User.Identity?.Name</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="LogoutAsync">@L["Auth_Logout"]</button>
+                </Authorized>
+            </AuthorizeView>
+        </header>
+
+        <main class="app-content">
+            <ErrorBoundary @ref="_errorBoundary">
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent>
+                    <div class="alert alert-danger app-alert" role="alert">
+                        <div class="fw-semibold">@L["Error_Unexpected"]</div>
+                        <div class="app-alert-detail">@L["Error_UnexpectedHint"]</div>
+                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" @onclick="Recover">@L["Action_Retry"]</button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        </main>
+    </div>
+</div>
+
+@code {
+    private bool _navOpen;
+    private ErrorBoundary? _errorBoundary;
+
+    // a ogni navigazione il layout riceve un nuovo Body: si riparte senza l'errore della pagina precedente
+    protected override void OnParametersSet()
+    {
+        _errorBoundary?.Recover();
+    }
+
+    // "Riprova": la pagina viene ricreata da zero (se l'errore si ripete, il messaggio ricompare)
+    private void Recover()
+    {
+        _errorBoundary?.Recover();
+    }
+
+    private void ToggleNav() => _navOpen = !_navOpen;
+
+    private void CloseNav() => _navOpen = false;
+
+    private async Task LogoutAsync()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo(AppRoutes.Login);
+    }
+
+    private static string Initial(string? name)
+    {
+        return string.IsNullOrWhiteSpace(name) ? "?" : name[..1];
+    }
+}

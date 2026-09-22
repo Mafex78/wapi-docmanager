@@ -35,7 +35,7 @@ namespace WAPIDocument.Controllers
         }
         
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{nameof(RoleType.Viewer)},{nameof(RoleType.Admin)}")]
+        [Authorize(Roles = $"{nameof(RoleType.Viewer)},{nameof(RoleType.Editor)},{nameof(RoleType.Admin)}")]
         [ProducesResponseType(typeof(DocumentReadResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -49,7 +49,7 @@ namespace WAPIDocument.Controllers
         
         [HttpGet]
         [AutoValidationActionFilter]
-        [Authorize(Roles = $"{nameof(RoleType.Viewer)},{nameof(RoleType.Admin)}")]
+        [Authorize(Roles = $"{nameof(RoleType.Viewer)},{nameof(RoleType.Editor)},{nameof(RoleType.Admin)}")]
         [ProducesResponseType(typeof(PageDto<DocumentReadResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> FindPagedByFilterAsync(

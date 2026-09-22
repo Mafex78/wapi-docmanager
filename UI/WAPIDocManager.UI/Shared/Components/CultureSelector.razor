@@ -1,0 +1,32 @@
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+@*
+    Selettore della lingua (culture in Shared/Localization/AppCultures.Supported).
+    Salva la scelta nel localStorage (window.wapiPreferences.setCulture) e ricarica la pagina: la cultura viene applicata
+    all'avvio in Program.cs. La sessione JWT nel sessionStorage sopravvive al reload; i filtri della lista no.
+*@
+
+<select class="form-select form-select-sm app-culture-select" aria-label="@L["Culture_Label"]" value="@CultureInfo.CurrentUICulture.Name" @onchange="ChangeAsync">
+    @foreach (AppCulture culture in AppCultures.Supported)
+    {
+        <option value="@culture.Name">@culture.DisplayName</option>
+    }
+</select>
+
+@code {
+    private async Task ChangeAsync(ChangeEventArgs args)
+    {
+        string? cultureName = args.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(cultureName) || cultureName == CultureInfo.CurrentUICulture.Name)
+        {
+            return;
+        }
+
+        await JS.InvokeVoidAsync("wapiPreferences.setCulture", cultureName);
+
+        // in WebAssembly la cultura si applica all'avvio: ricarica la pagina
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

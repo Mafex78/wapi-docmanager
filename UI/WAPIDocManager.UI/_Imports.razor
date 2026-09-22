@@ -1,0 +1,37 @@
+@*
+    Using globali di tutti i componenti .razor (non valgono per i file C#, es. Shared/Forms/*.cs e le partial .razor.cs).
+    Ogni namespace elencato deve contenere almeno un tipo, altrimenti la compilazione fallisce.
+    L = localizzatore dei testi (Resources/SharedResource*.resx), disponibile in ogni componente come @L["Chiave"].
+    Struttura del progetto (vertical slice): Features/<Area>/ con tutto ciò che serve alla funzionalità
+    (Views/Pages, Views/Components, ViewModels, Entities, Models, Services, Contracts), Shared/ con ciò che serve
+    a due o più funzionalità,
+    Layout/ con layout e menu. Un namespace di slice elencato qui è visibile a TUTTI i componenti: aggiungerne uno
+    significa rendere quella funzionalità raggiungibile da ovunque, quindi va fatto solo per i tipi usati in più aree.
+*@
+@using System.Globalization
+@using System.Net.Http
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using WAPIDocManager.UI
+@using WAPIDocManager.UI.Features.Documents
+@using WAPIDocManager.UI.Features.Documents.Views.Components
+@using WAPIDocManager.UI.Layout
+@using WAPIDocManager.UI.Shared.Authentication
+@using WAPIDocManager.UI.Shared.Components
+@using WAPIDocManager.UI.Shared.Forms
+@using WAPIDocManager.UI.Shared.Formatting
+@using WAPIDocManager.UI.Shared.Localization
+@using WAPIDocManager.UI.Shared.Navigation
+@using WAPIDocManager.UI.Features.Documents.Entities
+@using WAPIDocManager.UI.Features.Documents.Models
+@using WAPIDocManager.UI.Features.Documents.Services
+@using WAPIDocManager.UI.Features.Auth.Models
+@using WAPIDocManager.UI.Features.Users.Models
+@using WAPIDocManager.UI.Shared.Api
+@using WAPIDocManager.UI.Shared.Validation
+@inject IStringLocalizer<SharedResource> L

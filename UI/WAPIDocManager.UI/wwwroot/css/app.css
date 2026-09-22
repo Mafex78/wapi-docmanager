@@ -1,0 +1,941 @@
+/* =====================================================================
+   WAPIDocManager UI – design system
+   Unico stylesheet dell'applicazione: token dei temi light/dark,
+   personalizzazione di Bootstrap 5.3 e stili di tutti i componenti.
+
+   Regole:
+   - NON creare file .razor.css: lo scoped CSS è disabilitato nel csproj
+     (ScopedCssEnabled=false) e tutti gli stili stanno in questo file.
+   - Colori sempre tramite token --app-*: ogni nuovo token va definito
+     sia in ":root, [data-bs-theme=light]" sia in "[data-bs-theme=dark]".
+   - Il tema è l'attributo data-bs-theme su <html>, gestito dallo script
+     inline di index.html e da wwwroot/js/app.js (ThemeToggle).
+   - Classi applicative con prefisso "app-"; i componenti Bootstrap si
+     personalizzano ridefinendo le loro variabili --bs-* (sezione 3):
+     le variabili globali come --bs-primary non cambiano .btn-primary.
+   - Il file è caricato DOPO lib/bootstrap/css/bootstrap.min.css
+     (index.html): a parità di specificità vincono le regole di questo file.
+
+   Indice:
+   1. Design token (light/dark) e mappatura sulle variabili Bootstrap
+   2. Base
+   3. Bootstrap: componenti personalizzati (btn, form, table, pagination, modal)
+   4. Layout applicativo (shell, sidebar, top bar, navigazione, login)
+   5. Elementi di pagina (card, header, liste, tabelle, badge, chip, modale)
+   6. Avvio ed errori Blazor (loading progress, blazor-error-ui)
+   ===================================================================== */
+
+/* ---------- 1. Design token ---------- */
+
+:root,
+[data-bs-theme="light"] {
+    --app-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --app-radius: 0.75rem;
+    --app-radius-sm: 0.5rem;
+    --app-sidebar-width: 15.5rem;
+
+    --app-bg: #f4f5f8;
+    --app-surface: #ffffff;
+    --app-surface-2: #f1f3f7;
+    --app-border: #e2e5eb;
+    --app-text: #1b2130;
+    --app-text-muted: #5e6a7b;
+    --app-accent: #3b5bdb;
+    --app-accent-hover: #3050c7;
+    --app-accent-rgb: 59, 91, 219;
+    --app-accent-soft: #e9eeff;
+    --app-on-accent: #ffffff;
+    --app-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    --app-backdrop: rgba(16, 24, 40, 0.45);
+
+    --app-status-draft-bg: #eef0f3;
+    --app-status-draft-fg: #4b5563;
+    --app-status-ready-bg: #e6f0ff;
+    --app-status-ready-fg: #1d4ed8;
+    --app-status-sent-bg: #fff4e0;
+    --app-status-sent-fg: #a15c00;
+    --app-status-approved-bg: #e3f6ea;
+    --app-status-approved-fg: #177a3c;
+    --app-status-rejected-bg: #fdeaea;
+    --app-status-rejected-fg: #b42318;
+
+    /* Mappatura sulle variabili di Bootstrap */
+    --bs-body-font-family: var(--app-font-sans);
+    --bs-body-bg: var(--app-bg);
+    --bs-body-color: var(--app-text);
+    --bs-emphasis-color: var(--app-text);
+    --bs-secondary-color: var(--app-text-muted);
+    --bs-tertiary-bg: var(--app-surface-2);
+    --bs-border-color: var(--app-border);
+    --bs-border-radius: var(--app-radius-sm);
+    --bs-primary: var(--app-accent);
+    --bs-primary-rgb: var(--app-accent-rgb);
+    --bs-link-color: var(--app-accent);
+    --bs-link-color-rgb: var(--app-accent-rgb);
+    --bs-link-hover-color: var(--app-accent-hover);
+    --bs-link-hover-color-rgb: var(--app-accent-rgb);
+    --bs-focus-ring-color: rgba(var(--app-accent-rgb), 0.25);
+}
+
+[data-bs-theme="dark"] {
+    --app-bg: #0e1117;
+    --app-surface: #161a22;
+    --app-surface-2: #1d222c;
+    --app-border: #2a303b;
+    --app-text: #e6e9ef;
+    --app-text-muted: #98a2b3;
+    --app-accent: #7d95ff;
+    --app-accent-hover: #93a8ff;
+    --app-accent-rgb: 125, 149, 255;
+    --app-accent-soft: rgba(125, 149, 255, 0.14);
+    --app-on-accent: #0b0f1a;
+    --app-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --app-backdrop: rgba(0, 0, 0, 0.6);
+
+    --app-status-draft-bg: rgba(152, 162, 179, 0.16);
+    --app-status-draft-fg: #c3cad5;
+    --app-status-ready-bg: rgba(96, 150, 255, 0.16);
+    --app-status-ready-fg: #8fb4ff;
+    --app-status-sent-bg: rgba(245, 166, 35, 0.16);
+    --app-status-sent-fg: #f5bd5f;
+    --app-status-approved-bg: rgba(52, 199, 110, 0.16);
+    --app-status-approved-fg: #6ad99a;
+    --app-status-rejected-bg: rgba(240, 82, 82, 0.16);
+    --app-status-rejected-fg: #f69494;
+
+    --bs-body-bg: var(--app-bg);
+    --bs-body-color: var(--app-text);
+    --bs-emphasis-color: var(--app-text);
+    --bs-secondary-color: var(--app-text-muted);
+    --bs-tertiary-bg: var(--app-surface-2);
+    --bs-border-color: var(--app-border);
+    --bs-primary: var(--app-accent);
+    --bs-primary-rgb: var(--app-accent-rgb);
+    --bs-link-color: var(--app-accent);
+    --bs-link-color-rgb: var(--app-accent-rgb);
+    --bs-link-hover-color: var(--app-accent-hover);
+    --bs-link-hover-color-rgb: var(--app-accent-rgb);
+    --bs-focus-ring-color: rgba(var(--app-accent-rgb), 0.3);
+}
+
+/* ---------- 2. Base ---------- */
+
+html, body {
+    background-color: var(--app-bg);
+    color: var(--app-text);
+}
+
+body {
+    font-size: 0.9375rem;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1:focus {
+    outline: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+.app-mono {
+    font-family: var(--bs-font-monospace);
+    font-size: 0.875em;
+    overflow-wrap: anywhere;
+}
+
+.app-hint {
+    color: var(--app-text-muted);
+    font-size: 0.875rem;
+}
+
+/* ---------- 3. Bootstrap: componenti personalizzati ---------- */
+
+.btn {
+    --bs-btn-border-radius: var(--app-radius-sm);
+    --bs-btn-font-weight: 500;
+}
+
+.btn-primary {
+    --bs-btn-color: var(--app-on-accent);
+    --bs-btn-bg: var(--app-accent);
+    --bs-btn-border-color: var(--app-accent);
+    --bs-btn-hover-color: var(--app-on-accent);
+    --bs-btn-hover-bg: var(--app-accent-hover);
+    --bs-btn-hover-border-color: var(--app-accent-hover);
+    --bs-btn-active-color: var(--app-on-accent);
+    --bs-btn-active-bg: var(--app-accent-hover);
+    --bs-btn-active-border-color: var(--app-accent-hover);
+    --bs-btn-disabled-color: var(--app-on-accent);
+    --bs-btn-disabled-bg: var(--app-accent);
+    --bs-btn-disabled-border-color: var(--app-accent);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--app-accent);
+    --bs-btn-border-color: var(--app-accent);
+    --bs-btn-hover-color: var(--app-on-accent);
+    --bs-btn-hover-bg: var(--app-accent);
+    --bs-btn-hover-border-color: var(--app-accent);
+    --bs-btn-active-color: var(--app-on-accent);
+    --bs-btn-active-bg: var(--app-accent-hover);
+    --bs-btn-active-border-color: var(--app-accent-hover);
+    --bs-btn-disabled-color: var(--app-accent);
+    --bs-btn-disabled-border-color: var(--app-accent);
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--app-text);
+    --bs-btn-border-color: var(--app-border);
+    --bs-btn-hover-color: var(--app-text);
+    --bs-btn-hover-bg: var(--app-surface-2);
+    --bs-btn-hover-border-color: var(--app-border);
+    --bs-btn-active-color: var(--app-text);
+    --bs-btn-active-bg: var(--app-surface-2);
+    --bs-btn-active-border-color: var(--app-border);
+}
+
+.form-control,
+.form-select {
+    background-color: var(--app-surface);
+    border-color: var(--app-border);
+    color: var(--app-text);
+}
+
+    .form-control:focus,
+    .form-select:focus,
+    .form-check-input:focus {
+        border-color: var(--app-accent);
+        box-shadow: 0 0 0 0.2rem rgba(var(--app-accent-rgb), 0.2);
+    }
+
+    .form-control:disabled,
+    .form-control[readonly] {
+        background-color: var(--app-surface-2);
+    }
+
+.form-check-input:checked {
+    background-color: var(--app-accent);
+    border-color: var(--app-accent);
+}
+
+.form-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--app-text-muted);
+    margin-bottom: 0.375rem;
+}
+
+/* Classi di validazione applicate dai componenti Input* di Blazor */
+.form-control.invalid,
+.form-select.invalid {
+    border-color: var(--bs-form-invalid-border-color);
+}
+
+.invalid-feedback {
+    font-size: 0.8125rem;
+}
+
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--app-text);
+    --bs-table-border-color: var(--app-border);
+    --bs-table-hover-bg: var(--app-surface-2);
+    --bs-table-hover-color: var(--app-text);
+}
+
+.pagination {
+    --bs-pagination-color: var(--app-text);
+    --bs-pagination-bg: var(--app-surface);
+    --bs-pagination-border-color: var(--app-border);
+    --bs-pagination-hover-color: var(--app-text);
+    --bs-pagination-hover-bg: var(--app-surface-2);
+    --bs-pagination-hover-border-color: var(--app-border);
+    --bs-pagination-focus-color: var(--app-text);
+    --bs-pagination-focus-bg: var(--app-surface-2);
+    --bs-pagination-active-color: var(--app-on-accent);
+    --bs-pagination-active-bg: var(--app-accent);
+    --bs-pagination-active-border-color: var(--app-accent);
+    --bs-pagination-disabled-color: var(--app-text-muted);
+    --bs-pagination-disabled-bg: var(--app-surface);
+    --bs-pagination-disabled-border-color: var(--app-border);
+}
+
+.modal {
+    --bs-modal-bg: var(--app-surface);
+    --bs-modal-color: var(--app-text);
+    --bs-modal-border-color: var(--app-border);
+    --bs-modal-header-border-color: var(--app-border);
+    --bs-modal-footer-border-color: var(--app-border);
+    --bs-modal-border-radius: var(--app-radius);
+}
+
+.modal-backdrop {
+    --bs-backdrop-bg: #000;
+}
+
+.alert {
+    --bs-alert-border-radius: var(--app-radius-sm);
+}
+
+/* ---------- 4. Layout applicativo ---------- */
+
+.app-shell {
+    display: grid;
+    grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.app-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.25rem 0.875rem;
+    background-color: var(--app-surface);
+    border-right: 1px solid var(--app-border);
+    overflow-y: auto;
+}
+
+.app-sidebar-backdrop {
+    display: none;
+}
+
+.app-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1.5rem;
+    background-color: color-mix(in srgb, var(--app-bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--app-border);
+}
+
+.app-topbar-spacer {
+    flex: 1;
+}
+
+.app-content {
+    width: 100%;
+    max-width: 75rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.5rem 3rem;
+}
+
+.app-nav-toggle {
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+    .app-shell {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .app-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 1045;
+        width: var(--app-sidebar-width);
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+    }
+
+    .nav-open .app-sidebar {
+        transform: none;
+    }
+
+    .nav-open .app-sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 1040;
+        background-color: var(--app-backdrop);
+    }
+
+    .app-nav-toggle {
+        display: inline-grid;
+    }
+
+    .app-topbar {
+        padding: 0.625rem 1rem;
+    }
+
+    .app-content {
+        padding: 1.25rem 1rem 2.5rem;
+    }
+
+    .app-user-email {
+        display: none;
+    }
+}
+
+/* Brand */
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0 0.5rem;
+    color: var(--app-text);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+    .app-brand:hover {
+        text-decoration: none;
+    }
+
+.app-brand-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--app-radius-sm);
+    background-color: var(--app-accent);
+    color: var(--app-on-accent);
+    font-weight: 700;
+}
+
+.app-brand-lg {
+    justify-content: center;
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Navigazione */
+.app-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.app-nav-section {
+    padding: 0.875rem 0.625rem 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--app-text-muted);
+}
+
+.app-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: var(--app-radius-sm);
+    color: var(--app-text-muted);
+    font-weight: 500;
+}
+
+    .app-nav-link svg {
+        flex: none;
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .app-nav-link:hover {
+        text-decoration: none;
+        color: var(--app-text);
+        background-color: var(--app-surface-2);
+    }
+
+    .app-nav-link.active {
+        color: var(--app-accent);
+        background-color: var(--app-accent-soft);
+    }
+
+/* Controlli top bar */
+.app-icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-sm);
+    background-color: var(--app-surface);
+    color: var(--app-text);
+}
+
+    .app-icon-btn:hover {
+        background-color: var(--app-surface-2);
+    }
+
+    .app-icon-btn svg {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+.app-culture-select {
+    width: auto;
+    min-width: 7rem;
+}
+
+.app-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    font-size: 0.875rem;
+}
+
+.app-user-email {
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-avatar {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: var(--app-accent-soft);
+    color: var(--app-accent);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Layout di autenticazione */
+.app-auth {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.app-auth-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.app-auth-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 1rem 4rem;
+}
+
+.app-auth-card {
+    width: 100%;
+    max-width: 25rem;
+    padding: 2rem;
+}
+
+/* ---------- 5. Elementi di pagina ---------- */
+
+.app-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.app-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--app-accent);
+    margin-bottom: 0.25rem;
+}
+
+.app-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
+.app-subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--app-text-muted);
+}
+
+.app-back {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+}
+
+    .app-back a {
+        color: var(--app-text-muted);
+    }
+
+.app-card {
+    margin-bottom: 1rem;
+    padding: 1.25rem;
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    box-shadow: var(--app-shadow);
+}
+
+.app-card-flush {
+    padding: 0;
+    overflow: hidden;
+}
+
+.app-card-header {
+    padding: 1.125rem 1.25rem 0;
+}
+
+.app-section-title {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.app-narrow {
+    max-width: 40rem;
+}
+
+.app-toolbar,
+.app-row-actions,
+.app-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.app-row-actions {
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+}
+
+/* Wrapper dei pulsanti disabilitati: i pulsanti disabled non ricevono eventi del mouse
+   (pointer-events: none di Bootstrap), quindi il tooltip (title) e il cursore stanno qui */
+.app-disabled-action {
+    display: inline-block;
+    cursor: not-allowed;
+}
+
+.app-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+}
+
+.app-status-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-color: rgba(var(--app-accent-rgb), 0.35);
+    background-color: var(--app-accent-soft);
+}
+
+.app-alert {
+    position: relative;
+    padding-right: 3rem;
+}
+
+    .app-alert .btn-close {
+        position: absolute;
+        top: 0.875rem;
+        right: 1rem;
+    }
+
+.app-alert-detail {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    white-space: pre-line;
+}
+
+.app-empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--app-text-muted);
+}
+
+.app-loading {
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+}
+
+    .app-loading .spinner-border {
+        color: var(--app-accent);
+    }
+
+/* Liste di dettaglio */
+.app-dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1rem 1.5rem;
+    margin: 0;
+}
+
+    .app-dl dt {
+        margin-bottom: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--app-text-muted);
+    }
+
+    .app-dl dd {
+        margin: 0;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+    }
+
+.app-amount {
+    font-size: 1.125rem;
+    font-weight: 650;
+}
+
+.app-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.app-list-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.875rem 1.25rem;
+    border-top: 1px solid var(--app-border);
+}
+
+.app-list-bordered {
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-sm);
+    overflow: hidden;
+}
+
+    .app-list-bordered .app-list-item:first-child {
+        border-top: 0;
+    }
+
+.app-card-header + .app-list,
+.app-card-header + .app-empty,
+.app-card-header + .table-responsive {
+    margin-top: 0.75rem;
+}
+
+/* Tabelle */
+.app-table {
+    margin-bottom: 0;
+}
+
+    .app-table > :not(caption) > * > * {
+        padding: 0.75rem 1rem;
+    }
+
+    .app-table thead th {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--app-text-muted);
+        white-space: nowrap;
+        background-color: var(--app-surface-2);
+    }
+
+    .app-table tbody tr:last-child > * {
+        border-bottom: 0;
+    }
+
+    .app-table tfoot th {
+        border-bottom: 0;
+        border-top: 1px solid var(--app-border);
+    }
+
+.app-lines-table {
+    min-width: 40rem;
+}
+
+    .app-lines-table .app-col-num {
+        width: 9.5rem;
+    }
+
+    .app-lines-table .app-col-total {
+        width: 8rem;
+    }
+
+.app-col-actions {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.app-table-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--app-border);
+    font-size: 0.875rem;
+    color: var(--app-text-muted);
+}
+
+/* Badge di stato */
+.app-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.1875rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+    background-color: var(--app-badge-bg);
+    color: var(--app-badge-fg);
+}
+
+    .app-badge::before {
+        content: "";
+        width: 0.375rem;
+        height: 0.375rem;
+        border-radius: 50%;
+        background-color: currentColor;
+    }
+
+.app-badge-draft {
+    --app-badge-bg: var(--app-status-draft-bg);
+    --app-badge-fg: var(--app-status-draft-fg);
+}
+
+.app-badge-ready {
+    --app-badge-bg: var(--app-status-ready-bg);
+    --app-badge-fg: var(--app-status-ready-fg);
+}
+
+.app-badge-sent {
+    --app-badge-bg: var(--app-status-sent-bg);
+    --app-badge-fg: var(--app-status-sent-fg);
+}
+
+.app-badge-approved {
+    --app-badge-bg: var(--app-status-approved-bg);
+    --app-badge-fg: var(--app-status-approved-fg);
+}
+
+.app-badge-rejected {
+    --app-badge-bg: var(--app-status-rejected-bg);
+    --app-badge-fg: var(--app-status-rejected-fg);
+}
+
+/* Chip dei filtri */
+.app-chip {
+    --bs-btn-padding-x: 0.75rem;
+    --bs-btn-color: var(--app-text-muted);
+    --bs-btn-bg: var(--app-surface);
+    --bs-btn-border-color: var(--app-border);
+    --bs-btn-hover-color: var(--app-text);
+    --bs-btn-hover-bg: var(--app-surface-2);
+    --bs-btn-hover-border-color: var(--app-border);
+    --bs-btn-active-color: var(--app-accent);
+    --bs-btn-active-bg: var(--app-accent-soft);
+    --bs-btn-active-border-color: var(--app-accent);
+    border-radius: 999px;
+}
+
+    .app-chip.active {
+        color: var(--app-accent);
+        background-color: var(--app-accent-soft);
+        border-color: var(--app-accent);
+    }
+
+/* Modale (senza JavaScript di Bootstrap) */
+.app-modal {
+    display: block;
+    overflow-y: auto;
+}
+
+/* ---------- 6. Avvio ed errori Blazor ---------- */
+
+.loading-progress {
+    position: relative;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    margin: 20vh auto 1rem auto;
+}
+
+    .loading-progress circle {
+        fill: none;
+        stroke: var(--app-border);
+        stroke-width: 0.6rem;
+        transform-origin: 50% 50%;
+        transform: rotate(-90deg);
+    }
+
+        .loading-progress circle:last-child {
+            stroke: var(--app-accent);
+            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+            transition: stroke-dasharray 0.05s ease-in-out;
+        }
+
+.loading-progress-text {
+    position: absolute;
+    inset: calc(20vh + 3.25rem) 0 auto 0;
+    text-align: center;
+    font-weight: 600;
+    color: var(--app-text-muted);
+}
+
+    .loading-progress-text:after {
+        content: var(--blazor-load-percentage-text, "Loading");
+    }
+
+#blazor-error-ui {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 2000;
+    display: none;
+    width: 100%;
+    padding: 0.75rem 3rem 0.75rem 1.25rem;
+    background-color: #fff4d6;
+    color: #3d2e00;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+    #blazor-error-ui .dismiss {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.75rem;
+        cursor: pointer;
+    }
+
+.blazor-error-boundary {
+    padding: 1rem 1rem 1rem 1.25rem;
+    border-radius: var(--app-radius-sm);
+    background-color: var(--app-status-rejected-bg);
+    color: var(--app-status-rejected-fg);
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred.";
+    }

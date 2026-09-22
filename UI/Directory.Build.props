@@ -1,0 +1,42 @@
+<Project>
+
+    <!--
+        Configurazione di build comune a TUTTI i progetti della solution client (MSBuild importa automaticamente
+        questo file risalendo le cartelle a partire da ogni .csproj, prima del contenuto del .csproj stesso).
+
+        Perimetro: solo UI/. Il backend nella cartella superiore non ha Directory.Build.props e resta invariato.
+        I .csproj mantengono solo ciò che è specifico del progetto (SDK Blazor, proprietà WebAssembly,
+        ProjectReference, pacchetti non comuni).
+
+        Il progetto di test è uno solo (Tests/WAPIDocManager.UI.Tests): le sue proprietà specifiche stanno nel suo
+        .csproj. Se un giorno ne comparisse un secondo, un Tests/Directory.Build.props dovrebbe importare ESPLICITAMENTE
+        questo file con $([MSBuild]::GetPathOfFileAbove(...)), altrimenti MSBuild si ferma al primo file trovato.
+        Le versioni dei pacchetti stanno in Directory.Packages.props (gestione centralizzata NuGet).
+    -->
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Analisi statica">
+        <!--
+            Analizzatori .NET integrati nell'SDK (diagnostiche CAxxxx: correttezza, prestazioni, sicurezza).
+            AnalysisMode=Recommended attiva un set più ampio del default senza arrivare a "All", che è pensato
+            per codice nuovo e produce moltissimo rumore.
+        -->
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>Recommended</AnalysisMode>
+        <!-- Regole di stile (IDExxxx) dell'.editorconfig applicate anche in build, non solo nell'IDE -->
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <!--
+            I warning restano warning: una segnalazione di stile non deve impedire di compilare o di eseguire i test.
+            L'obiettivo resta comunque 0 warning (stato attuale della solution).
+            SonarAnalyzer.CSharp (diagnostiche Sxxxx) è in Directory.Packages.props come GlobalPackageReference.
+        -->
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+</Project>

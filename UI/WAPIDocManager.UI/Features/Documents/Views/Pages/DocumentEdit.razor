@@ -1,0 +1,76 @@
+@attribute [Route(AppRoutes.Templates.DocumentEdit)]
+@attribute [Authorize(Roles = AppRoles.Writers)]
+@using WAPIDocManager.UI.Features.Documents.ViewModels
+@inject DocumentEditViewModel Vm
+@inject NavigationManager Navigation
+
+@*
+    Modifica documento: GET per precompilare il form, poi PUT api/v1/documents/{id} (ruoli Editor, Admin).
+    - Logica in DocumentEditViewModel (stessa cartella della view): caricamento, modello del form, salvataggio.
+    - Consentita solo in Draft/Ready (DocumentRules.CanEdit): negli altri stati si mostra un avviso invece del form,
+      perché il server risponderebbe comunque 400.
+    - In Ready il server rivalida il documento: rimuovere cliente o righe obbligatorie produce un 400 mostrato nella pagina.
+    - Il documento viene ricaricato a ogni cambio di Id (OnParametersSetAsync); dopo il salvataggio si torna al dettaglio.
+    - Route e link da AppRoutes (Shared/Navigation).
+*@
+
+<PageTitle>@L["DocumentEdit_Title"] · @L["App_Name"]</PageTitle>
+
+<div class="app-back"><a href="@AppRoutes.DocumentDetail(Id)">← @L["Action_Back"]</a></div>
+
+<div class="app-page-header">
+    <div>
+        @if (Vm.Document is not null)
+        {
+            <div class="app-eyebrow">@L.Label(Vm.Document.Type)</div>
+        }
+        <h1 class="app-title d-flex flex-wrap align-items-center gap-2">
+            <span>@L["DocumentEdit_Title"]</span>
+            @if (Vm.Document is not null)
+            {
+                <span class="app-mono">@DisplayFormat.ShortNumber(Vm.Document.Number)</span>
+                <StatusBadge Status="Vm.Document.Status" />
+            }
+        </h1>
+    </div>
+</div>
+
+@if (Vm.IsLoading)
+{
+    <LoadingSpinner />
+}
+else if (Vm.Document is null)
+{
+    <ApiErrorAlert Error="Vm.Error" />
+}
+else if (!DocumentRules.CanEdit(Vm.Document.Status))
+{
+    <div class="alert alert-warning" role="alert">@L["DocumentEdit_NotEditable", L.Label(Vm.Document.Status)]</div>
+}
+else
+{
+    <ApiErrorAlert Error="Vm.Error" OnDismiss="() => Vm.Error = null" />
+    <DocumentForm Model="Vm.Model" IsEdit="true" Busy="Vm.IsBusy" OnValidSubmit="SaveAsync" OnCancel="Cancel" />
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await Vm.LoadAsync(Id);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (await Vm.SaveAsync(Id))
+        {
+            Navigation.NavigateTo(AppRoutes.DocumentDetail(Id));
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(AppRoutes.DocumentDetail(Id));
+    }
+}

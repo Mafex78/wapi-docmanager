@@ -1,0 +1,59 @@
+@*
+    Paginazione (pagine numerate da 1, come le API).
+    Nascosto se c'è una sola pagina; mostra al massimo MaxVisiblePages numeri attorno alla pagina corrente.
+    Non carica dati: notifica la pagina scelta con OnPageChanged e il chiamante esegue la nuova ricerca.
+*@
+@if (TotalPages > 1)
+{
+    <nav aria-label="@L["Pager_Label"]">
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item @(CurrentPage <= 1 ? "disabled" : null)">
+                <button type="button" class="page-link" disabled="@(CurrentPage <= 1)" @onclick="() => ChangeAsync(CurrentPage - 1)">
+                    @L["Pager_Previous"]
+                </button>
+            </li>
+            @foreach (int pageNumber in VisiblePages())
+            {
+                bool isCurrent = pageNumber == CurrentPage;
+                <li class="page-item @(isCurrent ? "active" : null)">
+                    <button type="button" class="page-link" aria-current="@(isCurrent ? "page" : null)" @onclick="() => ChangeAsync(pageNumber)">
+                        @pageNumber
+                    </button>
+                </li>
+            }
+            <li class="page-item @(CurrentPage >= TotalPages ? "disabled" : null)">
+                <button type="button" class="page-link" disabled="@(CurrentPage >= TotalPages)" @onclick="() => ChangeAsync(CurrentPage + 1)">
+                    @L["Pager_Next"]
+                </button>
+            </li>
+        </ul>
+    </nav>
+}
+
+@code {
+    private const int MaxVisiblePages = 5;
+
+    [Parameter] public int CurrentPage { get; set; }
+
+    [Parameter] public int TotalPages { get; set; }
+
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    private IEnumerable<int> VisiblePages()
+    {
+        int end = Math.Min(TotalPages, Math.Max(1, CurrentPage - MaxVisiblePages / 2) + MaxVisiblePages - 1);
+        int start = Math.Max(1, end - MaxVisiblePages + 1);
+
+        return Enumerable.Range(start, end - start + 1);
+    }
+
+    private async Task ChangeAsync(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages || pageNumber == CurrentPage)
+        {
+            return;
+        }
+
+        await OnPageChanged.InvokeAsync(pageNumber);
+    }
+}

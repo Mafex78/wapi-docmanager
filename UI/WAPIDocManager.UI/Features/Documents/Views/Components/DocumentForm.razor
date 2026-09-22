@@ -1,0 +1,93 @@
+@*
+    Form documento condiviso da DocumentCreate.razor (IsEdit = false) e DocumentEdit.razor (IsEdit = true).
+    - Creazione: si sceglie la tipologia; la data la assegna il server. Modifica: si cambia la data; la tipologia è fissa.
+    - Valuta mostrata in sola lettura: il client invia sempre EUR (Features/Documents/Entities/DocumentCurrency).
+    - OnValidSubmit parte solo se la validazione client (ModelGraphValidator) passa; chiamata API ed errori del server
+      sono gestiti dalla pagina chiamante, che passa Busy per disabilitare il salvataggio durante la richiesta.
+*@
+<EditForm Model="Model" OnValidSubmit="() => OnValidSubmit.InvokeAsync()">
+    <ModelGraphValidator />
+
+    <section class="app-card">
+        <h2 class="app-section-title">@L["Document_General"]</h2>
+        <div class="row g-3">
+            @if (IsEdit)
+            {
+                <div class="col-sm-6 col-lg-4">
+                    <label class="form-label" for="document-date">@L["Field_Date"]</label>
+                    <InputDate id="document-date" class="form-control" @bind-Value="Model.Date" />
+                </div>
+            }
+            else
+            {
+                <div class="col-sm-6 col-lg-4">
+                    <label class="form-label" for="document-type">@L["Field_Type"]</label>
+                    <InputSelect id="document-type" class="form-select" @bind-Value="Model.Type">
+                        @foreach (DocumentType type in Enum.GetValues<DocumentType>())
+                        {
+                            <option value="@type">@L.Label(type)</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+            <div class="col-sm-6 col-lg-4">
+                <label class="form-label" for="document-currency">@L["Field_Currency"]</label>
+                <input id="document-currency" class="form-control" value="@L["Common_CurrencyValue"]" readonly />
+            </div>
+        </div>
+    </section>
+
+    <section class="app-card">
+        <h2 class="app-section-title mb-1">@L["Document_Customer"]</h2>
+        <p class="app-hint mb-3">@L["Document_CustomerHint"]</p>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="customer-name">@L["Field_CustomerName"]</label>
+                <InputText id="customer-name" class="form-control" @bind-Value="Model.Customer.Name" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="customer-vat">@L["Field_VatNumber"]</label>
+                <InputText id="customer-vat" class="form-control" @bind-Value="Model.Customer.VatNumber" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="customer-email">@L["Field_Email"]</label>
+                <InputText id="customer-email" type="email" class="form-control" @bind-Value="Model.Customer.Email" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="customer-address">@L["Field_Address"]</label>
+                <InputText id="customer-address" class="form-control" @bind-Value="Model.Customer.Address" />
+            </div>
+        </div>
+    </section>
+
+    <section class="app-card">
+        <h2 class="app-section-title">@L["Document_Lines"]</h2>
+        <DocumentLinesEditor Lines="Model.Lines" />
+    </section>
+
+    <div class="app-form-actions">
+        <button type="button" class="btn btn-outline-secondary" @onclick="OnCancel">@L["Action_Cancel"]</button>
+        <button type="submit" class="btn btn-primary" disabled="@Busy">
+            @if (Busy)
+            {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            }
+            @L["Action_Save"]
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public DocumentEditModel Model { get; set; } = default!;
+
+    /// <summary>
+    /// In modifica si edita la data, in creazione la tipologia
+    /// </summary>
+    [Parameter] public bool IsEdit { get; set; }
+
+    [Parameter] public bool Busy { get; set; }
+
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

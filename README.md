@@ -4,6 +4,8 @@ Sistema di gestione documenti commerciali (preventivi, proforme e ordini di vend
 
 La solution è composta da due microservizi indipendenti (`WAPIIdentity` e `WAPIDocument`) che condividono tre librerie trasversali (`Shared.Domain`, `Shared.Application`, `Shared.Infrastructure`), oltre a quattro progetti di test automatizzati. Il formato della solution è il nuovo `.slnx` (XML solution format).
 
+Nella cartella `UI/` è presente una solution separata (`WAPIDocManager.UI.slnx`) con il client web **Blazor WebAssembly Standalone** che si autentica su `WAPIIdentity` e offre l'interfaccia grafica per tutti gli endpoint di `WAPIDocument` (vedi [Client UI](#client-ui-blazor-webassembly)).
+
 ---
 
 ## Parte 1 – Analisi e architettura
@@ -278,8 +280,8 @@ La validazione dei parametri di paginazione e filtro avviene tramite `DocumentFi
 | Metodo | Route | Auth | Descrizione |
 |---|---|---|---|
 | `POST` | `/api/v1/documents` | `Editor`, `Admin` | Crea un documento |
-| `GET` | `/api/v1/documents/{id}` | `Viewer`, `Admin` | Legge un documento per ID |
-| `GET` | `/api/v1/documents` | `Viewer`, `Admin` | Ricerca paginata e filtrata |
+| `GET` | `/api/v1/documents/{id}` | `Viewer`, `Editor`, `Admin` | Legge un documento per ID |
+| `GET` | `/api/v1/documents` | `Viewer`, `Editor`, `Admin` | Ricerca paginata e filtrata |
 | `PUT` | `/api/v1/documents/{id}` | `Editor`, `Admin` | Aggiorna un documento (`Draft` / `Ready`) |
 | `PUT` | `/api/v1/documents/{id}/status` | `Editor`, `Admin` | Avanza lo stato del documento |
 | `DELETE` | `/api/v1/documents/{id}` | `Editor`, `Admin` | Elimina un documento (`Draft` / `Ready`) |
@@ -295,6 +297,7 @@ Il file `appsettings.json` di ciascun servizio espone le sezioni:
 - **`Mongo`**: `ConnectionString` (default `mongodb://localhost:27017`), `Database` (`identity` / `documents`).
 - **`Jwt`**: `Issuer`, `Audience` (entrambi `http://localhost:7205`), `SigningKey` (256-bit hex), `ExpirationMinutes` (default `60`).
 - **`Serilog`**: configurazione sink Console e MongoDB con filtro per source context del servizio corrente.
+- **`Cors`**: `AllowedOrigins` – elenco delle origini autorizzate a chiamare le API dal browser (default `https://localhost:7150` e `http://localhost:5150`, cioè il client Blazor WebAssembly). La policy CORS di default ammette qualsiasi header e metodo solo per queste origini.
 
 ---
 
@@ -308,3 +311,130 @@ La solution include quattro progetti di test che coprono i livelli Application e
 - `WAPIIdentity.Api.Tests` – controller (`AuthControllerTests`, `UsersControllerTests`).
 
 Tutti i test usano **xUnit** + **Moq** per il mocking delle dipendenze. I validator FluentValidation vengono mockati come "successo" nei test di servizio, così i test si concentrano sulla logica applicativa e di dominio. La copertura è raccolta tramite **coverlet**.
+
+---
+
+## Client UI (Blazor WebAssembly)
+
+Client web **Blazor WebAssembly Standalone** (.NET 8) nella cartella `UI/`, con solution dedicata `WAPIDocManager.UI.slnx`. Si autentica su `WAPIIdentity` (login JWT) e offre l'interfaccia per tutti gli endpoint di `WAPIDocument`, più la registrazione utenti riservata agli `Admin`.
+
+### Struttura
+
+Il client è **un solo progetto**, organizzato a *vertical slice*: ogni funzionalità sta in una cartella sotto
+`Features/` con tutto ciò che le serve — pagine, componenti, entità (ciò che torna dalle API), modelli di form,
+chiamate HTTP e contratti wire. Fuori da `Features/` sta soltanto ciò che **due o più** funzionalità usano davvero.
+
+```
+UI/
+├── Directory.Build.props             (proprietà di build comuni: net8.0, nullable, analizzatori)
+├── Directory.Packages.props          (versioni dei pacchetti NuGet, gestione centralizzata)
+├── .editorconfig                     (stile di codifica: template ufficiale SDK + personalizzazioni)
+├── Dockerfile / nginx.conf / docker-compose.yml   (esecuzione del client in container)
+├── WAPIDocManager.UI.slnx
+├── WAPIDocManager.UI/
+│   ├── Features/
+│   │   ├── Auth/         Views/Pages · Models · Services · Contracts      (login, sessione)
+│   │   ├── Documents/    Views/{Pages,Components} · ViewModels · Entities · Models · Services · Contracts
+│   │   │                 + DocumentPermissions · DocumentListState · DocumentLabels
+│   │   ├── Users/        Views/Pages · Models · Services · Contracts      (registrazione, solo Admin)
+│   │   └── Home/         Views/Pages
+│   ├── Shared/           Api · Authentication · Validation · Components · Formatting
+│   │                     · Forms · Localization · Navigation
+│   ├── Layout/ · Resources/ · wwwroot/
+│   └── Program.cs · App.razor · _Imports.razor · SharedResource.cs
+└── Tests/WAPIDocManager.UI.Tests/    (unico progetto di test, stessa struttura)
+```
+
+| Cartella dello slice | Contenuto |
+|---|---|
+| `Views/Pages/` · `Views/Components/` | markup e code-behind: pagine routabili e componenti della funzionalità |
+| `ViewModels/` | logica delle pagine che ne hanno (MVVM solo dove serve: le pagine sottili come `DocumentCreate` o `Login` non ne hanno), testata senza Blazor |
+| `Entities/` | ciò che torna dalle API già trasformato per l'app: `Document`, `Customer`, `PagedResult`, gli enum e `DocumentRules` (regole di stato speculari al server) |
+| `Models/` | modelli di form e di filtro con le DataAnnotations: `DocumentEditModel`, `DocumentFilter`, `LoginModel`, `RegisterUserModel` |
+| `Services/` | interfaccia + typed `HttpClient` verso le API della funzionalità, mapper e query string builder |
+| `Contracts/` | forme di trasporto (DTO wire) con gli operatori di conversione espliciti |
+
+Il punto di ingresso per capire una funzionalità è il commento in testa alla sua classe di registrazione
+(`Features/<Area>/<Area>FeatureRegistration.cs`), richiamata da `Program.cs` dopo `AddApiInfrastructure`.
+
+Nello slice Documenti convivono **tre forme** dello stesso documento — `Contracts/DocumentResponse` (trasporto),
+`Entities/Document` (lettura), `Models/DocumentEditModel` (form) — documentate in testa a `DocumentResponse.cs`.
+`Documents` non è divisa per caso d'uso (creazione, modifica, …) perché quelle pagine condividono form, modello,
+entità e servizio: la divisione naturale, se servirà, è per sotto-area.
+
+In `Shared/` un tipo entra quando compare il **secondo** utilizzatore; finché ne ha uno solo resta nello slice
+(per questo `PagedResult` e `PageDto` stanno in `Features/Documents`).
+
+### Funzionalità
+
+- **Login** su `POST /api/v1/auth/login`; il token JWT viene salvato nel `sessionStorage` e i ruoli sono letti dal payload del token. Le pagine e le azioni sono mostrate in base al ruolo (`Viewer` lettura, `Editor` scrittura, `Admin` completo).
+- **Documenti**: ricerca paginata con filtri (tipologie, stati, cliente, numero/data), ordinamento; creazione; modifica (solo `Draft`/`Ready`); avanzamento di stato (`Draft → Ready → Sent → Approved/Rejected`); generazione di un nuovo documento da uno esistente; collegamento manuale bidirezionale; eliminazione con conferma; elenco dei documenti collegati.
+- **Valuta**: il client gestisce solo Euro – invia sempre `Currency = "EUR"` e mostra gli importi in `€`.
+- **Design system**: Bootstrap 5.3.8 (solo CSS, in `wwwroot/lib/bootstrap`) + un unico stylesheet `wwwroot/css/app.css` con i design token e gli stili di tutti i componenti (nessun CSS isolato per componente). Temi **light** e **dark** tramite `data-bs-theme`, scelta salvata nel browser (default: tema di sistema).
+- **Localizzazione**: `IStringLocalizer` con `Resources/SharedResource.resx` (italiano, predefinito) e `SharedResource.en.resx` (inglese); la lingua si cambia dalla top bar (ricarica della pagina). Gli errori restituiti dalle API sono mostrati così come arrivano (inglese) sotto un titolo localizzato.
+
+### Configurazione e avvio
+
+- `UI/WAPIDocManager.UI/wwwroot/appsettings.json` → sezione `Api`: `IdentityBaseUrl` (`https://localhost:7205/`) e `DocumentBaseUrl` (`https://localhost:7273/`).
+- Le API devono autorizzare l'origine del client nella sezione `Cors:AllowedOrigins` (vedi [Configurazione](#configurazione)).
+- Avvio: eseguire `WAPIIdentity` e `WAPIDocument` (profilo `https`), poi `dotnet run --project UI/WAPIDocManager.UI --launch-profile https` e aprire `https://localhost:7150`.
+
+### Test del client
+
+Un unico progetto, `Tests/WAPIDocManager.UI.Tests`, con la stessa struttura del sorgente (123 test):
+
+- `Features/Documents` – regole di stato e completezza, permessi per ruolo e stato, validazione e precompilazione dei
+  modelli di form, conversioni dei contratti, `DocumentApiService` con `HttpMessageHandler` fittizio (URL, metodi,
+  query string con liste, body JSON, enum numerici, date UTC, valuta EUR) e i ViewModel delle quattro pagine.
+- `Features/Auth` – login, lettura dei ruoli dal JWT, conversione `LoginResponse` → `UserSession`.
+- `Features/Users` – registrazione utenti e conversione del relativo contratto.
+- `Shared/Api` – lettura delle risposte ProblemDetails → `ApiException`, `BearerTokenHandler` (token scaduto, 401, 403).
+- `Shared/Authentication` – sessione utente e persistenza nel `sessionStorage`.
+- `Shared/Validation` – `ModelValidator` (validazione del grafo, righe documento) e attributi personalizzati.
+- `TestSupport/` – fake riusabili: `HttpMessageHandler`, `IJSRuntime`, `TimeProvider`, generatore di JWT.
+
+### Configurazione di build centralizzata
+
+Tutti i file sono a livello della solution client (`UI/`) e valgono solo per essa: il backend non è coinvolto.
+
+| File | Contenuto | Quando si tocca |
+|---|---|---|
+| `UI/Directory.Build.props` | `TargetFramework`, `Nullable`, `ImplicitUsings` e le proprietà dell'analisi statica, comuni a tutti i progetti | per una proprietà che deve valere ovunque |
+| `UI/Tests/WAPIDocManager.UI.Tests/*.csproj` | proprietà e pacchetti del progetto di test (`IsTestProject`, `using Xunit` implicito, `Microsoft.NET.Test.Sdk`, `xunit`, `Moq`, `coverlet.collector`) | il progetto di test è uno solo, quindi non serve un `Directory.Build.props` dedicato |
+| `UI/Directory.Packages.props` | **versioni** di tutti i pacchetti NuGet (`ManagePackageVersionsCentrally`) | per aggiungere un pacchetto o aggiornare una versione |
+| `UI/.editorconfig` | stile di codifica e severità delle regole | per cambiare una convenzione o motivare una soppressione |
+
+Per aggiungere un pacchetto: `<PackageVersion Include="Nome" Version="x.y.z" />` in `Directory.Packages.props`, poi `<PackageReference Include="Nome" />` (senza versione) nel `.csproj` che lo usa. Una versione lasciata nel `.csproj` fa fallire il restore con `NU1008`.
+
+### Stile di codifica e analisi statica
+
+`UI/.editorconfig` parte dal template ufficiale dell'SDK (`dotnet new editorconfig`, SDK 8.0.425); le poche voci modificate sono marcate `[PERSONALIZZATO]` con il motivo: fine riga `lf`, newline finale, namespace file-scoped (severità `warning`), niente riga vuota tra i gruppi di `using`, sezioni per `.razor`, i file MSBuild, `.resx` e gli asset di `wwwroot`.
+
+Analizzatori attivi su tutti i progetti:
+
+| Fonte | Diagnostiche | Configurazione |
+|---|---|---|
+| Analizzatori .NET dell'SDK | `CAxxxx` | `EnableNETAnalyzers`, `AnalysisLevel=latest`, `AnalysisMode=Recommended` in `Directory.Build.props` |
+| Regole di stile | `IDExxxx` | `EnforceCodeStyleInBuild=true` + `.editorconfig` |
+| SonarAnalyzer.CSharp | `Sxxxx` | `GlobalPackageReference` in `Directory.Packages.props` (vale per tutti i progetti) |
+| xunit.analyzers | `xUnit1xxx`, `xUnit2xxx` | incluso nel metapacchetto `xunit`, nessuna configurazione |
+| Moq.Analyzers | `Moq1xxx` | `PackageReference` nei tre progetti di test che usano Moq |
+
+I warning **non** sono trattati come errori, ma la solution compila a **0 warning**: una segnalazione nuova va corretta oppure motivata con una riga di severità nell'`.editorconfig` (in fondo al file ci sono le soppressioni attuali, ognuna con il proprio commento). Non sono stati inclusi StyleCop (regole di stile in conflitto con `EnforceCodeStyleInBuild`), Roslynator e Meziantou (in larga parte sovrapposti a Sonar).
+
+### Esecuzione del client in Docker
+
+Il client Blazor WASM pubblica file statici, quindi l'immagine è in due stadi: build con l'SDK .NET 8, esecuzione con `nginx:alpine`. Le due API e MongoDB **non** sono containerizzate: restano in esecuzione sulla macchina.
+
+```bash
+cd UI
+docker compose up --build -d     # http://localhost:8080
+docker compose down
+```
+
+Gli indirizzi delle API non sono compilati nell'immagine: `docker-entrypoint.sh` riscrive `wwwroot/appsettings.json` all'avvio del container a partire da `API_IDENTITY_BASE_URL` e `API_DOCUMENT_BASE_URL` (impostate in `docker-compose.yml`), quindi la stessa immagine può puntare ad ambienti diversi senza essere ricompilata. Sono indirizzi usati dal **browser**, non dal container: `localhost` è la macchina di chi apre la pagina.
+
+Perché il client in container funzioni servono due condizioni:
+
+1. `http://localhost:8080` deve essere presente in `Cors:AllowedOrigins` di **entrambe** le API, altrimenti il browser blocca ogni chiamata (in UI compare l'errore "servizio non raggiungibile");
+2. il certificato di sviluppo ASP.NET deve essere fidato nel browser, perché le API rispondono in `https`.

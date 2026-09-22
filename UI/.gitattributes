@@ -1,0 +1,7 @@
+# Gli script eseguiti dentro il container devono restare con fine riga LF anche su Windows:
+# con CRLF la prima riga (#!/bin/sh) diventa "#!/bin/sh\r" e l'immagine alpine non trova l'interprete.
+*.sh text eol=lf
+
+# File letti da nginx e da Docker: stessa ragione, vanno mantenuti in formato Unix.
+Dockerfile text eol=lf
+nginx.conf text eol=lf
