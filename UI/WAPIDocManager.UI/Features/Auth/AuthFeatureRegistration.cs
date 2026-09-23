@@ -1,7 +1,9 @@
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using WAPIDocManager.UI.Features.Auth.Contracts;
 using WAPIDocManager.UI.Features.Auth.Models;
+using WAPIDocManager.UI.Features.Auth.Validators;
+using WAPIDocManager.UI.Features.Auth.Contracts;
 using WAPIDocManager.UI.Features.Auth.Services;
 using WAPIDocManager.UI.Shared.Api;
 using WAPIDocManager.UI.Shared.Authentication;
@@ -17,7 +19,9 @@ namespace WAPIDocManager.UI.Features.Auth;
 /// CONTENUTO DELLO SLICE
 /// <list type="bullet">
 ///   <item><c>Pages/Login.razor</c> – unica pagina anonima dell'app ([AllowAnonymous]); rotta in <c>Shared/Navigation/AppRoutes</c>.</item>
-///   <item><c>Models/LoginModel</c> – modello del form con DataAnnotations.</item>
+///   <item><c>Models/LoginModel</c> – modello del form, senza attributi: le regole stanno in Validators.</item>
+///   <item><c>Validators/LoginModelValidator</c> – regole FluentValidation, registrate nella DI e usate dal
+///         componente &lt;FluentValidator /&gt; della pagina.</item>
 ///   <item><c>Services/IAuthService</c> + <c>AuthApiService</c> – chiamata a <c>POST /api/v1/auth/login</c> di WAPIIdentity
 ///         (endpoint anonimo: il typed HttpClient NON monta BearerTokenHandler); <c>JwtPayloadReader</c> legge i ruoli dal token.</item>
 ///   <item><c>Contracts/LoginRequest</c>, <c>LoginResponse</c> – forme di trasporto, con gli operatori di conversione.</item>
@@ -37,6 +41,9 @@ public static class AuthFeatureRegistration
         // login: endpoint anonimo, nessun token da allegare
         services.AddHttpClient<IAuthService, AuthApiService>(client =>
             client.BaseAddress = apiOptions.IdentityBaseAddress());
+
+        // regole del form: risolte dalla DI dal componente <FluentValidator /> (Blazilla); senza stato, quindi Singleton
+        services.AddSingleton<IValidator<LoginModel>, LoginModelValidator>();
 
         return services;
     }

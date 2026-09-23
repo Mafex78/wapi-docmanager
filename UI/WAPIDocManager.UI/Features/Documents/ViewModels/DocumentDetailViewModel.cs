@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Services;
@@ -21,7 +22,7 @@ namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 /// è governato dalla guardia sull'Id in <see cref="LoadAsync"/>.
 /// </para>
 /// </remarks>
-public sealed class DocumentDetailViewModel
+public sealed partial class DocumentDetailViewModel : ObservableObject
 {
     /// <summary>Risultati per pagina nella ricerca della modale di collegamento.</summary>
     public const int AttachPageSize = 10;
@@ -37,43 +38,58 @@ public sealed class DocumentDetailViewModel
         _documentService = documentService;
     }
 
-    /// <summary>
-    /// Sollevato quando lo stato cambia fuori dal gestore di evento della pagina e serve un ridisegno
-    /// (caricamento dei documenti collegati). La pagina si iscrive e chiama StateHasChanged.
-    /// </summary>
-    public event Action? StateChanged;
+    // Stato di proprietà del ViewModel: setter privato + SetProperty, così la pagina lo legge e basta.
+    // (non [ObservableProperty]: il generatore crea sempre un setter pubblico)
+    private Document? _document;
+    private DocumentDetailNotification _notification;
+    private DocumentStatus? _notificationStatus;
+    private bool _isLoading = true;
+    private bool _isLoadingLinks;
+    private bool _isBusy;
+    private bool _attachLoading;
+    private DocumentFilter _attachFilter = new() { PageSize = AttachPageSize };
 
-    public Document? Document { get; private set; }
+    public Document? Document { get => _document; private set => SetProperty(ref _document, value); }
 
-    /// <summary>Errore dell'ultima azione; la pagina lo azzera quando l'utente chiude l'avviso.</summary>
-    public Exception? Error { get; set; }
-
-    public DocumentDetailNotification Notification { get; private set; }
+    public DocumentDetailNotification Notification { get => _notification; private set => SetProperty(ref _notification, value); }
 
     /// <summary>Stato raggiunto, valorizzato solo con <see cref="DocumentDetailNotification.StatusUpdated"/>.</summary>
-    public DocumentStatus? NotificationStatus { get; private set; }
+    public DocumentStatus? NotificationStatus { get => _notificationStatus; private set => SetProperty(ref _notificationStatus, value); }
 
-    public bool IsLoading { get; private set; } = true;
+    public bool IsLoading { get => _isLoading; private set => SetProperty(ref _isLoading, value); }
 
-    public bool IsLoadingLinks { get; private set; }
+    /// <summary>Caricamento dei documenti collegati: avviene dopo il caricamento della pagina, quindi la sua
+    /// notifica è ciò che fa comparire prima lo spinner e poi l'elenco.</summary>
+    public bool IsLoadingLinks { get => _isLoadingLinks; private set => SetProperty(ref _isLoadingLinks, value); }
 
     /// <summary>Azione in corso: la pagina disabilita i pulsanti.</summary>
-    public bool IsBusy { get; private set; }
+    public bool IsBusy { get => _isBusy; private set => SetProperty(ref _isBusy, value); }
 
-    public bool ConfirmDelete { get; set; }
+    public bool AttachLoading { get => _attachLoading; private set => SetProperty(ref _attachLoading, value); }
 
-    public bool ShowGenerate { get; set; }
+    public DocumentFilter AttachFilter { get => _attachFilter; private set => SetProperty(ref _attachFilter, value); }
+
+    // Stato che la pagina scrive direttamente dal markup (@bind, modali): setter pubblico generato da [ObservableProperty]
+
+    /// <summary>Errore dell'ultima azione; la pagina lo azzera quando l'utente chiude l'avviso.</summary>
+    [ObservableProperty]
+    private Exception? _error;
+
+    [ObservableProperty]
+    private bool _confirmDelete;
+
+    [ObservableProperty]
+    private bool _showGenerate;
 
     /// <summary>Tipologia proposta per la generazione (modificabile dalla modale).</summary>
-    public DocumentType GenerateType { get; set; }
+    [ObservableProperty]
+    private DocumentType _generateType;
 
-    public bool ShowAttach { get; set; }
+    [ObservableProperty]
+    private bool _showAttach;
 
-    public bool AttachLoading { get; private set; }
-
-    public Exception? AttachError { get; set; }
-
-    public DocumentFilter AttachFilter { get; private set; } = new() { PageSize = AttachPageSize };
+    [ObservableProperty]
+    private Exception? _attachError;
 
     /// <summary>
     /// Candidati al collegamento: esclude il documento corrente e quelli già collegati.
@@ -256,10 +272,9 @@ public sealed class DocumentDetailViewModel
             return;
         }
 
+        // lo stato cambia fuori da un gestore di evento: la notifica di IsLoadingLinks (prima true, poi false
+        // al termine) è ciò che fa ridisegnare la pagina, prima con lo spinner e poi con l'elenco
         IsLoadingLinks = true;
-
-        // qui lo stato cambia fuori da un gestore di evento: la pagina deve ridisegnarsi per mostrare lo spinner
-        StateChanged?.Invoke();
 
         Document?[] linkedDocuments = await Task.WhenAll(Document.LinkedDocuments
             .Select(link => TryGetDocumentAsync(link.TargetDocumentId)));

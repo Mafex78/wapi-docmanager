@@ -10,7 +10,7 @@ namespace WAPIDocManager.UI.Features.Documents.Contracts;
 ///         nessuna validazione. Cambia solo se cambiano i DTO di WAPIDocument.</item>
 ///   <item><b>Entities/Document</b> – FORMA DI LETTURA usata da pagine, regole e permessi: collezioni mai null,
 ///         valori normalizzati. Costruita dall'operatore esplicito qui sotto.</item>
-///   <item><b>Models/DocumentEditModel</b> – FORMA DI FORM: DataAnnotations, proprietà mutabili per il binding.
+///   <item><b>Models/DocumentEditModel</b> – FORMA DI FORM: proprietà mutabili per il binding, regole in Validators/.
 ///         Torna verso le API con gli operatori di DocumentCreateRequest / DocumentUpdateRequest.</item>
 /// </list>
 /// Il prezzo è un mapping in più; il guadagno è che il JSON del server non arriva alle pagine e che la validazione

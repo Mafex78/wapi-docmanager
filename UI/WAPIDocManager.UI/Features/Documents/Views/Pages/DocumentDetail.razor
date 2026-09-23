@@ -1,5 +1,8 @@
 @attribute [Route(AppRoutes.Templates.DocumentDetail)]
 @attribute [Authorize(Roles = AppRoles.Readers)]
+@using WAPIDocManager.UI.Features.Documents.ViewModels
+@* la base inietta il ViewModel come Vm e ridisegna la pagina quando notifica un cambiamento *@
+@inherits MvvmComponentBase<DocumentDetailViewModel>
 
 @*
     Dettaglio documento: punto di accesso a quasi tutti gli endpoint di WAPIDocument.

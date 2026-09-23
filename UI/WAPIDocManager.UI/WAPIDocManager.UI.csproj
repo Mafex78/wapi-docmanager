@@ -45,6 +45,11 @@
         <PackageReference Include="Microsoft.Extensions.Http" />
         <!-- IJSRuntime per sessionStorage e tema (Shared/Authentication, wwwroot/js/app.js) -->
         <PackageReference Include="Microsoft.JSInterop" />
+        <!-- regole dei form (Features/<Area>/Validators) e componente <FluentValidator /> per EditForm -->
+        <PackageReference Include="FluentValidation" />
+        <PackageReference Include="Blazilla" />
+        <!-- ObservableObject per i ViewModel (vedi Shared/Mvvm/MvvmComponentBase.cs) -->
+        <PackageReference Include="CommunityToolkit.Mvvm" />
     </ItemGroup>
 
     <ItemGroup>

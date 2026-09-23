@@ -1,7 +1,9 @@
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using WAPIDocManager.UI.Features.Users.Contracts;
 using WAPIDocManager.UI.Features.Users.Models;
+using WAPIDocManager.UI.Features.Users.Validators;
+using WAPIDocManager.UI.Features.Users.Contracts;
 using WAPIDocManager.UI.Features.Users.Services;
 using WAPIDocManager.UI.Shared.Api;
 using WAPIDocManager.UI.Shared.Authentication;
@@ -16,7 +18,8 @@ namespace WAPIDocManager.UI.Features.Users;
 /// CONTENUTO DELLO SLICE
 /// <list type="bullet">
 ///   <item><c>Pages/UserRegister.razor</c> – form di registrazione, protetto da [Authorize(Roles = AppRoles.Admin)].</item>
-///   <item><c>Models/RegisterUserModel</c> – modello del form (email, password, ruoli).</item>
+///   <item><c>Models/RegisterUserModel</c> – modello del form (email, password, ruoli), senza attributi.</item>
+///   <item><c>Validators/RegisterUserModelValidator</c> – regole FluentValidation registrate nella DI.</item>
 ///   <item><c>Services/IUserService</c> + <c>UserApiService</c> – <c>POST /api/v1/users/register</c> di WAPIIdentity
 ///         (endpoint protetto: il typed HttpClient monta BearerTokenHandler).</item>
 ///   <item><c>Contracts/RegisterUserRequest</c>, <c>RegisterUserResponse</c> – forme di trasporto.</item>
@@ -36,6 +39,9 @@ public static class UsersFeatureRegistration
         services.AddHttpClient<IUserService, UserApiService>(client =>
                 client.BaseAddress = apiOptions.IdentityBaseAddress())
             .AddHttpMessageHandler<BearerTokenHandler>();
+
+        // regole del form: risolte dalla DI dal componente <FluentValidator /> (Blazilla); senza stato, quindi Singleton
+        services.AddSingleton<IValidator<RegisterUserModel>, RegisterUserModelValidator>();
 
         return services;
     }

@@ -8,13 +8,15 @@ namespace WAPIDocManager.UI.Shared.Validation;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Le costanti vanno usate come <c>ErrorMessage</c> degli attributi DataAnnotations dei form model: Application resta
-/// indipendente dalla localizzazione e <c>Shared/Forms/FieldValidationMessage</c> traduce la chiave.
+/// Le costanti si usano con <c>WithMessage(...)</c> nei validator FluentValidation degli slice
+/// (<c>Features/&lt;Area&gt;/Validators</c>): le regole restano indipendenti dalla localizzazione e
+/// <c>Shared/Forms/FieldValidationMessage</c> traduce la chiave al momento della resa.
 /// </para>
 /// <para>
 /// Ogni nuova chiave va aggiunta in ENTRAMBI i file <c>WAPIDocManager.UI/Resources/SharedResource.resx</c> (italiano)
 /// e <c>SharedResource.en.resx</c> (inglese); una chiave mancante viene mostrata così com'è.
-/// Le chiavi non devono contenere segnaposto <c>{0}</c> (ValidationAttribute.FormatErrorMessage li sostituirebbe con il nome del campo).
+/// Le chiavi non devono contenere segnaposto di FluentValidation (<c>{PropertyName}</c>, <c>{ComparisonValue}</c>):
+/// il testo tradotto arriva dal .resx, non dal messaggio della regola.
 /// </para>
 /// </remarks>
 public static class ValidationKeys

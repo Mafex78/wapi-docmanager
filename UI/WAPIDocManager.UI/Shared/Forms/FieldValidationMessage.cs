@@ -12,7 +12,8 @@ namespace WAPIDocManager.UI.Shared.Forms;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Sostituisce il ValidationMessage standard nei form che usano <see cref="ModelGraphValidator"/>.
+/// Sostituisce il ValidationMessage standard nei form che usano <c>&lt;FluentValidator /&gt;</c> (Blazilla):
+/// i validator scrivono nell'EditContext la CHIAVE del messaggio e qui viene tradotta.
 /// Uso: <c>&lt;FieldValidationMessage For="() =&gt; line.Quantity" /&gt;</c>; funziona anche per elementi di collezioni
 /// perché il FieldIdentifier è creato dall'espressione (istanza della riga + nome proprietà).
 /// </para>

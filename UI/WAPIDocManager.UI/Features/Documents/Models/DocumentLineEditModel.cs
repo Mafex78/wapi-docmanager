@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Shared.Validation;
 
@@ -13,16 +12,10 @@ namespace WAPIDocManager.UI.Features.Documents.Models;
 /// </remarks>
 public class DocumentLineEditModel
 {
-    [Required(ErrorMessage = ValidationKeys.Required)]
     public string? Description { get; set; }
 
     /// <summary>Valore iniziale 1 per le nuove righe.</summary>
-    [GreaterThanZero(ErrorMessage = ValidationKeys.GreaterThanZero)]
-    [DecimalPrecision(9, 2, ErrorMessage = ValidationKeys.QuantityPrecision)]
     public decimal Quantity { get; set; } = 1M;
-
-    [GreaterThanZero(ErrorMessage = ValidationKeys.GreaterThanZero)]
-    [DecimalPrecision(12, 2, ErrorMessage = ValidationKeys.UnitPricePrecision)]
     public decimal UnitPrice { get; set; }
 
     /// <summary>

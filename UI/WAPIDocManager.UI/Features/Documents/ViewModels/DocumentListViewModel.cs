@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Services;
@@ -20,11 +21,11 @@ namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 /// <see cref="DocumentListState"/> (Scoped), così sopravvivono alla navigazione verso il dettaglio e ritorno.
 /// </para>
 /// <para>
-/// Nessuna dipendenza da Blazor: lo stato cambia sempre dentro un gestore di evento della pagina, quindi il ridisegno
-/// è automatico e non serve notificare nulla al componente.
+/// Nessuna dipendenza da Blazor: deriva da ObservableObject (CommunityToolkit.Mvvm) e notifica i cambiamenti di
+/// proprietà; è <c>Shared/Mvvm/MvvmComponentBase</c> a tradurli in un ridisegno del componente.
 /// </para>
 /// </remarks>
-public sealed class DocumentListViewModel
+public sealed partial class DocumentListViewModel : ObservableObject
 {
     private readonly IDocumentService _documentService;
     private readonly DocumentListState _listState;
@@ -40,17 +41,26 @@ public sealed class DocumentListViewModel
     /// <summary>Filtro condiviso con <see cref="DocumentListState"/>: il form della pagina lo modifica direttamente.</summary>
     public DocumentFilter Filter => _listState.Filter;
 
-    public PagedResult<Document> Result { get; private set; } = new();
+    // Stato di proprietà del ViewModel: setter privato + SetProperty (la pagina lo legge e basta)
+    private PagedResult<Document> _result = new();
+    private bool _isLoading = true;
+    private bool _isDeleting;
+
+    public PagedResult<Document> Result { get => _result; private set => SetProperty(ref _result, value); }
+
+    public bool IsLoading { get => _isLoading; private set => SetProperty(ref _isLoading, value); }
+
+    public bool IsDeleting { get => _isDeleting; private set => SetProperty(ref _isDeleting, value); }
+
+    // Stato scritto dalla pagina: setter pubblico generato da [ObservableProperty]
 
     /// <summary>Errore dell'ultima chiamata; la pagina lo azzera quando l'utente chiude l'avviso.</summary>
-    public Exception? Error { get; set; }
-
-    public bool IsLoading { get; private set; } = true;
-
-    public bool IsDeleting { get; private set; }
+    [ObservableProperty]
+    private Exception? _error;
 
     /// <summary>Documento per cui è aperta la modale di conferma eliminazione (null = modale chiusa).</summary>
-    public Document? DocumentToDelete { get; set; }
+    [ObservableProperty]
+    private Document? _documentToDelete;
 
     /// <summary>Esegue la ricerca con i filtri correnti.</summary>
     public async Task LoadAsync()

@@ -1,7 +1,8 @@
 @attribute [Route(AppRoutes.Templates.DocumentEdit)]
 @attribute [Authorize(Roles = AppRoles.Writers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
-@inject DocumentEditViewModel Vm
+@* la base inietta il ViewModel come Vm e ridisegna la pagina quando notifica un cambiamento *@
+@inherits MvvmComponentBase<DocumentEditViewModel>
 @inject NavigationManager Navigation
 
 @*

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Services;
 using WAPIDocManager.UI.Features.Documents;
@@ -49,7 +48,5 @@ public class DocumentFilter
 
     /// <summary>Pagina richiesta (prima = 1).</summary>
     public int Page { get; set; } = 1;
-
-    [Range(1, MaxPageSize, ErrorMessage = ValidationKeys.PageSizeRange)]
     public int PageSize { get; set; } = MaxPageSize;
 }

@@ -1,8 +1,10 @@
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WAPIDocManager.UI.Features.Documents.Models;
+using WAPIDocManager.UI.Features.Documents.Validators;
 using WAPIDocManager.UI.Features.Documents.Contracts;
 using WAPIDocManager.UI.Features.Documents.Entities;
-using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Services;
 using WAPIDocManager.UI.Features.Documents.ViewModels;
 using WAPIDocManager.UI.Features.Documents.Views.Pages;
@@ -26,6 +28,7 @@ namespace WAPIDocManager.UI.Features.Documents;
 ///         DocumentLink, PagedResult, gli enum e DocumentRules (regole di stato SPECULARI a quelle del server).</item>
 ///   <item><c>Models/</c> – modelli di form e di filtro con la validazione: DocumentEditModel, CustomerEditModel,
 ///         DocumentLineEditModel, DocumentFilter, DocumentSortFields, SortDirection.</item>
+///   <item><c>Validators/</c> – regole dei form (FluentValidation): documento, cliente annidato, righe e filtri.</item>
 ///   <item><c>Services/</c> – IDocumentService + DocumentApiService (tutti gli endpoint di WAPIDocument),
 ///         DocumentQueryStringBuilder e DocumentMapper.</item>
 ///   <item><c>Contracts/</c> – forme di trasporto (DocumentResponse, DocumentCreateRequest, PageDto, ...) con gli
@@ -54,6 +57,11 @@ public static class DocumentsFeatureRegistration
         services.AddHttpClient<IDocumentService, DocumentApiService>(client =>
                 client.BaseAddress = apiOptions.DocumentBaseAddress())
             .AddHttpMessageHandler<BearerTokenHandler>();
+
+        // regole dei form: risolte dalla DI dal componente <FluentValidator /> (Blazilla); senza stato, quindi Singleton.
+        // Quello del documento delega ai validator del cliente e delle righe (SetValidator / RuleForEach).
+        services.AddSingleton<IValidator<DocumentEditModel>, DocumentEditModelValidator>();
+        services.AddSingleton<IValidator<DocumentFilter>, DocumentFilterValidator>();
 
         // in WebAssembly lo scope dura quanto la scheda: i filtri della lista sopravvivono alla navigazione
         services.AddScoped<DocumentListState>();

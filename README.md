@@ -350,12 +350,25 @@ UI/
 | `Views/Pages/` · `Views/Components/` | markup e code-behind: pagine routabili e componenti della funzionalità |
 | `ViewModels/` | logica delle pagine che ne hanno (MVVM solo dove serve: le pagine sottili come `DocumentCreate` o `Login` non ne hanno), testata senza Blazor |
 | `Entities/` | ciò che torna dalle API già trasformato per l'app: `Document`, `Customer`, `PagedResult`, gli enum e `DocumentRules` (regole di stato speculari al server) |
-| `Models/` | modelli di form e di filtro con le DataAnnotations: `DocumentEditModel`, `DocumentFilter`, `LoginModel`, `RegisterUserModel` |
+| `Models/` | modelli di form e di filtro, senza attributi: `DocumentEditModel`, `DocumentFilter`, `LoginModel`, `RegisterUserModel` |
+| `Validators/` | regole dei form (FluentValidation), una classe per modello; i messaggi sono chiavi di `ValidationKeys`, tradotte alla resa |
 | `Services/` | interfaccia + typed `HttpClient` verso le API della funzionalità, mapper e query string builder |
 | `Contracts/` | forme di trasporto (DTO wire) con gli operatori di conversione espliciti |
 
 Il punto di ingresso per capire una funzionalità è il commento in testa alla sua classe di registrazione
 (`Features/<Area>/<Area>FeatureRegistration.cs`), richiamata da `Program.cs` dopo `AddApiInfrastructure`.
+
+La validazione dei form usa **FluentValidation** con **Blazilla** come ponte verso `EditForm`: ogni form monta
+`<FluentValidator />`, che risolve dalla DI il validator registrato dalla registrazione del proprio slice. Gli oggetti
+annidati e le collezioni sono coperti da `SetValidator` e `RuleForEach` (righe del documento e dati cliente). I
+messaggi restano chiavi di `ValidationKeys`, tradotte da `Shared/Forms/FieldValidationMessage`. Costo misurato sul
+bundle: **+244 KB** compressi, verificati funzionanti anche nel publish con trimming attivo.
+
+Il pattern MVVM usa **CommunityToolkit.Mvvm**: i ViewModel derivano da `ObservableObject` e notificano i cambiamenti
+di proprietà; `Shared/Mvvm/MvvmComponentBase<TViewModel>` — una trentina di righe scritte qui — inietta il ViewModel
+nella pagina (`@inherits MvvmComponentBase<DocumentListViewModel>`) e traduce le notifiche in `StateHasChanged`.
+Non è stato adottato Blazing.Mvvm, che farebbe lo stesso ma mettendo un pacchetto di terze parti nella classe base di
+tutte le pagine. Costo nel bundle, misurato con due publish a confronto: **+12 KB** compressi.
 
 Nello slice Documenti convivono **tre forme** dello stesso documento — `Contracts/DocumentResponse` (trasporto),
 `Entities/Document` (lettura), `Models/DocumentEditModel` (form) — documentate in testa a `DocumentResponse.cs`.

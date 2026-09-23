@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using WAPIDocManager.UI.Features.Auth.Contracts;
 using WAPIDocManager.UI.Shared.Validation;
 
@@ -13,10 +12,6 @@ namespace WAPIDocManager.UI.Features.Auth.Models;
 /// </remarks>
 public class LoginModel
 {
-    [Required(ErrorMessage = ValidationKeys.Required)]
-    [EmailAddress(ErrorMessage = ValidationKeys.EmailInvalid)]
     public string? Email { get; set; }
-
-    [Required(ErrorMessage = ValidationKeys.Required)]
     public string? Password { get; set; }
 }

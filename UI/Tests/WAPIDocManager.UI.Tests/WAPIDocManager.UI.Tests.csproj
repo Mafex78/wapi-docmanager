@@ -29,6 +29,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <!-- FluentValidation.TestHelper: asserzioni tipizzate sui validator (ShouldHaveValidationErrorFor) -->
+        <PackageReference Include="FluentValidation" />
         <PackageReference Include="Moq" />
         <!-- regole Moq1xxx: setup su membri non virtuali, Verify su metodi mai configurati, ecc. -->
         <PackageReference Include="Moq.Analyzers">

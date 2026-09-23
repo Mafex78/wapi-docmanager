@@ -35,9 +35,9 @@ public class DocumentEditModel
     public CustomerEditModel Customer { get; set; } = new();
 
     /// <summary>
-    /// Righe del documento: <see cref="NestedValidationAttribute"/> fa validare ogni riga.
+    /// Righe del documento: ogni riga è validata da DocumentLineEditModelValidator, richiamato con RuleForEach
+    /// da <c>Validators/DocumentEditModelValidator</c>.
     /// </summary>
-    [NestedValidation]
     public List<DocumentLineEditModel> Lines { get; set; } = new();
 
     /// <summary>

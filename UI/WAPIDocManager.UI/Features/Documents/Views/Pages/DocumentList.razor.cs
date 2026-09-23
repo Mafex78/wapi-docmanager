@@ -17,14 +17,15 @@ namespace WAPIDocManager.UI.Features.Documents.Views.Pages;
 /// </remarks>
 public partial class DocumentList
 {
-    [Inject] private DocumentListViewModel Vm { get; set; } = default!;
-
+    // Vm arriva da MvvmComponentBase<DocumentListViewModel>, dichiarata con @inherits nel .razor
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     private IReadOnlyCollection<RoleType> _roles = Array.Empty<RoleType>();
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         _roles = (await AuthenticationStateTask).User.GetRoles();
         await Vm.LoadAsync();
     }

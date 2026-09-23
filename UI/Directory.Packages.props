@@ -30,6 +30,27 @@
         <PackageVersion Include="Microsoft.Extensions.Localization" Version="8.0.31" />
     </ItemGroup>
 
+    <ItemGroup Label="Validazione">
+        <!--
+            Regole dei form come classi (Features/<Area>/Validators), al posto degli attributi DataAnnotations e del
+            motore di validazione del grafo scritto a mano. Blazilla è il ponte verso EditForm: <FluentValidator />
+            risolve il validator dalla DI (Blazored.FluentValidation, l'alternativa più nota, è unlisted su NuGet).
+            Costo misurato sul bundle: +280 KB compressi (FluentValidation 146, regex 85, Blazilla 20, Immutable 13).
+        -->
+        <PackageVersion Include="FluentValidation" Version="12.1.1" />
+        <PackageVersion Include="Blazilla" Version="2.4.1" />
+    </ItemGroup>
+
+    <ItemGroup Label="MVVM">
+        <!--
+            ObservableObject e i generatori [ObservableProperty]/[RelayCommand] usati dai ViewModel degli slice.
+            Pacchetto Microsoft, senza dipendenze da Blazor: l'integrazione con i componenti sono le ~30 righe di
+            Shared/Mvvm/MvvmComponentBase.cs, scritte da noi per non legare la classe base delle pagine a terze parti
+            (valutato e scartato Blazing.Mvvm, che fa la stessa cosa ma entra nella gerarchia dei componenti).
+        -->
+        <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    </ItemGroup>
+
     <ItemGroup Label="HTTP, configurazione e interop JS (Shared/Api e Services degli slice)">
         <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
         <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />

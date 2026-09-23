@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using WAPIDocManager.UI.Features.Users.Contracts;
 using WAPIDocManager.UI.Shared.Authentication;
 using WAPIDocManager.UI.Shared.Validation;
@@ -14,11 +13,7 @@ namespace WAPIDocManager.UI.Features.Users.Models;
 /// </remarks>
 public class RegisterUserModel
 {
-    [Required(ErrorMessage = ValidationKeys.Required)]
-    [EmailAddress(ErrorMessage = ValidationKeys.EmailInvalid)]
     public string? Email { get; set; }
-
-    [Required(ErrorMessage = ValidationKeys.Required)]
     public string? Password { get; set; }
 
     /// <summary>

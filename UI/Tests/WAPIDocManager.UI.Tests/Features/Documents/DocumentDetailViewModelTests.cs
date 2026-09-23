@@ -26,8 +26,8 @@ public class DocumentDetailViewModelTests
         service.Setup(s => s.GetByIdAsync("gone", It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ApiException(HttpStatusCode.NotFound, null));
         var viewModel = new DocumentDetailViewModel(service.Object);
-        int stateChanged = 0;
-        viewModel.StateChanged += () => stateChanged++;
+        var notified = new List<string?>();
+        viewModel.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
 
         await viewModel.LoadAsync("abc");
 
@@ -36,8 +36,26 @@ public class DocumentDetailViewModelTests
         Assert.False(viewModel.IsLoadingLinks);
         Assert.Equal("N-OK", viewModel.TryGetLinkedDocument("ok")?.Number);
         Assert.Null(viewModel.TryGetLinkedDocument("gone"));
-        // il ridisegno serve per mostrare lo spinner dei collegati
-        Assert.Equal(1, stateChanged);
+        // i documenti collegati si caricano dopo la pagina: le due notifiche di IsLoadingLinks (true e poi false)
+        // sono ciò che fa comparire prima lo spinner e poi l'elenco, al posto del vecchio evento StateChanged
+        Assert.Equal(2, notified.Count(name => name == nameof(DocumentDetailViewModel.IsLoadingLinks)));
+    }
+
+    [Fact]
+    public void ObservableProperty_Setter_Notifies_The_Page()
+    {
+        (DocumentDetailViewModel viewModel, Mock<IDocumentService> _) = Create();
+        var notified = new List<string?>();
+        viewModel.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+
+        viewModel.ShowAttach = true;
+        viewModel.Error = new InvalidOperationException();
+
+        // proprietà scritte dal markup: il setter generato da [ObservableProperty] deve notificare,
+        // altrimenti la pagina non si ridisegna quando lo stato cambia fuori da un gestore di evento
+        Assert.Equal(
+            new[] { nameof(DocumentDetailViewModel.ShowAttach), nameof(DocumentDetailViewModel.Error) },
+            notified);
     }
 
     [Fact]

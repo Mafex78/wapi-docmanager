@@ -1,5 +1,8 @@
 @attribute [Route(AppRoutes.Templates.Documents)]
 @attribute [Authorize(Roles = AppRoles.Readers)]
+@using WAPIDocManager.UI.Features.Documents.ViewModels
+@* la base inietta il ViewModel come Vm e ridisegna la pagina quando notifica un cambiamento *@
+@inherits MvvmComponentBase<DocumentListViewModel>
 
 @*
     Lista documenti: GET api/v1/documents (ruoli Viewer, Editor, Admin).
@@ -33,6 +36,7 @@
 
 <section class="app-card">
     <EditForm Model="Vm.Filter" OnValidSubmit="Vm.SearchAsync">
+        <FluentValidator />
         <div class="row g-3">
             <div class="col-md-6 col-lg-3">
                 <label class="form-label" for="filter-text">@L["Filter_PlainText"]</label>

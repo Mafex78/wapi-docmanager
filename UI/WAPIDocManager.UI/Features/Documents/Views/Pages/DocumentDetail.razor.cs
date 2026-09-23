@@ -17,12 +17,11 @@ namespace WAPIDocManager.UI.Features.Documents.Views.Pages;
 /// testi localizzati (titolo e messaggio di esito), navigazione dopo eliminazione e generazione, e il ridisegno
 /// richiesto dal ViewModel durante il caricamento dei documenti collegati.
 /// </remarks>
-// sealed: il componente non viene ereditato e senza finalizzatore basta un Dispose() semplice
-// (soddisfa CA1816/S3881 senza il cerimoniale del dispose pattern, che qui non serve)
-public sealed partial class DocumentDetail : IDisposable
+public sealed partial class DocumentDetail
 {
-    [Inject] private DocumentDetailViewModel Vm { get; set; } = default!;
-
+    // Vm arriva da MvvmComponentBase<DocumentDetailViewModel>, dichiarata con @inherits nel .razor:
+    // è la base a iscriversi a PropertyChanged e a chiamare StateHasChanged (anche per il caricamento
+    // asincrono dei documenti collegati, che prima passava da un evento StateChanged scritto a mano).
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
     [Parameter] public string Id { get; set; } = string.Empty;
@@ -45,8 +44,7 @@ public sealed partial class DocumentDetail : IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        // il ViewModel chiede un ridisegno quando lo stato cambia fuori dai gestori di evento
-        Vm.StateChanged += OnViewModelStateChanged;
+        await base.OnInitializedAsync();
 
         _roles = (await AuthenticationStateTask).User.GetRoles();
     }
@@ -55,16 +53,6 @@ public sealed partial class DocumentDetail : IDisposable
     protected override async Task OnParametersSetAsync()
     {
         await Vm.LoadAsync(Id);
-    }
-
-    public void Dispose()
-    {
-        Vm.StateChanged -= OnViewModelStateChanged;
-    }
-
-    private void OnViewModelStateChanged()
-    {
-        StateHasChanged();
     }
 
     private async Task DeleteAsync()
