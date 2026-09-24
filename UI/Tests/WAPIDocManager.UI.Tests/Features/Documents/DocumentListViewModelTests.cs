@@ -57,11 +57,54 @@ public class DocumentListViewModelTests
         var viewModel = new DocumentListViewModel(service.Object, new DocumentListState());
         viewModel.Filter.Page = 3;
 
-        await viewModel.LoadAsync();
+        await viewModel.LoadCommand.ExecuteAsync(null);
 
         Assert.Equal(2, viewModel.Filter.Page);
         Assert.Single(viewModel.Result.Items);
         service.Verify(s => s.FindPagedAsync(It.IsAny<DocumentFilter>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task Load_Command_Is_Not_Executable_While_Running()
+    {
+        var pending = new TaskCompletionSource<PagedResult<Document>>();
+        var service = new Mock<IDocumentService>();
+        service.Setup(s => s.FindPagedAsync(It.IsAny<DocumentFilter>(), It.IsAny<CancellationToken>()))
+            .Returns(pending.Task);
+        var viewModel = new DocumentListViewModel(service.Object, new DocumentListState());
+
+        Task loading = viewModel.LoadCommand.ExecuteAsync(null);
+
+        // è così che il markup disabilita Cerca, Azzera e il Pager: prima restavano cliccabili e due ricerche
+        // potevano sovrapporsi, con l'esito dell'ultima risposta arrivata
+        Assert.True(viewModel.LoadCommand.IsRunning);
+        Assert.False(viewModel.LoadCommand.CanExecute(null));
+
+        pending.SetResult(new PagedResult<Document>());
+        await loading;
+
+        Assert.False(viewModel.LoadCommand.IsRunning);
+        Assert.True(viewModel.LoadCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task SearchAsync_Goes_Through_The_Command_And_Resets_The_Page()
+    {
+        var pending = new TaskCompletionSource<PagedResult<Document>>();
+        var service = new Mock<IDocumentService>();
+        service.Setup(s => s.FindPagedAsync(It.IsAny<DocumentFilter>(), It.IsAny<CancellationToken>()))
+            .Returns(pending.Task);
+        var viewModel = new DocumentListViewModel(service.Object, new DocumentListState());
+        viewModel.Filter.Page = 4;
+
+        Task searching = viewModel.SearchAsync();
+
+        // passa dal comando: chiamare il metodo direttamente salterebbe IsRunning e la guardia non scatterebbe
+        Assert.True(viewModel.LoadCommand.IsRunning);
+        Assert.Equal(1, viewModel.Filter.Page);
+
+        pending.SetResult(new PagedResult<Document>());
+        await searching;
     }
 
     [Fact]
@@ -72,7 +115,7 @@ public class DocumentListViewModelTests
             .ThrowsAsync(new ApiException(HttpStatusCode.BadRequest, "PageSize must be less than or equal to 20."));
         var viewModel = new DocumentListViewModel(service.Object, new DocumentListState());
 
-        await viewModel.LoadAsync();
+        await viewModel.LoadCommand.ExecuteAsync(null);
 
         Assert.IsType<ApiException>(viewModel.Error);
         Assert.Empty(viewModel.Result.Items);

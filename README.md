@@ -364,11 +364,14 @@ annidati e le collezioni sono coperti da `SetValidator` e `RuleForEach` (righe d
 messaggi restano chiavi di `ValidationKeys`, tradotte da `Shared/Forms/FieldValidationMessage`. Costo misurato sul
 bundle: **+244 KB** compressi, verificati funzionanti anche nel publish con trimming attivo.
 
-Il pattern MVVM usa **CommunityToolkit.Mvvm**: i ViewModel derivano da `ObservableObject` e notificano i cambiamenti
-di proprietà; `Shared/Mvvm/MvvmComponentBase<TViewModel>` — una trentina di righe scritte qui — inietta il ViewModel
-nella pagina (`@inherits MvvmComponentBase<DocumentListViewModel>`) e traduce le notifiche in `StateHasChanged`.
-Non è stato adottato Blazing.Mvvm, che farebbe lo stesso ma mettendo un pacchetto di terze parti nella classe base di
-tutte le pagine. Costo nel bundle, misurato con due publish a confronto: **+12 KB** compressi.
+Il pattern MVVM usa **Blazing.Mvvm** sopra **CommunityToolkit.Mvvm**: i ViewModel derivano da `ViewModelBase` e usano
+`[ObservableProperty]` e `[RelayCommand]`; le pagine dichiarano `@inherits Blazing.Mvvm.Components.MvvmComponentBase<T>`
+ed espongono il ViewModel come `ViewModel`. La libreria si occupa di iniettarlo, di ridisegnare la pagina a ogni
+notifica e — punto per cui è stata scelta — di rilanciare le notifiche dei comandi (`IsRunning`), che altrimenti
+il componente non vedrebbe perché le solleva il comando e non il ViewModel.
+Costo nel bundle, misurato con due publish a confronto: **+84 KB** compressi (CommunityToolkit da solo erano +12 KB).
+Nota: il gruppo `net8.0` della libreria richiede `Microsoft.Extensions.DependencyInjection.Abstractions` e
+`Logging.Abstractions` **10.0.10**, che restano quindi in banda 10.x pur contenendo l'assembly per net8.0.
 
 Nello slice Documenti convivono **tre forme** dello stesso documento — `Contracts/DocumentResponse` (trasporto),
 `Entities/Document` (lettura), `Models/DocumentEditModel` (form) — documentate in testa a `DocumentResponse.cs`.

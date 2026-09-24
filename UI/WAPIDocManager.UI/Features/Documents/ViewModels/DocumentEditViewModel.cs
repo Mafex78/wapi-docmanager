@@ -1,3 +1,4 @@
+using Blazing.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
@@ -14,7 +15,7 @@ namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 /// (<c>DocumentRules.CanEdit</c>) e la navigazione dopo il salvataggio restano nel componente; il server rivalida comunque.
 /// Registrato Transient.
 /// </remarks>
-public sealed partial class DocumentEditViewModel : ObservableObject
+public sealed partial class DocumentEditViewModel : ViewModelBase
 {
     private readonly IDocumentService _documentService;
 

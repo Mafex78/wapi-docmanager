@@ -48,7 +48,9 @@
         <!-- regole dei form (Features/<Area>/Validators) e componente <FluentValidator /> per EditForm -->
         <PackageReference Include="FluentValidation" />
         <PackageReference Include="Blazilla" />
-        <!-- ObservableObject per i ViewModel (vedi Shared/Mvvm/MvvmComponentBase.cs) -->
+        <!-- MvvmComponentBase per le pagine e ViewModelBase per i ViewModel (registrazione: AddMvvm in Program.cs) -->
+        <PackageReference Include="Blazing.Mvvm" />
+        <!-- attributi [ObservableProperty] e [RelayCommand] usati dai ViewModel -->
         <PackageReference Include="CommunityToolkit.Mvvm" />
     </ItemGroup>
 

@@ -2,13 +2,15 @@
     Paginazione (pagine numerate da 1, come le API).
     Nascosto se c'è una sola pagina; mostra al massimo MaxVisiblePages numeri attorno alla pagina corrente.
     Non carica dati: notifica la pagina scelta con OnPageChanged e il chiamante esegue la nuova ricerca.
+    Disabled: disattiva tutti i pulsanti mentre il chiamante sta già caricando (la lista lo lega a
+    LoadCommand.CanExecute), così non si sovrappongono più richieste di pagina.
 *@
 @if (TotalPages > 1)
 {
     <nav aria-label="@L["Pager_Label"]">
         <ul class="pagination pagination-sm mb-0">
-            <li class="page-item @(CurrentPage <= 1 ? "disabled" : null)">
-                <button type="button" class="page-link" disabled="@(CurrentPage <= 1)" @onclick="() => ChangeAsync(CurrentPage - 1)">
+            <li class="page-item @(Disabled || CurrentPage <= 1 ? "disabled" : null)">
+                <button type="button" class="page-link" disabled="@(Disabled || CurrentPage <= 1)" @onclick="() => ChangeAsync(CurrentPage - 1)">
                     @L["Pager_Previous"]
                 </button>
             </li>
@@ -16,13 +18,13 @@
             {
                 bool isCurrent = pageNumber == CurrentPage;
                 <li class="page-item @(isCurrent ? "active" : null)">
-                    <button type="button" class="page-link" aria-current="@(isCurrent ? "page" : null)" @onclick="() => ChangeAsync(pageNumber)">
+                    <button type="button" class="page-link" disabled="@Disabled" aria-current="@(isCurrent ? "page" : null)" @onclick="() => ChangeAsync(pageNumber)">
                         @pageNumber
                     </button>
                 </li>
             }
-            <li class="page-item @(CurrentPage >= TotalPages ? "disabled" : null)">
-                <button type="button" class="page-link" disabled="@(CurrentPage >= TotalPages)" @onclick="() => ChangeAsync(CurrentPage + 1)">
+            <li class="page-item @(Disabled || CurrentPage >= TotalPages ? "disabled" : null)">
+                <button type="button" class="page-link" disabled="@(Disabled || CurrentPage >= TotalPages)" @onclick="() => ChangeAsync(CurrentPage + 1)">
                     @L["Pager_Next"]
                 </button>
             </li>
@@ -38,6 +40,9 @@
     [Parameter] public int TotalPages { get; set; }
 
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    /// <summary>Disattiva tutti i pulsanti (il chiamante sta caricando).</summary>
+    [Parameter] public bool Disabled { get; set; }
 
     private IEnumerable<int> VisiblePages()
     {

@@ -43,11 +43,20 @@
 
     <ItemGroup Label="MVVM">
         <!--
-            ObservableObject e i generatori [ObservableProperty]/[RelayCommand] usati dai ViewModel degli slice.
-            Pacchetto Microsoft, senza dipendenze da Blazor: l'integrazione con i componenti sono le ~30 righe di
-            Shared/Mvvm/MvvmComponentBase.cs, scritte da noi per non legare la classe base delle pagine a terze parti
-            (valutato e scartato Blazing.Mvvm, che fa la stessa cosa ma entra nella gerarchia dei componenti).
+            Blazing.Mvvm: integrazione MVVM per Blazor (MvvmComponentBase per le pagine, ViewModelBase per i
+            ViewModel). Il suo ViewModelBase si iscrive da sé ai propri IAsyncRelayCommand e rilancia la notifica
+            quando cambia IsRunning: è ciò che permette al markup di legarsi a XxxCommand.IsRunning.
+            Costo misurato sul bundle: +84 KB compressi.
+
+            CommunityToolkit.Mvvm resta dichiarato anche se arriverebbe per via transitiva: il codice usa
+            direttamente i suoi attributi [ObservableProperty] e [RelayCommand], quindi è una dipendenza diretta.
+
+            NOTA sulle versioni: il gruppo net8.0 di Blazing.Mvvm dichiara come minimo
+            Microsoft.Extensions.DependencyInjection.Abstractions e Logging.Abstractions 10.0.10, quindi quei due
+            pacchetti salgono alla banda 10.x anche in questa app net8 (contengono comunque l'assembly per net8.0).
+            In NuGet le versioni dichiarate sono minimi: non è possibile scendere senza un downgrade (NU1605).
         -->
+        <PackageVersion Include="Blazing.Mvvm" Version="3.3.16" />
         <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     </ItemGroup>
 

@@ -1,8 +1,8 @@
 @attribute [Route(AppRoutes.Templates.DocumentEdit)]
 @attribute [Authorize(Roles = AppRoles.Writers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
-@* la base inietta il ViewModel come Vm e ridisegna la pagina quando notifica un cambiamento *@
-@inherits MvvmComponentBase<DocumentEditViewModel>
+@* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
+@inherits Blazing.Mvvm.Components.MvvmComponentBase<DocumentEditViewModel>
 @inject NavigationManager Navigation
 
 @*
@@ -21,37 +21,37 @@
 
 <div class="app-page-header">
     <div>
-        @if (Vm.Document is not null)
+        @if (ViewModel.Document is not null)
         {
-            <div class="app-eyebrow">@L.Label(Vm.Document.Type)</div>
+            <div class="app-eyebrow">@L.Label(ViewModel.Document.Type)</div>
         }
         <h1 class="app-title d-flex flex-wrap align-items-center gap-2">
             <span>@L["DocumentEdit_Title"]</span>
-            @if (Vm.Document is not null)
+            @if (ViewModel.Document is not null)
             {
-                <span class="app-mono">@DisplayFormat.ShortNumber(Vm.Document.Number)</span>
-                <StatusBadge Status="Vm.Document.Status" />
+                <span class="app-mono">@DisplayFormat.ShortNumber(ViewModel.Document.Number)</span>
+                <StatusBadge Status="ViewModel.Document.Status" />
             }
         </h1>
     </div>
 </div>
 
-@if (Vm.IsLoading)
+@if (ViewModel.IsLoading)
 {
     <LoadingSpinner />
 }
-else if (Vm.Document is null)
+else if (ViewModel.Document is null)
 {
-    <ApiErrorAlert Error="Vm.Error" />
+    <ApiErrorAlert Error="ViewModel.Error" />
 }
-else if (!DocumentRules.CanEdit(Vm.Document.Status))
+else if (!DocumentRules.CanEdit(ViewModel.Document.Status))
 {
-    <div class="alert alert-warning" role="alert">@L["DocumentEdit_NotEditable", L.Label(Vm.Document.Status)]</div>
+    <div class="alert alert-warning" role="alert">@L["DocumentEdit_NotEditable", L.Label(ViewModel.Document.Status)]</div>
 }
 else
 {
-    <ApiErrorAlert Error="Vm.Error" OnDismiss="() => Vm.Error = null" />
-    <DocumentForm Model="Vm.Model" IsEdit="true" Busy="Vm.IsBusy" OnValidSubmit="SaveAsync" OnCancel="Cancel" />
+    <ApiErrorAlert Error="ViewModel.Error" OnDismiss="() => ViewModel.Error = null" />
+    <DocumentForm Model="ViewModel.Model" IsEdit="true" Busy="ViewModel.IsBusy" OnValidSubmit="SaveAsync" OnCancel="Cancel" />
 }
 
 @code {
@@ -59,12 +59,12 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        await Vm.LoadAsync(Id);
+        await ViewModel.LoadAsync(Id);
     }
 
     private async Task SaveAsync()
     {
-        if (await Vm.SaveAsync(Id))
+        if (await ViewModel.SaveAsync(Id))
         {
             Navigation.NavigateTo(AppRoutes.DocumentDetail(Id));
         }

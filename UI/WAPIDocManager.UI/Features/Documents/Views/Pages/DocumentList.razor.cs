@@ -17,7 +17,8 @@ namespace WAPIDocManager.UI.Features.Documents.Views.Pages;
 /// </remarks>
 public partial class DocumentList
 {
-    // Vm arriva da MvvmComponentBase<DocumentListViewModel>, dichiarata con @inherits nel .razor
+    // ViewModel arriva da Blazing.Mvvm.Components.MvvmComponentBase<DocumentListViewModel>,
+    // dichiarata con @inherits nel .razor
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     private IReadOnlyCollection<RoleType> _roles = Array.Empty<RoleType>();
@@ -27,7 +28,9 @@ public partial class DocumentList
         await base.OnInitializedAsync();
 
         _roles = (await AuthenticationStateTask).User.GetRoles();
-        await Vm.LoadAsync();
+        // dal comando e non dal metodo: è l'esecuzione del comando a valorizzare IsRunning e quindi a
+        // disabilitare Cerca, Azzera e Pager durante il caricamento
+        await ViewModel.LoadCommand.ExecuteAsync(null);
     }
 
     // tooltip del pulsante Modifica disabilitato (il ruolo ha la precedenza sullo stato, vedi DocumentPermissions)

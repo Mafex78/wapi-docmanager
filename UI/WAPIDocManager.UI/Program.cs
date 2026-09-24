@@ -6,6 +6,7 @@ using WAPIDocManager.UI;
 using WAPIDocManager.UI.Features.Auth;
 using WAPIDocManager.UI.Features.Documents;
 using WAPIDocManager.UI.Features.Users;
+using Blazing.Mvvm;
 using WAPIDocManager.UI.Shared.Api;
 using WAPIDocManager.UI.Shared.Authentication;
 using WAPIDocManager.UI.Shared.Localization;
@@ -23,23 +24,28 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// 1) infrastruttura HTTP condivisa: PRIMA degli slice, che ne usano BearerTokenHandler e gli URL base
+// 1) MVVM (Blazing.Mvvm): registra ciò che serve a MvvmComponentBase, in particolare IParameterResolver.
+//    I ViewModel restano registrati esplicitamente dalle registrazioni di slice: AddMvvm li registrerebbe come
+//    Transient con TryAdd, quindi le nostre registrazioni hanno comunque la precedenza.
+builder.Services.AddMvvm(options => options.HostingModelType = BlazorHostingModelType.WebAssembly);
+
+// 2) infrastruttura HTTP condivisa: PRIMA degli slice, che ne usano BearerTokenHandler e gli URL base
 //    (sezione "Api" di wwwroot/appsettings.json, vedi Shared/Api/ApiOptions.cs)
 builder.Services.AddApiInfrastructure(builder.Configuration);
 
-// 2) una registrazione per funzionalità: typed HttpClient, servizi, stato e ViewModel dello slice
+// 3) una registrazione per funzionalità: typed HttpClient, servizi, stato e ViewModel dello slice
 builder.Services.AddAuthFeature(builder.Configuration);
 builder.Services.AddDocumentsFeature(builder.Configuration);
 builder.Services.AddUsersFeature(builder.Configuration);
 
-// 3) autenticazione JWT
+// 4) autenticazione JWT
 // - AddCascadingAuthenticationState: Task<AuthenticationState> disponibile a tutti i componenti come [CascadingParameter]
 // - JwtAuthenticationStateProvider: ricava l'utente da IUserSessionStore (registrato in AddApiInfrastructure)
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 
-// 4) localizzazione (Resources/SharedResource*.resx)
+// 5) localizzazione (Resources/SharedResource*.resx)
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 WebAssemblyHost host = builder.Build();

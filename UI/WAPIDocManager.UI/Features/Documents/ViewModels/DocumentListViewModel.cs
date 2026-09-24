@@ -1,4 +1,6 @@
+using Blazing.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Services;
@@ -21,11 +23,12 @@ namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 /// <see cref="DocumentListState"/> (Scoped), così sopravvivono alla navigazione verso il dettaglio e ritorno.
 /// </para>
 /// <para>
-/// Nessuna dipendenza da Blazor: deriva da ObservableObject (CommunityToolkit.Mvvm) e notifica i cambiamenti di
-/// proprietà; è <c>Shared/Mvvm/MvvmComponentBase</c> a tradurli in un ridisegno del componente.
+/// Nessuna dipendenza da Blazor: deriva da ViewModelBase (Blazing.Mvvm, che a sua volta è un ObservableObject di
+/// CommunityToolkit) e notifica i cambiamenti di proprietà; è MvvmComponentBase della libreria a tradurli in un
+/// ridisegno del componente. ViewModelBase rilancia anche le notifiche dei comandi [RelayCommand].
 /// </para>
 /// </remarks>
-public sealed partial class DocumentListViewModel : ObservableObject
+public sealed partial class DocumentListViewModel : ViewModelBase
 {
     private readonly IDocumentService _documentService;
     private readonly DocumentListState _listState;
@@ -62,21 +65,37 @@ public sealed partial class DocumentListViewModel : ObservableObject
     [ObservableProperty]
     private Document? _documentToDelete;
 
-    /// <summary>Esegue la ricerca con i filtri correnti.</summary>
-    public async Task LoadAsync()
+    /// <summary>
+    /// Esegue la ricerca con i filtri correnti (comando: <c>LoadCommand</c>)
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// È un comando e non un metodo pubblico perché <c>CanExecute</c> diventa false mentre è in esecuzione: è così
+    /// che il markup disabilita Cerca, Azzera e il Pager, che prima restavano cliccabili e potevano sovrapporre
+    /// più ricerche (vinceva l'ultima risposta arrivata, non l'ultima richiesta fatta).
+    /// </para>
+    /// <para>
+    /// <see cref="IsLoading"/> RESTA: nasce true e mostra lo spinner al primo render, mentre <c>IsRunning</c> del
+    /// comando parte false e si attiva solo quando la pagina esegue il comando in OnInitializedAsync.
+    /// Ogni chiamata interna deve passare da <c>LoadCommand.ExecuteAsync</c>: invocare il metodo direttamente
+    /// salterebbe IsRunning e quindi la guardia.
+    /// </para>
+    /// </remarks>
+    [RelayCommand]
+    private async Task LoadAsync(CancellationToken cancellationToken)
     {
         IsLoading = true;
         Error = null;
 
         try
         {
-            Result = await _documentService.FindPagedAsync(Filter);
+            Result = await _documentService.FindPagedAsync(Filter, cancellationToken);
 
             // pagina oltre l'ultima (es. dopo un'eliminazione): torna all'ultima disponibile
             if (Result.Items.Count == 0 && Filter.Page > 1 && Result.TotalPages > 0)
             {
                 Filter.Page = Result.TotalPages;
-                Result = await _documentService.FindPagedAsync(Filter);
+                Result = await _documentService.FindPagedAsync(Filter, cancellationToken);
             }
         }
         catch (Exception ex) when (ex is ApiException or HttpRequestException)
@@ -94,20 +113,20 @@ public sealed partial class DocumentListViewModel : ObservableObject
     public Task SearchAsync()
     {
         Filter.Page = 1;
-        return LoadAsync();
+        return LoadCommand.ExecuteAsync(null);
     }
 
     /// <summary>Azzera i filtri sostituendo l'istanza condivisa e ricarica.</summary>
     public Task ResetAsync()
     {
         _listState.Filter = new DocumentFilter();
-        return LoadAsync();
+        return LoadCommand.ExecuteAsync(null);
     }
 
     public Task GoToPageAsync(int page)
     {
         Filter.Page = page;
-        return LoadAsync();
+        return LoadCommand.ExecuteAsync(null);
     }
 
     /// <summary>Elimina il documento in <see cref="DocumentToDelete"/> e ricarica la pagina corrente.</summary>
@@ -124,7 +143,7 @@ public sealed partial class DocumentListViewModel : ObservableObject
         {
             await _documentService.DeleteAsync(DocumentToDelete.Id);
             DocumentToDelete = null;
-            await LoadAsync();
+            await LoadCommand.ExecuteAsync(null);
         }
         catch (Exception ex) when (ex is ApiException or HttpRequestException)
         {

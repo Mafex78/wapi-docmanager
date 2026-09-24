@@ -1,8 +1,8 @@
 @attribute [Route(AppRoutes.Templates.DocumentDetail)]
 @attribute [Authorize(Roles = AppRoles.Readers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
-@* la base inietta il ViewModel come Vm e ridisegna la pagina quando notifica un cambiamento *@
-@inherits MvvmComponentBase<DocumentDetailViewModel>
+@* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
+@inherits Blazing.Mvvm.Components.MvvmComponentBase<DocumentDetailViewModel>
 
 @*
     Dettaglio documento: punto di accesso a quasi tutti gli endpoint di WAPIDocument.
@@ -26,69 +26,69 @@
 
 <div class="app-back"><a href="@AppRoutes.Documents">← @L["Action_Back"]</a></div>
 
-@if (Vm.IsLoading)
+@if (ViewModel.IsLoading)
 {
     <LoadingSpinner />
 }
-else if (Vm.Document is null)
+else if (ViewModel.Document is null)
 {
-    <ApiErrorAlert Error="Vm.Error" />
+    <ApiErrorAlert Error="ViewModel.Error" />
 }
 else
 {
     <div class="app-page-header">
         <div>
-            <div class="app-eyebrow">@L.Label(Vm.Document.Type)</div>
+            <div class="app-eyebrow">@L.Label(ViewModel.Document.Type)</div>
             <h1 class="app-title d-flex flex-wrap align-items-center gap-2">
-                <span class="app-mono">@DisplayFormat.ShortNumber(Vm.Document.Number)</span>
-                <StatusBadge Status="Vm.Document.Status" />
+                <span class="app-mono">@DisplayFormat.ShortNumber(ViewModel.Document.Number)</span>
+                <StatusBadge Status="ViewModel.Document.Status" />
             </h1>
         </div>
         <div class="app-toolbar">
-            @if (DocumentPermissions.CanEdit(_roles, Vm.Document.Status))
+            @if (DocumentPermissions.CanEdit(_roles, ViewModel.Document.Status))
             {
-                <a class="btn btn-outline-primary" href="@AppRoutes.DocumentEdit(Vm.Document.Id)">@L["Action_Edit"]</a>
+                <a class="btn btn-outline-primary" href="@AppRoutes.DocumentEdit(ViewModel.Document.Id)">@L["Action_Edit"]</a>
             }
             @if (DocumentPermissions.CanWrite(_roles))
             {
-                <button type="button" class="btn btn-outline-secondary" disabled="@Vm.IsBusy" @onclick="() => Vm.ShowGenerate = true">@L["Action_Generate"]</button>
-                <button type="button" class="btn btn-outline-secondary" disabled="@Vm.IsBusy" @onclick="Vm.OpenAttachAsync">@L["Action_Attach"]</button>
+                <button type="button" class="btn btn-outline-secondary" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.ShowGenerate = true">@L["Action_Generate"]</button>
+                <button type="button" class="btn btn-outline-secondary" disabled="@ViewModel.IsBusy" @onclick="ViewModel.OpenAttachAsync">@L["Action_Attach"]</button>
             }
-            @if (DocumentPermissions.CanDelete(_roles, Vm.Document.Status))
+            @if (DocumentPermissions.CanDelete(_roles, ViewModel.Document.Status))
             {
-                <button type="button" class="btn btn-outline-danger" disabled="@Vm.IsBusy" @onclick="() => Vm.ConfirmDelete = true">@L["Action_Delete"]</button>
+                <button type="button" class="btn btn-outline-danger" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.ConfirmDelete = true">@L["Action_Delete"]</button>
             }
         </div>
     </div>
 
-    <ApiErrorAlert Error="Vm.Error" OnDismiss="() => Vm.Error = null" />
+    <ApiErrorAlert Error="ViewModel.Error" OnDismiss="() => ViewModel.Error = null" />
 
     @if (NotificationMessage is not null)
     {
         <div class="alert alert-success app-alert" role="status">
             @NotificationMessage
-            <button type="button" class="btn-close" aria-label="@L["Action_Close"]" @onclick="Vm.ClearNotification"></button>
+            <button type="button" class="btn-close" aria-label="@L["Action_Close"]" @onclick="ViewModel.ClearNotification"></button>
         </div>
     }
 
-    @if (DocumentPermissions.CanChangeStatus(_roles, Vm.Document.Status))
+    @if (DocumentPermissions.CanChangeStatus(_roles, ViewModel.Document.Status))
     {
         <section class="app-card app-status-card">
             <div>
                 <h2 class="app-section-title mb-1">@L["Document_Workflow"]</h2>
                 <p class="app-hint mb-0">
-                    @(Vm.Document.Status == DocumentStatus.Draft && !DocumentRules.IsComplete(Vm.Document)
+                    @(ViewModel.Document.Status == DocumentStatus.Draft && !DocumentRules.IsComplete(ViewModel.Document)
                         ? L["Document_IncompleteWarning"]
                         : L["Document_WorkflowHint"])
                 </p>
             </div>
             <div class="app-toolbar">
-                @foreach (DocumentStatus nextStatus in DocumentRules.GetNextStatuses(Vm.Document.Status))
+                @foreach (DocumentStatus nextStatus in DocumentRules.GetNextStatuses(ViewModel.Document.Status))
                 {
                     <button type="button"
                             class="btn @(nextStatus == DocumentStatus.Rejected ? "btn-outline-danger" : "btn-primary")"
-                            disabled="@Vm.IsBusy"
-                            @onclick="() => Vm.ChangeStatusAsync(nextStatus)">
+                            disabled="@ViewModel.IsBusy"
+                            @onclick="() => ViewModel.ChangeStatusAsync(nextStatus)">
                         @L.StatusActionLabel(nextStatus)
                     </button>
                 }
@@ -99,27 +99,27 @@ else
     <section class="app-card">
         <h2 class="app-section-title">@L["Document_Details"]</h2>
         <dl class="app-dl">
-            <div><dt>@L["Field_Number"]</dt><dd class="app-mono">@DisplayFormat.OrDash(Vm.Document.Number)</dd></div>
-            <div><dt>@L["Field_Type"]</dt><dd>@L.Label(Vm.Document.Type)</dd></div>
-            <div><dt>@L["Field_Date"]</dt><dd>@DisplayFormat.Date(Vm.Document.Date)</dd></div>
+            <div><dt>@L["Field_Number"]</dt><dd class="app-mono">@DisplayFormat.OrDash(ViewModel.Document.Number)</dd></div>
+            <div><dt>@L["Field_Type"]</dt><dd>@L.Label(ViewModel.Document.Type)</dd></div>
+            <div><dt>@L["Field_Date"]</dt><dd>@DisplayFormat.Date(ViewModel.Document.Date)</dd></div>
             <div><dt>@L["Field_Currency"]</dt><dd>@L["Common_CurrencyValue"]</dd></div>
-            <div><dt>@L["Field_Total"]</dt><dd class="app-amount">@DisplayFormat.Money(Vm.Document.Total)</dd></div>
+            <div><dt>@L["Field_Total"]</dt><dd class="app-amount">@DisplayFormat.Money(ViewModel.Document.Total)</dd></div>
         </dl>
     </section>
 
     <section class="app-card">
         <h2 class="app-section-title">@L["Document_Customer"]</h2>
         <dl class="app-dl">
-            <div><dt>@L["Field_CustomerName"]</dt><dd>@DisplayFormat.OrDash(Vm.Document.Customer.Name)</dd></div>
-            <div><dt>@L["Field_VatNumber"]</dt><dd>@DisplayFormat.OrDash(Vm.Document.Customer.VatNumber)</dd></div>
-            <div><dt>@L["Field_Email"]</dt><dd>@DisplayFormat.OrDash(Vm.Document.Customer.Email)</dd></div>
-            <div><dt>@L["Field_Address"]</dt><dd>@DisplayFormat.OrDash(Vm.Document.Customer.Address)</dd></div>
+            <div><dt>@L["Field_CustomerName"]</dt><dd>@DisplayFormat.OrDash(ViewModel.Document.Customer.Name)</dd></div>
+            <div><dt>@L["Field_VatNumber"]</dt><dd>@DisplayFormat.OrDash(ViewModel.Document.Customer.VatNumber)</dd></div>
+            <div><dt>@L["Field_Email"]</dt><dd>@DisplayFormat.OrDash(ViewModel.Document.Customer.Email)</dd></div>
+            <div><dt>@L["Field_Address"]</dt><dd>@DisplayFormat.OrDash(ViewModel.Document.Customer.Address)</dd></div>
         </dl>
     </section>
 
     <section class="app-card app-card-flush">
         <h2 class="app-section-title app-card-header">@L["Document_Lines"]</h2>
-        @if (Vm.Document.Lines.Count == 0)
+        @if (ViewModel.Document.Lines.Count == 0)
         {
             <div class="app-empty">@L["Lines_Empty"]</div>
         }
@@ -136,7 +136,7 @@ else
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (DocumentLine line in Vm.Document.Lines)
+                        @foreach (DocumentLine line in ViewModel.Document.Lines)
                         {
                             <tr>
                                 <td>@DisplayFormat.OrDash(line.Description)</td>
@@ -149,7 +149,7 @@ else
                     <tfoot>
                         <tr>
                             <th scope="row" colspan="3" class="text-end">@L["Field_DocumentTotal"]</th>
-                            <th class="text-end text-nowrap">@DisplayFormat.Money(Vm.Document.Total)</th>
+                            <th class="text-end text-nowrap">@DisplayFormat.Money(ViewModel.Document.Total)</th>
                         </tr>
                     </tfoot>
                 </table>
@@ -159,18 +159,18 @@ else
 
     <section class="app-card app-card-flush">
         <h2 class="app-section-title app-card-header">@L["Document_LinkedDocuments"]</h2>
-        @if (Vm.Document.LinkedDocuments.Count == 0)
+        @if (ViewModel.Document.LinkedDocuments.Count == 0)
         {
             <div class="app-empty">@L["Document_LinkedEmpty"]</div>
         }
-        else if (Vm.IsLoadingLinks)
+        else if (ViewModel.IsLoadingLinks)
         {
             <LoadingSpinner />
         }
         else
         {
             <ul class="app-list">
-                @foreach ((DocumentLink link, Document? linked) in Vm.GetLinkedRows())
+                @foreach ((DocumentLink link, Document? linked) in ViewModel.GetLinkedRows())
                 {
                     <li class="app-list-item" @key="link.TargetDocumentId">
                         @if (linked is null)
@@ -192,21 +192,21 @@ else
         }
     </section>
 
-    <ModalDialog IsOpen="Vm.ConfirmDelete" Title="@L["Delete_Title"]" OnClose="() => Vm.ConfirmDelete = false">
+    <ModalDialog IsOpen="ViewModel.ConfirmDelete" Title="@L["Delete_Title"]" OnClose="() => ViewModel.ConfirmDelete = false">
         <ChildContent>
-            <p class="mb-0">@L["Delete_Message", DisplayFormat.ShortNumber(Vm.Document.Number)]</p>
+            <p class="mb-0">@L["Delete_Message", DisplayFormat.ShortNumber(ViewModel.Document.Number)]</p>
         </ChildContent>
         <FooterContent>
-            <button type="button" class="btn btn-outline-secondary" @onclick="() => Vm.ConfirmDelete = false">@L["Action_Cancel"]</button>
-            <button type="button" class="btn btn-danger" disabled="@Vm.IsBusy" @onclick="DeleteAsync">@L["Action_Delete"]</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="() => ViewModel.ConfirmDelete = false">@L["Action_Cancel"]</button>
+            <button type="button" class="btn btn-danger" disabled="@ViewModel.IsBusy" @onclick="DeleteAsync">@L["Action_Delete"]</button>
         </FooterContent>
     </ModalDialog>
 
-    <ModalDialog IsOpen="Vm.ShowGenerate" Title="@L["Generate_Title"]" OnClose="() => Vm.ShowGenerate = false">
+    <ModalDialog IsOpen="ViewModel.ShowGenerate" Title="@L["Generate_Title"]" OnClose="() => ViewModel.ShowGenerate = false">
         <ChildContent>
             <p>@L["Generate_Message"]</p>
             <label class="form-label" for="generate-type">@L["Generate_TargetType"]</label>
-            <select id="generate-type" class="form-select" @bind="Vm.GenerateType">
+            <select id="generate-type" class="form-select" @bind="ViewModel.GenerateType">
                 @foreach (DocumentType type in Enum.GetValues<DocumentType>())
                 {
                     <option value="@type">@L.Label(type)</option>
@@ -214,33 +214,35 @@ else
             </select>
         </ChildContent>
         <FooterContent>
-            <button type="button" class="btn btn-outline-secondary" @onclick="() => Vm.ShowGenerate = false">@L["Action_Cancel"]</button>
-            <button type="button" class="btn btn-primary" disabled="@Vm.IsBusy" @onclick="GenerateAsync">@L["Action_Generate"]</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="() => ViewModel.ShowGenerate = false">@L["Action_Cancel"]</button>
+            <button type="button" class="btn btn-primary" disabled="@ViewModel.IsBusy" @onclick="GenerateAsync">@L["Action_Generate"]</button>
         </FooterContent>
     </ModalDialog>
 
-    <ModalDialog IsOpen="Vm.ShowAttach" Title="@L["Attach_Title"]" Size="lg" OnClose="() => Vm.ShowAttach = false">
+    <ModalDialog IsOpen="ViewModel.ShowAttach" Title="@L["Attach_Title"]" Size="lg" OnClose="() => ViewModel.ShowAttach = false">
         <ChildContent>
             <p class="app-hint">@L["Attach_Message"]</p>
-            <form class="row g-2 mb-3" @onsubmit="Vm.SearchAttachAsync">
+            <form class="row g-2 mb-3" @onsubmit="() => ViewModel.SearchAttachCommand.ExecuteAsync(null)">
                 <div class="col-sm-5">
-                    <input class="form-control" aria-label="@L["Attach_SearchNumber"]" placeholder="@L["Attach_SearchNumber"]" @bind="Vm.AttachFilter.PlainText" @bind:event="oninput" />
+                    <input class="form-control" aria-label="@L["Attach_SearchNumber"]" placeholder="@L["Attach_SearchNumber"]" @bind="ViewModel.AttachFilter.PlainText" @bind:event="oninput" />
                 </div>
                 <div class="col-sm-5">
-                    <input class="form-control" aria-label="@L["Attach_SearchCustomer"]" placeholder="@L["Attach_SearchCustomer"]" @bind="Vm.AttachFilter.CustomerName" @bind:event="oninput" />
+                    <input class="form-control" aria-label="@L["Attach_SearchCustomer"]" placeholder="@L["Attach_SearchCustomer"]" @bind="ViewModel.AttachFilter.CustomerName" @bind:event="oninput" />
                 </div>
                 <div class="col-sm-2 d-grid">
-                    <button type="submit" class="btn btn-outline-primary">@L["Action_Search"]</button>
+                    @* disabled da CanExecute: mentre la ricerca è in corso il comando non è eseguibile, così non
+                       si sovrappongono due chiamate come poteva accadere prima (il pulsante non era disabilitato) *@
+                    <button type="submit" class="btn btn-outline-primary" disabled="@(!ViewModel.SearchAttachCommand.CanExecute(null))">@L["Action_Search"]</button>
                 </div>
             </form>
 
-            <ApiErrorAlert Error="Vm.AttachError" />
+            <ApiErrorAlert Error="ViewModel.AttachError" />
 
             @{
                 // calcolata una sola volta per render: GetAttachCandidates filtra e costruisce una nuova lista a ogni chiamata
-                IReadOnlyList<Document> attachCandidates = Vm.GetAttachCandidates();
+                IReadOnlyList<Document> attachCandidates = ViewModel.GetAttachCandidates();
             }
-            @if (Vm.AttachLoading)
+            @if (ViewModel.SearchAttachCommand.IsRunning)
             {
                 <LoadingSpinner />
             }
@@ -258,7 +260,7 @@ else
                             <span>@L.Label(candidate.Type)</span>
                             <span class="app-hint">@DisplayFormat.OrDash(candidate.Customer.Name)</span>
                             <StatusBadge Status="candidate.Status" />
-                            <button type="button" class="btn btn-sm btn-primary ms-auto" disabled="@Vm.IsBusy" @onclick="() => Vm.AttachAsync(candidate)">@L["Action_Link"]</button>
+                            <button type="button" class="btn btn-sm btn-primary ms-auto" disabled="@ViewModel.IsBusy" @onclick="() => ViewModel.AttachAsync(candidate)">@L["Action_Link"]</button>
                         </li>
                     }
                 </ul>

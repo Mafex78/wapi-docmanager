@@ -19,9 +19,9 @@ namespace WAPIDocManager.UI.Features.Documents.Views.Pages;
 /// </remarks>
 public sealed partial class DocumentDetail
 {
-    // Vm arriva da MvvmComponentBase<DocumentDetailViewModel>, dichiarata con @inherits nel .razor:
-    // è la base a iscriversi a PropertyChanged e a chiamare StateHasChanged (anche per il caricamento
-    // asincrono dei documenti collegati, che prima passava da un evento StateChanged scritto a mano).
+    // ViewModel arriva da Blazing.Mvvm.Components.MvvmComponentBase<DocumentDetailViewModel>, dichiarata con
+    // @inherits nel .razor: è la base a iscriversi a PropertyChanged e a chiamare StateHasChanged, mentre le
+    // notifiche dei comandi (IsRunning) arrivano dal ViewModelBase di Blazing, che le rilancia.
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
     [Parameter] public string Id { get; set; } = string.Empty;
@@ -30,14 +30,14 @@ public sealed partial class DocumentDetail
 
     private IReadOnlyCollection<RoleType> _roles = Array.Empty<RoleType>();
 
-    private string PageTitleText => Vm.Document is null
+    private string PageTitleText => ViewModel.Document is null
         ? L["Document_Details"]
-        : $"{L.Label(Vm.Document.Type)} {DisplayFormat.ShortNumber(Vm.Document.Number)}";
+        : $"{L.Label(ViewModel.Document.Type)} {DisplayFormat.ShortNumber(ViewModel.Document.Number)}";
 
     // testo dell'avviso verde: il ViewModel segnala solo cosa è accaduto (DocumentDetailNotification)
-    private string? NotificationMessage => Vm.Notification switch
+    private string? NotificationMessage => ViewModel.Notification switch
     {
-        DocumentDetailNotification.StatusUpdated => L["Detail_StatusUpdated", L.Label(Vm.NotificationStatus!.Value)].Value,
+        DocumentDetailNotification.StatusUpdated => L["Detail_StatusUpdated", L.Label(ViewModel.NotificationStatus!.Value)].Value,
         DocumentDetailNotification.Attached => L["Detail_Attached"].Value,
         _ => null
     };
@@ -52,12 +52,12 @@ public sealed partial class DocumentDetail
     // navigare da un documento all'altro riusa questa istanza: il ViewModel ricarica solo se l'Id è cambiato
     protected override async Task OnParametersSetAsync()
     {
-        await Vm.LoadAsync(Id);
+        await ViewModel.LoadAsync(Id);
     }
 
     private async Task DeleteAsync()
     {
-        if (await Vm.DeleteAsync())
+        if (await ViewModel.DeleteAsync())
         {
             Navigation.NavigateTo(AppRoutes.Documents);
         }
@@ -65,7 +65,7 @@ public sealed partial class DocumentDetail
 
     private async Task GenerateAsync()
     {
-        Document? generated = await Vm.GenerateAsync();
+        Document? generated = await ViewModel.GenerateAsync();
 
         if (generated is not null)
         {

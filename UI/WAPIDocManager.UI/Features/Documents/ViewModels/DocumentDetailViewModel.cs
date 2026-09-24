@@ -1,4 +1,6 @@
+using Blazing.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Services;
@@ -22,7 +24,7 @@ namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 /// è governato dalla guardia sull'Id in <see cref="LoadAsync"/>.
 /// </para>
 /// </remarks>
-public sealed partial class DocumentDetailViewModel : ObservableObject
+public sealed partial class DocumentDetailViewModel : ViewModelBase
 {
     /// <summary>Risultati per pagina nella ricerca della modale di collegamento.</summary>
     public const int AttachPageSize = 10;
@@ -46,7 +48,6 @@ public sealed partial class DocumentDetailViewModel : ObservableObject
     private bool _isLoading = true;
     private bool _isLoadingLinks;
     private bool _isBusy;
-    private bool _attachLoading;
     private DocumentFilter _attachFilter = new() { PageSize = AttachPageSize };
 
     public Document? Document { get => _document; private set => SetProperty(ref _document, value); }
@@ -64,8 +65,6 @@ public sealed partial class DocumentDetailViewModel : ObservableObject
 
     /// <summary>Azione in corso: la pagina disabilita i pulsanti.</summary>
     public bool IsBusy { get => _isBusy; private set => SetProperty(ref _isBusy, value); }
-
-    public bool AttachLoading { get => _attachLoading; private set => SetProperty(ref _attachLoading, value); }
 
     public DocumentFilter AttachFilter { get => _attachFilter; private set => SetProperty(ref _attachFilter, value); }
 
@@ -213,27 +212,41 @@ public sealed partial class DocumentDetailViewModel : ObservableObject
     {
         ShowAttach = true;
         AttachFilter = new DocumentFilter { PageSize = AttachPageSize };
-        await SearchAttachAsync();
+
+        // via comando e non chiamata diretta: eseguendo il metodo si salterebbe IsRunning e lo spinner non comparirebbe
+        await SearchAttachCommand.ExecuteAsync(null);
     }
 
-    public async Task SearchAttachAsync()
+    /// <summary>
+    /// Ricerca dei candidati al collegamento (prova di conversione a comando)
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>[RelayCommand]</c> genera <c>SearchAttachCommand</c>, che espone <c>IsRunning</c> al posto della vecchia
+    /// proprietà AttachLoading e, avendo la concorrenza disabilitata per impostazione predefinita, restituisce
+    /// <c>CanExecute == false</c> mentre è in esecuzione: è così che la pagina disabilita il pulsante Cerca, che
+    /// prima non era disabilitato affatto e permetteva ricerche sovrapposte.
+    /// </para>
+    /// <para>
+    /// ATTENZIONE: <c>CanExecute</c> non è una guardia automatica — chiamare <c>ExecuteAsync</c> mentre il comando è
+    /// in corso esegue comunque il corpo (verificato). La protezione sta nel markup che rispetta CanExecute.
+    /// Il token di annullamento è fornito dal comando e viene passato alle API.
+    /// </para>
+    /// </remarks>
+    [RelayCommand]
+    private async Task SearchAttachAsync(CancellationToken cancellationToken)
     {
-        AttachLoading = true;
         AttachError = null;
         AttachFilter.Page = 1;
 
         try
         {
-            _attachResult = await _documentService.FindPagedAsync(AttachFilter);
+            _attachResult = await _documentService.FindPagedAsync(AttachFilter, cancellationToken);
         }
         catch (Exception ex) when (ex is ApiException or HttpRequestException)
         {
             _attachResult = new PagedResult<Document>();
             AttachError = ex;
-        }
-        finally
-        {
-            AttachLoading = false;
         }
     }
 

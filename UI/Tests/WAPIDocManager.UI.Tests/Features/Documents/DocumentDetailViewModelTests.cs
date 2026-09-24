@@ -240,6 +240,32 @@ public class DocumentDetailViewModelTests
         };
     }
 
+    [Fact]
+    public async Task SearchAttach_Command_Is_Not_Executable_While_Running()
+    {
+        var pending = new TaskCompletionSource<PagedResult<Document>>();
+        var service = new Mock<IDocumentService>();
+        service.Setup(s => s.GetByIdAsync("abc", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Document { Id = "abc" });
+        service.Setup(s => s.FindPagedAsync(It.IsAny<DocumentFilter>(), It.IsAny<CancellationToken>()))
+            .Returns(pending.Task);
+        var viewModel = new DocumentDetailViewModel(service.Object);
+        await viewModel.LoadAsync("abc");
+
+        Task opening = viewModel.OpenAttachAsync();
+
+        // è questo che permette al markup di disabilitare il pulsante Cerca e di mostrare lo spinner:
+        // prima della conversione a comando il pulsante restava attivo e due ricerche potevano sovrapporsi
+        Assert.True(viewModel.SearchAttachCommand.IsRunning);
+        Assert.False(viewModel.SearchAttachCommand.CanExecute(null));
+
+        pending.SetResult(new PagedResult<Document>());
+        await opening;
+
+        Assert.False(viewModel.SearchAttachCommand.IsRunning);
+        Assert.True(viewModel.SearchAttachCommand.CanExecute(null));
+    }
+
     private static (DocumentDetailViewModel ViewModel, Mock<IDocumentService> Service) Create()
     {
         var service = new Mock<IDocumentService>();

@@ -1,14 +1,14 @@
 @attribute [Route(AppRoutes.Templates.Documents)]
 @attribute [Authorize(Roles = AppRoles.Readers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
-@* la base inietta il ViewModel come Vm e ridisegna la pagina quando notifica un cambiamento *@
-@inherits MvvmComponentBase<DocumentListViewModel>
+@* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
+@inherits Blazing.Mvvm.Components.MvvmComponentBase<DocumentListViewModel>
 
 @*
     Lista documenti: GET api/v1/documents (ruoli Viewer, Editor, Admin).
     - Logica in DocumentListViewModel (stessa cartella della view): ricerca, filtri, paginazione, eliminazione.
       Qui restano markup, permessi e testi.
-    - Filtri: il form è legato a Vm.Filter, che è l'istanza condivisa di DocumentListState, quindi i filtri restano
+    - Filtri: il form è legato a ViewModel.Filter, che è l'istanza condivisa di DocumentListState, quindi i filtri restano
       tornando dal dettaglio. "Cerca" riparte da pagina 1, "Azzera filtri" sostituisce l'istanza.
     - Tipologie e stati sono chip (pulsanti toggle) che aggiungono o rimuovono valori dalle liste del filtro.
     - Azioni per riga secondo DocumentPermissions (ruoli dell'utente × stato del documento): Modifica ed Elimina sono
@@ -35,20 +35,20 @@
 </div>
 
 <section class="app-card">
-    <EditForm Model="Vm.Filter" OnValidSubmit="Vm.SearchAsync">
+    <EditForm Model="ViewModel.Filter" OnValidSubmit="ViewModel.SearchAsync">
         <FluentValidator />
         <div class="row g-3">
             <div class="col-md-6 col-lg-3">
                 <label class="form-label" for="filter-text">@L["Filter_PlainText"]</label>
-                <InputText id="filter-text" class="form-control" placeholder="@L["Filter_PlainText_Placeholder"]" @bind-Value="Vm.Filter.PlainText" />
+                <InputText id="filter-text" class="form-control" placeholder="@L["Filter_PlainText_Placeholder"]" @bind-Value="ViewModel.Filter.PlainText" />
             </div>
             <div class="col-md-6 col-lg-3">
                 <label class="form-label" for="filter-customer">@L["Filter_Customer"]</label>
-                <InputText id="filter-customer" class="form-control" @bind-Value="Vm.Filter.CustomerName" />
+                <InputText id="filter-customer" class="form-control" @bind-Value="ViewModel.Filter.CustomerName" />
             </div>
             <div class="col-sm-4 col-lg-2">
                 <label class="form-label" for="filter-sort">@L["Filter_SortBy"]</label>
-                <InputSelect id="filter-sort" class="form-select" @bind-Value="Vm.Filter.SortBy">
+                <InputSelect id="filter-sort" class="form-select" @bind-Value="ViewModel.Filter.SortBy">
                     @foreach (string field in DocumentSortFields.All)
                     {
                         <option value="@field">@L.SortFieldLabel(field)</option>
@@ -57,7 +57,7 @@
             </div>
             <div class="col-sm-4 col-lg-2">
                 <label class="form-label" for="filter-direction">@L["Filter_Direction"]</label>
-                <InputSelect id="filter-direction" class="form-select" @bind-Value="Vm.Filter.SortDirection">
+                <InputSelect id="filter-direction" class="form-select" @bind-Value="ViewModel.Filter.SortDirection">
                     @foreach (SortDirection direction in Enum.GetValues<SortDirection>())
                     {
                         <option value="@direction">@L.Label(direction)</option>
@@ -66,7 +66,7 @@
             </div>
             <div class="col-sm-4 col-lg-2">
                 <label class="form-label" for="filter-page-size">@L["Filter_PageSize"]</label>
-                <InputSelect id="filter-page-size" class="form-select" @bind-Value="Vm.Filter.PageSize">
+                <InputSelect id="filter-page-size" class="form-select" @bind-Value="ViewModel.Filter.PageSize">
                     <option value="10">10</option>
                     <option value="@DocumentFilter.MaxPageSize">@DocumentFilter.MaxPageSize</option>
                 </InputSelect>
@@ -77,8 +77,8 @@
                 <div class="app-chips">
                     @foreach (DocumentType type in Enum.GetValues<DocumentType>())
                     {
-                        bool active = Vm.Filter.Types.Contains(type);
-                        <button type="button" class="btn btn-sm app-chip @(active ? "active" : null)" aria-pressed="@(active ? "true" : "false")" @onclick="() => Vm.ToggleType(type)">
+                        bool active = ViewModel.Filter.Types.Contains(type);
+                        <button type="button" class="btn btn-sm app-chip @(active ? "active" : null)" aria-pressed="@(active ? "true" : "false")" @onclick="() => ViewModel.ToggleType(type)">
                             @L.Label(type)
                         </button>
                     }
@@ -89,8 +89,8 @@
                 <div class="app-chips">
                     @foreach (DocumentStatus status in Enum.GetValues<DocumentStatus>())
                     {
-                        bool active = Vm.Filter.Statuses.Contains(status);
-                        <button type="button" class="btn btn-sm app-chip @(active ? "active" : null)" aria-pressed="@(active ? "true" : "false")" @onclick="() => Vm.ToggleStatus(status)">
+                        bool active = ViewModel.Filter.Statuses.Contains(status);
+                        <button type="button" class="btn btn-sm app-chip @(active ? "active" : null)" aria-pressed="@(active ? "true" : "false")" @onclick="() => ViewModel.ToggleStatus(status)">
                             @L.Label(status)
                         </button>
                     }
@@ -99,20 +99,21 @@
         </div>
 
         <div class="app-form-actions">
-            <button type="button" class="btn btn-outline-secondary" @onclick="Vm.ResetAsync">@L["Action_Reset"]</button>
-            <button type="submit" class="btn btn-primary">@L["Action_Search"]</button>
+            @* disabilitati mentre la ricerca è in corso: la condizione sta nel comando, non ripetuta qui *@
+            <button type="button" class="btn btn-outline-secondary" disabled="@(!ViewModel.LoadCommand.CanExecute(null))" @onclick="ViewModel.ResetAsync">@L["Action_Reset"]</button>
+            <button type="submit" class="btn btn-primary" disabled="@(!ViewModel.LoadCommand.CanExecute(null))">@L["Action_Search"]</button>
         </div>
     </EditForm>
 </section>
 
-<ApiErrorAlert Error="Vm.Error" OnDismiss="() => Vm.Error = null" />
+<ApiErrorAlert Error="ViewModel.Error" OnDismiss="() => ViewModel.Error = null" />
 
 <section class="app-card app-card-flush">
-    @if (Vm.IsLoading)
+    @if (ViewModel.IsLoading)
     {
         <LoadingSpinner />
     }
-    else if (Vm.Result.Items.Count == 0)
+    else if (ViewModel.Result.Items.Count == 0)
     {
         <div class="app-empty">@L["Documents_Empty"]</div>
     }
@@ -132,7 +133,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (Document document in Vm.Result.Items)
+                    @foreach (Document document in ViewModel.Result.Items)
                     {
                         PermissionDenialReason editDenial = DocumentPermissions.GetEditDenialReason(_roles, document.Status);
                         PermissionDenialReason deleteDenial = DocumentPermissions.GetDeleteDenialReason(_roles, document.Status);
@@ -159,7 +160,7 @@
                                     }
                                     @if (deleteDenial == PermissionDenialReason.None)
                                     {
-                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => Vm.DocumentToDelete = document">@L["Action_Delete"]</button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => ViewModel.DocumentToDelete = document">@L["Action_Delete"]</button>
                                     }
                                     else
                                     {
@@ -175,18 +176,18 @@
             </table>
         </div>
         <div class="app-table-footer">
-            <span>@L["Documents_Found", Vm.Result.TotalItems]</span>
-            <Pager CurrentPage="Vm.Result.CurrentPage" TotalPages="Vm.Result.TotalPages" OnPageChanged="Vm.GoToPageAsync" />
+            <span>@L["Documents_Found", ViewModel.Result.TotalItems]</span>
+            <Pager CurrentPage="ViewModel.Result.CurrentPage" TotalPages="ViewModel.Result.TotalPages" Disabled="@(!ViewModel.LoadCommand.CanExecute(null))" OnPageChanged="ViewModel.GoToPageAsync" />
         </div>
     }
 </section>
 
-<ModalDialog IsOpen="Vm.DocumentToDelete is not null" Title="@L["Delete_Title"]" OnClose="() => Vm.DocumentToDelete = null">
+<ModalDialog IsOpen="ViewModel.DocumentToDelete is not null" Title="@L["Delete_Title"]" OnClose="() => ViewModel.DocumentToDelete = null">
     <ChildContent>
-        <p class="mb-0">@L["Delete_Message", DisplayFormat.ShortNumber(Vm.DocumentToDelete?.Number)]</p>
+        <p class="mb-0">@L["Delete_Message", DisplayFormat.ShortNumber(ViewModel.DocumentToDelete?.Number)]</p>
     </ChildContent>
     <FooterContent>
-        <button type="button" class="btn btn-outline-secondary" @onclick="() => Vm.DocumentToDelete = null">@L["Action_Cancel"]</button>
-        <button type="button" class="btn btn-danger" disabled="@Vm.IsDeleting" @onclick="Vm.DeleteAsync">@L["Action_Delete"]</button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="() => ViewModel.DocumentToDelete = null">@L["Action_Cancel"]</button>
+        <button type="button" class="btn btn-danger" disabled="@ViewModel.IsDeleting" @onclick="ViewModel.DeleteAsync">@L["Action_Delete"]</button>
     </FooterContent>
 </ModalDialog>
