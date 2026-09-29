@@ -1,4 +1,4 @@
-@attribute [Route(AppRoutes.Templates.DocumentDetail)]
+@attribute [Route(AppRoutes.RouteTemplates.DocumentDetail)]
 @attribute [Authorize(Roles = AppRoles.Readers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
 @* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
@@ -24,7 +24,7 @@
 
 <PageTitle>@PageTitleText · @L["App_Name"]</PageTitle>
 
-<div class="app-back"><a href="@AppRoutes.Documents">← @L["Action_Back"]</a></div>
+<div class="app-back"><a href="@AppRoutes.PageRelativeUrls.Documents">← @L["Action_Back"]</a></div>
 
 @if (ViewModel.IsLoading)
 {
@@ -47,7 +47,7 @@ else
         <div class="app-toolbar">
             @if (DocumentPermissions.CanEdit(_roles, ViewModel.Document.Status))
             {
-                <a class="btn btn-outline-primary" href="@AppRoutes.DocumentEdit(ViewModel.Document.Id)">@L["Action_Edit"]</a>
+                <a class="btn btn-outline-primary" href="@AppRoutes.GetDocumentEdit(ViewModel.Document.Id)">@L["Action_Edit"]</a>
             }
             @if (DocumentPermissions.CanWrite(_roles))
             {
@@ -180,7 +180,7 @@ else
                         }
                         else
                         {
-                            <a class="app-mono fw-semibold" href="@AppRoutes.DocumentDetail(linked.Id)" title="@linked.Number">@DisplayFormat.ShortNumber(linked.Number)</a>
+                            <a class="app-mono fw-semibold" href="@AppRoutes.GetDocumentDetail(linked.Id)" title="@linked.Number">@DisplayFormat.ShortNumber(linked.Number)</a>
                             <span>@L.Label(linked.Type)</span>
                             <span class="app-hint">@DisplayFormat.OrDash(linked.Customer.Name)</span>
                             <StatusBadge Status="linked.Status" />

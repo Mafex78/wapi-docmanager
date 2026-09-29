@@ -18,7 +18,7 @@
 
 <div class="app-shell @(_navOpen ? "nav-open" : null)">
     <aside class="app-sidebar" id="app-sidebar">
-        <a class="app-brand" href="@AppRoutes.Documents">
+        <a class="app-brand" href="@AppRoutes.PageRelativeUrls.Documents">
             <span class="app-brand-mark" aria-hidden="true">W</span>
             <span>@L["App_Name"]</span>
         </a>
@@ -92,7 +92,7 @@
     private async Task LogoutAsync()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo(AppRoutes.Login);
+        Navigation.NavigateTo(AppRoutes.PageRelativeUrls.Login);
     }
 
     private static string Initial(string? name)

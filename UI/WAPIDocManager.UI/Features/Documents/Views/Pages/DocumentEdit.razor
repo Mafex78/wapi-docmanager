@@ -1,9 +1,10 @@
-@attribute [Route(AppRoutes.Templates.DocumentEdit)]
+@attribute [Route(AppRoutes.RouteTemplates.DocumentEdit)]
 @attribute [Authorize(Roles = AppRoles.Writers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
 @* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
 @inherits Blazing.Mvvm.Components.MvvmComponentBase<DocumentEditViewModel>
 @inject NavigationManager Navigation
+@inject ReturnUrlResolver ReturnUrlResolver
 
 @*
     Modifica documento: GET per precompilare il form, poi PUT api/v1/documents/{id} (ruoli Editor, Admin).
@@ -17,7 +18,7 @@
 
 <PageTitle>@L["DocumentEdit_Title"] · @L["App_Name"]</PageTitle>
 
-<div class="app-back"><a href="@AppRoutes.DocumentDetail(Id)">← @L["Action_Back"]</a></div>
+<div class="app-back"><a href="@_backUrl">← @L["Action_Back"]</a></div>
 
 <div class="app-page-header">
     <div>
@@ -57,8 +58,21 @@ else
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Pagina da cui si è aperta la modifica, passata da chi crea il link (oggi la lista documenti).
+    /// Assente quando si arriva dal dettaglio, che è anche la destinazione predefinita.
+    /// </summary>
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    // Indietro e Annulla tornano dove si era. Il valore arriva dalla query string, quindi è validato all'arrivo
+    // dal resolver (stessa protezione del returnUrl del login), una volta sola invece che a ogni render.
+    // Il salvataggio invece porta sempre al dettaglio, perché dopo aver salvato si vuole vedere il documento aggiornato.
+    private string _backUrl = string.Empty;
+
     protected override async Task OnParametersSetAsync()
     {
+        _backUrl = ReturnUrlResolver.Resolve(ReturnUrl, AppRoutes.GetDocumentDetail(Id));
+
         await ViewModel.LoadAsync(Id);
     }
 
@@ -66,12 +80,12 @@ else
     {
         if (await ViewModel.SaveAsync(Id))
         {
-            Navigation.NavigateTo(AppRoutes.DocumentDetail(Id));
+            Navigation.NavigateTo(AppRoutes.GetDocumentDetail(Id));
         }
     }
 
     private void Cancel()
     {
-        Navigation.NavigateTo(AppRoutes.DocumentDetail(Id));
+        Navigation.NavigateTo(_backUrl);
     }
 }

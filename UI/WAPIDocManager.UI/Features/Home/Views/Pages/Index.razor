@@ -1,4 +1,4 @@
-@attribute [Route(AppRoutes.Templates.Home)]
+@attribute [Route(AppRoutes.RouteTemplates.Home)]
 @inject NavigationManager Navigation
 
 @* Root dell'applicazione: reindirizza alla lista documenti (se l'utente non è autenticato interviene prima RedirectToLogin). *@
@@ -6,6 +6,6 @@
 @code {
     protected override void OnInitialized()
     {
-        Navigation.NavigateTo(AppRoutes.Documents, replace: true);
+        Navigation.NavigateTo(AppRoutes.PageRelativeUrls.Documents, replace: true);
     }
 }

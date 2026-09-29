@@ -1,4 +1,4 @@
-@attribute [Route(AppRoutes.Templates.Documents)]
+@attribute [Route(AppRoutes.RouteTemplates.Documents)]
 @attribute [Authorize(Roles = AppRoles.Readers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
 @* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
@@ -30,7 +30,7 @@
     </div>
     @if (DocumentPermissions.CanWrite(_roles))
     {
-        <a class="btn btn-primary" href="@AppRoutes.DocumentNew">+ @L["Nav_NewDocument"]</a>
+        <a class="btn btn-primary" href="@AppRoutes.PageRelativeUrls.DocumentNew">+ @L["Nav_NewDocument"]</a>
     }
 </div>
 
@@ -139,7 +139,7 @@
                         PermissionDenialReason deleteDenial = DocumentPermissions.GetDeleteDenialReason(_roles, document.Status);
 
                         <tr @key="document.Id">
-                            <td><a class="app-mono fw-semibold" href="@AppRoutes.DocumentDetail(document.Id)" title="@document.Number">@DisplayFormat.ShortNumber(document.Number)</a></td>
+                            <td><a class="app-mono fw-semibold" href="@AppRoutes.GetDocumentDetail(document.Id)" title="@document.Number">@DisplayFormat.ShortNumber(document.Number)</a></td>
                             <td>@L.Label(document.Type)</td>
                             <td class="text-nowrap">@DisplayFormat.Date(document.Date)</td>
                             <td>@DisplayFormat.OrDash(document.Customer.Name)</td>
@@ -147,10 +147,10 @@
                             <td class="text-end text-nowrap">@DisplayFormat.Money(document.Total)</td>
                             <td class="text-end">
                                 <div class="app-row-actions">
-                                    <a class="btn btn-sm btn-outline-secondary" href="@AppRoutes.DocumentDetail(document.Id)">@L["Action_View"]</a>
+                                    <a class="btn btn-sm btn-outline-secondary" href="@AppRoutes.GetDocumentDetail(document.Id)">@L["Action_View"]</a>
                                     @if (editDenial == PermissionDenialReason.None)
                                     {
-                                        <a class="btn btn-sm btn-outline-primary" href="@AppRoutes.DocumentEdit(document.Id)">@L["Action_Edit"]</a>
+                                        <a class="btn btn-sm btn-outline-primary" href="@AppRoutes.GetDocumentEdit(document.Id, AppRoutes.PageRelativeUrls.Documents)">@L["Action_Edit"]</a>
                                     }
                                     else
                                     {

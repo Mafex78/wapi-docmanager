@@ -1,5 +1,3 @@
-using WAPIDocManager.UI.Features.Documents.Views.Pages;
-
 namespace WAPIDocManager.UI.Shared.Navigation;
 
 /// <summary>
@@ -7,7 +5,7 @@ namespace WAPIDocManager.UI.Shared.Navigation;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="Templates"/> si usa nelle pagine con <c>@attribute [Route(AppRoutes.Templates.X)]</c> al posto di <c>@page</c>,
+/// <see cref="RouteTemplates"/> si usa nelle pagine con <c>@attribute [Route(AppRoutes.RouteTemplates.X)]</c> al posto di <c>@page</c>,
 /// che accetta solo stringhe letterali: <c>@page</c> genera proprio un <c>RouteAttribute</c> e il router lo legge allo stesso modo.
 /// </para>
 /// <para>
@@ -15,7 +13,7 @@ namespace WAPIDocManager.UI.Shared.Navigation;
 /// <c>href</c>, <c>NavLink</c> e <c>NavigationManager.NavigateTo</c>: così l'app funziona anche se pubblicata sotto un sotto-percorso.
 /// </para>
 /// <para>
-/// Per aggiungere una pagina: template in <see cref="Templates"/>, costante o metodo per il link qui sotto
+/// Per aggiungere una pagina: template in <see cref="RouteTemplates"/>, costante o metodo per il link qui sotto
 /// ed eventuale voce in <c>Layout/NavMenu.razor</c>.
 /// </para>
 /// </remarks>
@@ -24,32 +22,45 @@ public static class AppRoutes
     /// <summary>
     /// Template delle pagine: slash iniziale, parametri tra graffe con lo stesso nome della proprietà [Parameter] della pagina.
     /// </summary>
-    public static class Templates
+    public static class RouteTemplates
     {
         public const string Home = "/";
-        public const string Login = "/login";
-        public const string Documents = "/documents";
-        public const string DocumentNew = "/documents/new";
-        public const string DocumentDetail = "/documents/{Id}";
-        public const string DocumentEdit = "/documents/{Id}/edit";
-        public const string UserRegister = "/users/register";
+        public const string Login = $"/{PageRelativeUrls.Login}";
+        public const string Documents = $"/{PageRelativeUrls.Documents}";
+        public const string DocumentNew = $"/{PageRelativeUrls.DocumentNew}";
+        public const string DocumentDetail = $"/{PageRelativeUrls.Documents}/{{Id}}";
+        public const string DocumentEdit = $"/{PageRelativeUrls.Documents}/{{Id}}/edit";
+        public const string UserRegister = $"/{PageRelativeUrls.UserRegister}";
     }
-
-    public const string Login = "login";
-    public const string Documents = "documents";
-    public const string DocumentNew = "documents/new";
-    public const string UserRegister = "users/register";
+    
+    // Definisce le stringhe "pulite" (senza slash) come costanti di base
+    public static class PageRelativeUrls
+    {
+        public const string Login = "login";
+        public const string Documents = "documents";
+        public const string DocumentNew = $"{Documents}/new";
+        public const string UserRegister = "users/register";
+    }
 
     /// <summary>Dettaglio documento (Id codificato per l'URL).</summary>
-    public static string DocumentDetail(string id)
-    {
-        return $"{Documents}/{Uri.EscapeDataString(id)}";
-    }
+    public static string GetDocumentDetail(string id) => $"{PageRelativeUrls.Documents}/{Uri.EscapeDataString(id)}";
 
-    /// <summary>Modifica documento (Id codificato per l'URL).</summary>
-    public static string DocumentEdit(string id)
+    /// <summary>
+    /// Modifica documento (Id codificato per l'URL)
+    /// </summary>
+    /// <param name="id">ID del documento</param>
+    /// <param name="returnUrl">
+    /// Pagina a cui tornare con Indietro/Annulla, quando la modifica è aperta da un punto diverso dal dettaglio
+    /// (es. dalla lista). Omesso: la modifica torna al dettaglio del documento.
+    /// Il valore è validato da <see cref="SafeReturnUrl"/> prima dell'uso, come il returnUrl del login.
+    /// </param>
+    public static string GetDocumentEdit(string id, string? returnUrl = null)
     {
-        return $"{DocumentDetail(id)}/edit";
+        string url = $"{GetDocumentDetail(id)}/edit";
+
+        return string.IsNullOrEmpty(returnUrl)
+            ? url
+            : $"{url}?returnUrl={Uri.EscapeDataString(returnUrl)}";
     }
 
     /// <summary>
@@ -59,7 +70,7 @@ public static class AppRoutes
     public static string LoginWithReturnUrl(string? returnUrl)
     {
         return string.IsNullOrEmpty(returnUrl)
-            ? Login
-            : $"{Login}?returnUrl={Uri.EscapeDataString(returnUrl)}";
+            ? PageRelativeUrls.Login
+            : $"{PageRelativeUrls.Login}?returnUrl={Uri.EscapeDataString(returnUrl)}";
     }
 }

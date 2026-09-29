@@ -59,7 +59,7 @@ public sealed partial class DocumentDetail
     {
         if (await ViewModel.DeleteAsync())
         {
-            Navigation.NavigateTo(AppRoutes.Documents);
+            Navigation.NavigateTo(AppRoutes.PageRelativeUrls.Documents);
         }
     }
 
@@ -69,7 +69,7 @@ public sealed partial class DocumentDetail
 
         if (generated is not null)
         {
-            Navigation.NavigateTo(AppRoutes.DocumentDetail(generated.Id));
+            Navigation.NavigateTo(AppRoutes.GetDocumentDetail(generated.Id));
         }
     }
 }

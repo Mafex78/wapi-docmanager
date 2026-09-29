@@ -1,4 +1,4 @@
-@attribute [Route(AppRoutes.Templates.DocumentNew)]
+@attribute [Route(AppRoutes.RouteTemplates.DocumentNew)]
 @attribute [Authorize(Roles = AppRoles.Writers)]
 @inject IDocumentService DocumentService
 @inject NavigationManager Navigation
@@ -12,7 +12,7 @@
 
 <PageTitle>@L["DocumentCreate_Title"] · @L["App_Name"]</PageTitle>
 
-<div class="app-back"><a href="@AppRoutes.Documents">← @L["Action_Back"]</a></div>
+<div class="app-back"><a href="@AppRoutes.PageRelativeUrls.Documents">← @L["Action_Back"]</a></div>
 
 <div class="app-page-header">
     <div>
@@ -38,7 +38,7 @@
         try
         {
             Document created = await DocumentService.CreateAsync(_model);
-            Navigation.NavigateTo(AppRoutes.DocumentDetail(created.Id));
+            Navigation.NavigateTo(AppRoutes.GetDocumentDetail(created.Id));
         }
         catch (Exception ex) when (ex is ApiException or HttpRequestException)
         {
@@ -52,6 +52,6 @@
 
     private void Cancel()
     {
-        Navigation.NavigateTo(AppRoutes.Documents);
+        Navigation.NavigateTo(AppRoutes.PageRelativeUrls.Documents);
     }
 }

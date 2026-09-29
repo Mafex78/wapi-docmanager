@@ -1,10 +1,11 @@
-@attribute [Route(AppRoutes.Templates.Login)]
+@attribute [Route(AppRoutes.RouteTemplates.Login)]
 @layout AuthLayout
 @attribute [AllowAnonymous]
 @using System.Net
 @using WAPIDocManager.UI.Features.Auth.Services
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
+@inject ReturnUrlResolver ReturnUrlResolver
 
 @*
     Pagina di login (anonima, layout AuthLayout).
@@ -54,11 +55,20 @@
 </section>
 
 @code {
-    private const string DefaultReturnUrl = AppRoutes.Documents;
+    private const string DefaultReturnUrl = AppRoutes.PageRelativeUrls.Documents;
 
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    // risolto una volta all'arrivo del parametro, non a ogni navigazione: se il valore c'è ed è inutilizzabile
+    // il resolver lo segnala nella console del browser e qui resta la destinazione predefinita
+    private string _afterLoginUrl = DefaultReturnUrl;
+
+    protected override void OnParametersSet()
+    {
+        _afterLoginUrl = ReturnUrlResolver.Resolve(ReturnUrl, DefaultReturnUrl, AppRoutes.PageRelativeUrls.Login);
+    }
 
     private readonly LoginModel _model = new();
     private Exception? _error;
@@ -71,7 +81,7 @@
 
         if (state.User.Identity?.IsAuthenticated == true)
         {
-            Navigation.NavigateTo(GetSafeReturnUrl(), replace: true);
+            Navigation.NavigateTo(_afterLoginUrl, replace: true);
         }
     }
 
@@ -84,7 +94,7 @@
         try
         {
             await AuthService.LoginAsync(_model);
-            Navigation.NavigateTo(GetSafeReturnUrl());
+            Navigation.NavigateTo(_afterLoginUrl);
         }
         catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {
@@ -100,18 +110,4 @@
         }
     }
 
-    // accetta solo percorsi relativi all'applicazione (evita open redirect)
-    private string GetSafeReturnUrl()
-    {
-        if (string.IsNullOrWhiteSpace(ReturnUrl) ||
-            ReturnUrl.StartsWith('/') ||
-            ReturnUrl.StartsWith('\\') ||
-            ReturnUrl.StartsWith(AppRoutes.Login, StringComparison.OrdinalIgnoreCase) ||
-            !Uri.IsWellFormedUriString(ReturnUrl, UriKind.Relative))
-        {
-            return DefaultReturnUrl;
-        }
-
-        return ReturnUrl;
-    }
 }

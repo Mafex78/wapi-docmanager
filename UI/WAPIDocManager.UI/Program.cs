@@ -10,6 +10,7 @@ using Blazing.Mvvm;
 using WAPIDocManager.UI.Shared.Api;
 using WAPIDocManager.UI.Shared.Authentication;
 using WAPIDocManager.UI.Shared.Localization;
+using WAPIDocManager.UI.Shared.Navigation;
 
 // Composition root del client Blazor WebAssembly.
 //
@@ -38,14 +39,17 @@ builder.Services.AddAuthFeature(builder.Configuration);
 builder.Services.AddDocumentsFeature(builder.Configuration);
 builder.Services.AddUsersFeature(builder.Configuration);
 
-// 4) autenticazione JWT
+// 4) navigazione: validazione degli indirizzi di ritorno presi dalla query string (login e modifica documento)
+builder.Services.AddScoped<ReturnUrlResolver>();
+
+// 5) autenticazione JWT
 // - AddCascadingAuthenticationState: Task<AuthenticationState> disponibile a tutti i componenti come [CascadingParameter]
 // - JwtAuthenticationStateProvider: ricava l'utente da IUserSessionStore (registrato in AddApiInfrastructure)
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 
-// 5) localizzazione (Resources/SharedResource*.resx)
+// 6) localizzazione (Resources/SharedResource*.resx)
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 WebAssemblyHost host = builder.Build();
