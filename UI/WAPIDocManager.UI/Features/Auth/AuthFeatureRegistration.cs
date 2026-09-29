@@ -1,13 +1,8 @@
 using FluentValidation;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using WAPIDocManager.UI.Features.Auth.Models;
 using WAPIDocManager.UI.Features.Auth.Validators;
-using WAPIDocManager.UI.Features.Auth.Contracts;
 using WAPIDocManager.UI.Features.Auth.Services;
 using WAPIDocManager.UI.Shared.Api;
-using WAPIDocManager.UI.Shared.Authentication;
-using WAPIDocManager.UI.Shared.Navigation;
 
 namespace WAPIDocManager.UI.Features.Auth;
 

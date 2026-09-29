@@ -1,8 +1,7 @@
 using WAPIDocManager.UI.Features.Users.Models;
-using WAPIDocManager.UI.Features.Users.Services;
 using WAPIDocManager.UI.Shared.Authentication;
 
-namespace WAPIDocManager.UI.Features.Users.Contracts;
+namespace WAPIDocManager.UI.Features.Users.Services.Dto;
 
 /// <summary>
 /// Body di <c>POST api/v1/users/register</c> (<c>WAPIIdentity.Application/Dto/RegisterUserRequest.cs</c>), ruoli come numeri.

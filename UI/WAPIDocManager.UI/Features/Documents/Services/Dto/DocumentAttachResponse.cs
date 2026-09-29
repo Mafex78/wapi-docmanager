@@ -1,7 +1,6 @@
 using WAPIDocManager.UI.Features.Documents.Entities;
-using WAPIDocManager.UI.Features.Documents.Services;
 
-namespace WAPIDocManager.UI.Features.Documents.Contracts;
+namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
 /// <summary>
 /// Risposta del collegamento (<c>WAPIDocument.Application/Dto/Document/DocumentAttachResponse.cs</c>):

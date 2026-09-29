@@ -1,7 +1,6 @@
 using WAPIDocManager.UI.Features.Auth.Models;
-using WAPIDocManager.UI.Features.Auth.Services;
 
-namespace WAPIDocManager.UI.Features.Auth.Contracts;
+namespace WAPIDocManager.UI.Features.Auth.Services.Dto;
 
 /// <summary>
 /// Body di <c>POST api/v1/auth/login</c> (<c>WAPIIdentity.Application/Dto/LoginRequest.cs</c>).

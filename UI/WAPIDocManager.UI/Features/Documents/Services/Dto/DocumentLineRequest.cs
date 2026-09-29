@@ -1,8 +1,6 @@
-using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
-using WAPIDocManager.UI.Features.Documents.Services;
 
-namespace WAPIDocManager.UI.Features.Documents.Contracts;
+namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
 /// <summary>
 /// Riga in creazione/modifica (<c>WAPIDocument.Application/Dto/Document/DocumentCreateUpdateRequestDocumentLine.cs</c>).

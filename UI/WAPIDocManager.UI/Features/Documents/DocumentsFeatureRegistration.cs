@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Validators;
-using WAPIDocManager.UI.Features.Documents.Contracts;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Services;
 using WAPIDocManager.UI.Features.Documents.ViewModels;

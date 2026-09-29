@@ -1,6 +1,6 @@
 using WAPIDocManager.UI.Features.Documents.Entities;
 
-namespace WAPIDocManager.UI.Features.Documents.Contracts;
+namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
 /// <summary>
 /// Link a un altro documento (<c>WAPIDocument.Application/Dto/Document/DocumentLinkDto.cs</c>).

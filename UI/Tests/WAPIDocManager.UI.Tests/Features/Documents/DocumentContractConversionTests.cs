@@ -1,6 +1,6 @@
-using WAPIDocManager.UI.Features.Documents.Contracts;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
+using WAPIDocManager.UI.Features.Documents.Services.Dto;
 
 namespace WAPIDocManager.UI.Tests.Features.Documents;
 

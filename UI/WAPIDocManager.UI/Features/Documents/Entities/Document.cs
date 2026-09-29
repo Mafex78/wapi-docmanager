@@ -1,5 +1,3 @@
-using WAPIDocManager.UI.Features.Documents.Contracts;
-
 namespace WAPIDocManager.UI.Features.Documents.Entities;
 
 /// <remarks>Forma di LETTURA: vedi le tre forme documentate in <c>Features/Documents/Contracts/DocumentResponse.cs</c>.</remarks>

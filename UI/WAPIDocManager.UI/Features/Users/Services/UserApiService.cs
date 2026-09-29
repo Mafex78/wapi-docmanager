@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using WAPIDocManager.UI.Features.Users.Contracts;
 using WAPIDocManager.UI.Features.Users.Models;
+using WAPIDocManager.UI.Features.Users.Services.Dto;
 using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Users.Services;

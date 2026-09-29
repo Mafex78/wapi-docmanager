@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
-using WAPIDocManager.UI.Features.Documents.Contracts;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
+using WAPIDocManager.UI.Features.Documents.Services.Dto;
 using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Documents.Services;

@@ -1,4 +1,4 @@
-using WAPIDocManager.UI.Features.Auth.Contracts;
+using WAPIDocManager.UI.Features.Auth.Services.Dto;
 using WAPIDocManager.UI.Shared.Authentication;
 using WAPIDocManager.UI.Tests.TestSupport;
 

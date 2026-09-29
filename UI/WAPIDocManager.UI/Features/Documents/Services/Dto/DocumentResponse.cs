@@ -1,7 +1,6 @@
 using WAPIDocManager.UI.Features.Documents.Entities;
-using WAPIDocManager.UI.Features.Documents.Models;
 
-namespace WAPIDocManager.UI.Features.Documents.Contracts;
+namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
 /// <remarks>
 /// LE TRE FORME DEL DOCUMENTO NELLO SLICE (scelta deliberata, discussa e confermata: non unificarle senza motivo)

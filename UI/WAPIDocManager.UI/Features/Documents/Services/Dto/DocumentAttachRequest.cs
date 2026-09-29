@@ -1,6 +1,4 @@
-using WAPIDocManager.UI.Features.Documents.Entities;
-
-namespace WAPIDocManager.UI.Features.Documents.Contracts;
+namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
 /// <summary>
 /// Body di <c>POST api/v1/documents/{id}/attachments</c> (<c>WAPIDocument.Application/Dto/Document/DocumentAttachRequest.cs</c>).

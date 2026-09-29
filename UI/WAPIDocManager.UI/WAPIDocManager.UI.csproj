@@ -59,4 +59,10 @@
         <TrimmerRootAssembly Include="WAPIDocManager.UI" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Features\Auth\Contracts\" />
+      <Folder Include="Features\Documents\Contracts\" />
+      <Folder Include="Features\Users\Contracts\" />
+    </ItemGroup>
+
 </Project>

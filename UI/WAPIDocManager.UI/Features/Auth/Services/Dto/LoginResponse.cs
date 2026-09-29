@@ -1,7 +1,6 @@
-using WAPIDocManager.UI.Features.Auth.Services;
 using WAPIDocManager.UI.Shared.Authentication;
 
-namespace WAPIDocManager.UI.Features.Auth.Contracts;
+namespace WAPIDocManager.UI.Features.Auth.Services.Dto;
 
 /// <summary>
 /// Risposta del login (<c>WAPIIdentity.Application/Dto/LoginResponse.cs</c>).

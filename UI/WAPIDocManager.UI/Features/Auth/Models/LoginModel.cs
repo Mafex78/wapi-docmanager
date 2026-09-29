@@ -1,4 +1,3 @@
-using WAPIDocManager.UI.Features.Auth.Contracts;
 using WAPIDocManager.UI.Shared.Validation;
 
 namespace WAPIDocManager.UI.Features.Auth.Models;

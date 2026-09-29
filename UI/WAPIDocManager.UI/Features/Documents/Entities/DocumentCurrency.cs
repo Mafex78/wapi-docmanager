@@ -1,4 +1,3 @@
-using WAPIDocManager.UI.Features.Documents.Contracts;
 using WAPIDocManager.UI.Shared.Formatting;
 
 namespace WAPIDocManager.UI.Features.Documents.Entities;

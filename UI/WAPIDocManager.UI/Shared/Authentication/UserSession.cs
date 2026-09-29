@@ -1,7 +1,3 @@
-using WAPIDocManager.UI.Features.Auth.Contracts;
-using WAPIDocManager.UI.Features.Auth.Services;
-using WAPIDocManager.UI.Shared.Api;
-
 namespace WAPIDocManager.UI.Shared.Authentication;
 
 /// <summary>

@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using WAPIDocManager.UI.Features.Auth.Contracts;
 using WAPIDocManager.UI.Features.Auth.Models;
+using WAPIDocManager.UI.Features.Auth.Services.Dto;
 using WAPIDocManager.UI.Shared.Api;
 using WAPIDocManager.UI.Shared.Authentication;
 

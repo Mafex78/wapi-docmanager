@@ -1,9 +1,7 @@
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
-using WAPIDocManager.UI.Features.Documents.Services;
-using WAPIDocManager.UI.Shared.Api;
 
-namespace WAPIDocManager.UI.Features.Documents.Contracts;
+namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
 /// <summary>
 /// Cliente (<c>WAPIDocument.Application/Dto/CustomerDto.cs</c>), usato sia nei body sia nelle risposte.

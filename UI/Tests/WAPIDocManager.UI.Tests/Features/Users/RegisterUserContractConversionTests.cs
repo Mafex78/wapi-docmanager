@@ -1,5 +1,5 @@
-using WAPIDocManager.UI.Features.Users.Contracts;
 using WAPIDocManager.UI.Features.Users.Models;
+using WAPIDocManager.UI.Features.Users.Services.Dto;
 using WAPIDocManager.UI.Shared.Authentication;
 
 namespace WAPIDocManager.UI.Tests.Features.Users;

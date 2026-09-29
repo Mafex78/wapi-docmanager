@@ -1,4 +1,3 @@
-using WAPIDocManager.UI.Features.Documents.Contracts;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Shared.Validation;
 
