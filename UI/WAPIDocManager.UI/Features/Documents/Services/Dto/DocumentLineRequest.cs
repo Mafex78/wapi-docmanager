@@ -2,21 +2,15 @@ using WAPIDocManager.UI.Features.Documents.Models;
 
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Riga in creazione/modifica (<c>WAPIDocument.Application/Dto/Document/DocumentCreateUpdateRequestDocumentLine.cs</c>).
-/// </summary>
-/// <remarks>
-/// Il totale non viene inviato: lo calcola il server. Se il DTO cambia sul server va aggiornato qui.
-/// </remarks>
+/// Riga di documento in creazione e in modifica.
+/// Il totale non viene inviato: lo calcola il server, ed è l'unico valore di cui fa fede.
 public record DocumentLineRequest
 {
     public string? Description { get; init; }
     public decimal Quantity { get; init; }
     public decimal UnitPrice { get; init; }
 
-    /// <summary>
-    /// Riga del form → riga del body (descrizione vuota a null, altrimenti con trim).
-    /// </summary>
+    /// Dalla riga del form alla riga da inviare: descrizione vuota azzerata, altrimenti ripulita dagli spazi.
     public static explicit operator DocumentLineRequest(DocumentLineEditModel line)
     {
         return new DocumentLineRequest

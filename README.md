@@ -416,7 +416,7 @@ Tutti i file sono a livello della solution client (`UI/`) e valgono solo per ess
 | File | Contenuto | Quando si tocca |
 |---|---|---|
 | `UI/Directory.Build.props` | `TargetFramework`, `Nullable`, `ImplicitUsings` e le proprietà dell'analisi statica, comuni a tutti i progetti | per una proprietà che deve valere ovunque |
-| `UI/Tests/WAPIDocManager.UI.Tests/*.csproj` | proprietà e pacchetti del progetto di test (`IsTestProject`, `using Xunit` implicito, `Microsoft.NET.Test.Sdk`, `xunit`, `Moq`, `coverlet.collector`) | il progetto di test è uno solo, quindi non serve un `Directory.Build.props` dedicato |
+| `UI/UI.Tests/WAPIDocManager.UI.Tests/*.csproj` | proprietà e pacchetti del progetto di test (`IsTestProject`, `using Xunit` implicito, `Microsoft.NET.Test.Sdk`, `xunit`, `Moq`, `coverlet.collector`) | il progetto di test è uno solo, quindi non serve un `Directory.Build.props` dedicato |
 | `UI/Directory.Packages.props` | **versioni** di tutti i pacchetti NuGet (`ManagePackageVersionsCentrally`) | per aggiungere un pacchetto o aggiornare una versione |
 | `UI/.editorconfig` | stile di codifica e severità delle regole | per cambiare una convenzione o motivare una soppressione |
 

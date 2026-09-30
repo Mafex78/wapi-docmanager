@@ -5,7 +5,8 @@
 
           Features/<Area>/   tutto ciò che serve a una funzionalità: Views/Pages e Views/Components (markup e
                              code-behind), ViewModels (logica delle pagine che ne hanno), Entities (ciò che torna
-                             dalle API), Models (form e filtri), Services (chiamate HTTP), Contracts (DTO wire),
+                             dalle API), Models (form e filtri), Services (chiamate HTTP) con Services/Dto al suo
+                             interno (forme di trasporto),
                              più i file di area (permessi, stato, etichette) e la sua registrazione DI.
           Shared/            solo ciò che DUE O PIÙ funzionalità usano davvero: Api (HTTP, opzioni, eccezioni),
                              Authentication (sessione, ruoli, stato di autenticazione), Validation, Components,
@@ -13,7 +14,7 @@
           Layout/            layout e menu.  Resources/  risorse localizzate.  wwwroot/  asset statici.
 
         Il punto di ingresso per capire una funzionalità è il commento in testa alla sua classe di registrazione
-        (es. Features/Documents/DocumentsFeatureRegistration.cs), richiamata da Program.cs.
+        (la classe *FeatureRegistration della cartella), richiamata dal punto di composizione.
 
         Avvio in sviluppo: profilo "https" su https://localhost:7150, origine da autorizzare in Cors:AllowedOrigins delle API.
         Avvio in container: vedi ../Dockerfile (publish statico servito da nginx).
@@ -25,9 +26,9 @@
     <PropertyGroup>
         <!-- Formati data/numero di tutte le culture (localizzazione IT/EN) -->
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-        <!-- Satellite assembly incluse nel bundle: aggiungere qui ogni nuova lingua (vedi Shared/Localization/AppCultures.cs) -->
+        <!-- lingue incluse nel bundle: ogni nuova lingua va aggiunta sia qui sia fra quelle supportate dal codice -->
         <SatelliteResourceLanguages>it;en</SatelliteResourceLanguages>
-        <!-- Design system: un unico stylesheet globale (wwwroot/css/app.css), nessun CSS isolato per componente -->
+        <!-- un unico foglio di stile globale: niente CSS per singolo componente -->
         <ScopedCssEnabled>false</ScopedCssEnabled>
     </PropertyGroup>
 
@@ -39,11 +40,11 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
         <!-- IStringLocalizer basato su file .resx -->
         <PackageReference Include="Microsoft.Extensions.Localization" />
-        <!-- binding della sezione "Api" della configurazione in ApiOptions (Shared/Api) -->
+        <!-- lettura della sezione di configurazione con gli indirizzi dei servizi -->
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-        <!-- IHttpClientFactory / typed HttpClient / DelegatingHandler (Shared/Api, Services degli slice) -->
+        <!-- client HTTP tipizzati e gestori delle richieste, usati dalle chiamate alle API -->
         <PackageReference Include="Microsoft.Extensions.Http" />
-        <!-- IJSRuntime per sessionStorage e tema (Shared/Authentication, wwwroot/js/app.js) -->
+        <!-- interoperabilità con JavaScript: archivio della sessione e preferenze di tema e lingua -->
         <PackageReference Include="Microsoft.JSInterop" />
         <!-- regole dei form (Features/<Area>/Validators) e componente <FluentValidator /> per EditForm -->
         <PackageReference Include="FluentValidation" />
@@ -55,7 +56,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- ModelValidator (Shared/Validation) usa la reflection sui modelli di form: evita che il trimming rimuova le proprietà -->
+        <!-- il progetto viene tenuto per intero dal trimming: validazione e serializzazione raggiungono i tipi per
+             riflessione, quindi il trimmer non riesce a dimostrare che siano usati e li rimuoverebbe -->
         <TrimmerRootAssembly Include="WAPIDocManager.UI" />
     </ItemGroup>
 

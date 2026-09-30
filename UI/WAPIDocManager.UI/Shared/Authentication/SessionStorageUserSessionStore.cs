@@ -4,28 +4,20 @@ using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Shared.Authentication;
 
-/// <summary>
-/// Sessione utente salvata nel sessionStorage del browser, con cache in memoria.
-/// Va registrata Singleton: i DelegatingHandler di IHttpClientFactory vengono risolti in uno scope separato.
-/// </summary>
-/// <remarks>
-/// <para>
-/// sessionStorage (scelta concordata) = la sessione sopravvive al reload (anche al cambio lingua) ma non è condivisa
-/// tra schede e termina alla chiusura della scheda. Per passare a localStorage basta cambiare gli identificatori JS.
-/// </para>
-/// <para>
-/// Le funzioni <c>sessionStorage.getItem/setItem/removeItem</c> sono globali del browser: non serve codice in wwwroot/js/app.js.
-/// Il valore è <see cref="UserSession"/> serializzato con <see cref="JsonDefaults"/>.
-/// </para>
-/// </remarks>
+/// Sessione salvata nell'archivio di sessione del browser, con una copia in memoria.
+/// L'archivio di sessione è una scelta concordata: la sessione sopravvive al ricaricamento della pagina, e quindi
+/// anche al cambio lingua, ma non è condivisa fra schede e termina quando la scheda viene chiusa. Per passare
+/// all'archivio permanente basta cambiare gli identificatori JavaScript usati qui sotto.
+/// Le funzioni di lettura e scrittura sono globali del browser: non serve codice JavaScript nostro.
 public class SessionStorageUserSessionStore : IUserSessionStore
 {
-    /// <summary>Chiave nel sessionStorage (visibile dagli strumenti del browser).</summary>
+    /// Chiave nell'archivio di sessione, visibile dagli strumenti di sviluppo del browser.
     public const string StorageKey = "wapidocmanager.session";
 
     private readonly IJSRuntime _jsRuntime;
 
-    // cache: evita una chiamata JS interop a ogni richiesta HTTP (il BearerTokenHandler legge la sessione ogni volta)
+    // la copia in memoria evita una chiamata JavaScript a ogni richiesta HTTP: la sessione viene letta prima di
+    // ogni chiamata alle API, per aggiungere il token
     private UserSession? _session;
     private bool _loaded;
 
@@ -75,7 +67,7 @@ public class SessionStorageUserSessionStore : IUserSessionStore
         SessionChanged?.Invoke(null);
     }
 
-    // valore assente o non più compatibile (es. dopo una modifica di UserSession) = nessuna sessione
+    // valore assente o non più compatibile, per esempio dopo una modifica delle proprietà salvate = nessuna sessione
     private static UserSession? Deserialize(string? json)
     {
         if (string.IsNullOrWhiteSpace(json))

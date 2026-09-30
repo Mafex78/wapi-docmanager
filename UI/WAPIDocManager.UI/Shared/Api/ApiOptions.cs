@@ -1,30 +1,20 @@
-using WAPIDocManager.UI.Features.Documents.Entities;
-
 namespace WAPIDocManager.UI.Shared.Api;
 
-/// <summary>
-/// Indirizzi base dei microservizi (sezione "Api" di wwwroot/appsettings.json)
-/// </summary>
-/// <remarks>
-/// <para>
-/// In Blazor WebAssembly la configurazione è scaricata dal browser da <c>WAPIDocManager.UI/wwwroot/appsettings.json</c>
-/// (eventualmente <c>appsettings.{Environment}.json</c>): non contiene segreti. I file JSON non ammettono commenti, per questo è documentata qui.
-/// Valori di sviluppo: Identity <c>https://localhost:7205/</c>, Document <c>https://localhost:7273/</c> (launchSettings delle API).
-/// </para>
-/// <para>
-/// Ogni origine da cui gira il client (sviluppo: <c>https://localhost:7150</c> e <c>http://localhost:5150</c>, vedi
-/// <c>WAPIDocManager.UI/Properties/launchSettings.json</c>) deve essere presente in <c>Cors:AllowedOrigins</c> di
-/// ENTRAMBE le API (<c>WAPIIdentity/appsettings.json</c>, <c>WAPIDocument/appsettings.json</c>), altrimenti il browser
-/// blocca le chiamate (in UI appare come HttpRequestException, messaggio "servizio non raggiungibile").
-/// </para>
-/// </remarks>
+/// Indirizzi base dei due servizi a cui il client si rivolge.
+/// In WebAssembly la configurazione non è compilata nell'eseguibile: è un file che il browser scarica, quindi non
+/// può contenere segreti. I file JSON non ammettono commenti, ed è la ragione per cui la configurazione è
+/// documentata qui e non accanto ai valori. In sviluppo l'autenticazione risponde sulla porta 7205 e i documenti
+/// sulla 7273.
+/// Ogni origine da cui il client viene servito deve essere autorizzata fra le origini consentite di ENTRAMBI i
+/// servizi, altrimenti il browser blocca le chiamate e in interfaccia si vede un generico "servizio non
+/// raggiungibile".
 public class ApiOptions
 {
     public const string SectionName = "Api";
 
-    /// <summary>URL base di WAPIIdentity (lo slash finale viene aggiunto se mancante).</summary>
+    /// Indirizzo del servizio di autenticazione. Lo slash finale viene aggiunto se manca.
     public string IdentityBaseUrl { get; set; } = string.Empty;
 
-    /// <summary>URL base di WAPIDocument (lo slash finale viene aggiunto se mancante).</summary>
+    /// Indirizzo del servizio documenti. Lo slash finale viene aggiunto se manca.
     public string DocumentBaseUrl { get; set; } = string.Empty;
 }

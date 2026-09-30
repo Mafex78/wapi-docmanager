@@ -1,10 +1,12 @@
 @*
-    Editor delle righe documento (aggiunta, rimozione, modifica inline) usato da DocumentForm.
-    - Va usato dentro un EditForm con FluentValidator: FieldValidationMessage richiede l'EditContext cascaded.
-    - Lines è la lista del modello, modificata direttamente (nessun callback di notifica).
-    - @key = istanza della riga: mantiene lo stato degli input quando si rimuove una riga intermedia.
-    - InputNumber usa sempre il punto come separatore decimale (cultura invariante), a prescindere dalla lingua.
-    - I totali sono un'anteprima: il valore definitivo lo calcola il server.
+    Righe del documento: aggiunta, rimozione e modifica sul posto.
+    - Va usato dentro un form di modifica con la validazione attiva, perché i messaggi di errore dei campi si
+      appoggiano al contesto che quel form mette a disposizione.
+    - L'elenco è quello del modello e viene modificato direttamente, senza avvisare nessuno: è il form a rileggerlo.
+    - Ogni riga è identificata dalla propria istanza, non dalla posizione: senza, togliendo una riga in mezzo, il
+      contenuto già digitato nelle altre si sposterebbe di una posizione.
+    - I campi numerici usano sempre il punto come separatore decimale, indipendentemente dalla lingua scelta.
+    - I totali mostrati sono un'anteprima: il valore che conta lo calcola il server.
 *@
 <div class="table-responsive">
     <table class="table app-table app-lines-table align-middle">

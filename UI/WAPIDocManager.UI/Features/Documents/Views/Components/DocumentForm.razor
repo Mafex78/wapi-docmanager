@@ -1,9 +1,10 @@
 @*
-    Form documento condiviso da DocumentCreate.razor (IsEdit = false) e DocumentEdit.razor (IsEdit = true).
-    - Creazione: si sceglie la tipologia; la data la assegna il server. Modifica: si cambia la data; la tipologia è fissa.
-    - Valuta mostrata in sola lettura: il client invia sempre EUR (Features/Documents/Entities/DocumentCurrency).
-    - OnValidSubmit parte solo se la validazione client (FluentValidator + DocumentEditModelValidator) passa; chiamata API ed errori del server
-      sono gestiti dalla pagina chiamante, che passa Busy per disabilitare il salvataggio durante la richiesta.
+    Form del documento, condiviso dalla creazione e dalla modifica: cambia solo in due punti, perché in creazione si
+    sceglie la tipologia e la data la assegna il server, mentre in modifica si cambia la data e la tipologia è
+    ormai fissa.
+    La valuta è mostrata ma non modificabile: il client ne invia sempre una sola.
+    Il salvataggio viene proposto alla pagina chiamante solo se la validazione è passata; la chiamata alle API e i
+    suoi errori restano affare della pagina, che segnala qui quando è in corso per disattivare il pulsante.
 *@
 <EditForm Model="Model" OnValidSubmit="() => OnValidSubmit.InvokeAsync()">
     <FluentValidator />
@@ -80,9 +81,7 @@
 @code {
     [Parameter, EditorRequired] public DocumentEditModel Model { get; set; } = default!;
 
-    /// <summary>
-    /// In modifica si edita la data, in creazione la tipologia
-    /// </summary>
+    /// In modifica si cambia la data, in creazione la tipologia.
     [Parameter] public bool IsEdit { get; set; }
 
     [Parameter] public bool Busy { get; set; }

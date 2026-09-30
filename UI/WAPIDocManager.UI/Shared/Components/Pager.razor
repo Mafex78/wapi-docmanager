@@ -1,9 +1,9 @@
 @*
-    Paginazione (pagine numerate da 1, come le API).
-    Nascosto se c'è una sola pagina; mostra al massimo MaxVisiblePages numeri attorno alla pagina corrente.
-    Non carica dati: notifica la pagina scelta con OnPageChanged e il chiamante esegue la nuova ricerca.
-    Disabled: disattiva tutti i pulsanti mentre il chiamante sta già caricando (la lista lo lega a
-    LoadCommand.CanExecute), così non si sovrappongono più richieste di pagina.
+    Paginazione, con le pagine numerate da 1 come nelle API. Si nasconde del tutto quando c'è una sola pagina, e
+    mostra al massimo cinque numeri attorno a quello corrente.
+    Non carica dati: comunica soltanto la pagina scelta, e la ricerca la fa il chiamante.
+    I pulsanti si disattivano mentre un caricamento è già in corso, altrimenti un doppio clic accavallerebbe due
+    richieste di pagina diverse.
 *@
 @if (TotalPages > 1)
 {
@@ -41,7 +41,7 @@
 
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
-    /// <summary>Disattiva tutti i pulsanti (il chiamante sta caricando).</summary>
+    /// Disattiva tutti i pulsanti, perché il chiamante sta già caricando.
     [Parameter] public bool Disabled { get; set; }
 
     private IEnumerable<int> VisiblePages()

@@ -1,16 +1,11 @@
 using WAPIDocManager.UI.Features.Documents.Models;
-using WAPIDocManager.UI.Features.Documents.ViewModels;
 
 namespace WAPIDocManager.UI.Features.Documents;
 
-/// <summary>
-/// Mantiene i filtri della lista documenti durante la navigazione (dettaglio → lista)
-/// </summary>
-/// <remarks>
-/// Registrato Scoped in Program.cs (in WebAssembly vive quanto la scheda), a differenza dei ViewModel che sono Transient:
-/// <c>DocumentListViewModel</c> legge e sostituisce <see cref="Filter"/>, e il form della lista è legato
-/// direttamente a quell'istanza. Si perde con il reload della pagina (anche al cambio lingua).
-/// </remarks>
+/// Conserva i filtri dell'elenco documenti durante la navigazione, così tornando dal dettaglio si ritrova la ricerca
+/// appena fatta invece di un elenco azzerato.
+/// Vive quanto la scheda del browser, a differenza dei ViewModel che nascono a ogni visita: il form dell'elenco è
+/// legato direttamente a questa istanza. Si perde ricaricando la pagina, e quindi anche al cambio di lingua.
 public class DocumentListState
 {
     public DocumentFilter Filter { get; set; } = new();

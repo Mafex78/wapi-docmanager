@@ -1,7 +1,7 @@
 @attribute [Route(AppRoutes.RouteTemplates.Home)]
 @inject NavigationManager Navigation
 
-@* Root dell'applicazione: reindirizza alla lista documenti (se l'utente non è autenticato interviene prima RedirectToLogin). *@
+@* Radice dell'applicazione: manda all'elenco documenti. Se l'utente non è autenticato viene intercettato prima. *@
 
 @code {
     protected override void OnInitialized()

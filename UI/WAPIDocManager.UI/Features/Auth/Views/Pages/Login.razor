@@ -8,12 +8,14 @@
 @inject ReturnUrlResolver ReturnUrlResolver
 
 @*
-    Pagina di login (anonima, layout AuthLayout).
-    - Se l'utente è già autenticato va subito a returnUrl (o alla lista documenti).
-    - Login riuscito: AuthService salva la sessione → SessionChanged aggiorna lo stato di autenticazione → navigazione a returnUrl.
-    - 401 = credenziali errate o utente non attivo (messaggio dedicato); altri errori tramite ApiErrorAlert.
-    - returnUrl arriva da query string (RedirectToLogin, AppRoutes.LoginWithReturnUrl): si accettano solo percorsi relativi
-      all'app (protezione open redirect).
+    Unica pagina raggiungibile senza essere autenticati.
+    - Chi arriva già autenticato viene mandato subito a destinazione, senza vedere il form.
+    - Dopo l'accesso riuscito non serve aggiornare nulla a mano: il salvataggio della sessione cambia lo stato di
+      autenticazione e l'interfaccia si adegua da sola.
+    - Le credenziali errate e l'utente non attivo arrivano entrambi come 401 e meritano un messaggio dedicato,
+      perché sono l'errore che l'utente può correggere; tutti gli altri passano dall'avviso di errore generico.
+    - L'indirizzo di ritorno arriva dalla query string, quindi da una fonte non fidata: si accettano solo percorsi
+      relativi all'applicazione, altrimenti un link confezionato ad arte porterebbe l'utente fuori dal sito.
 *@
 
 <PageTitle>@L["Login_Title"] · @L["App_Name"]</PageTitle>
@@ -62,7 +64,7 @@
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
 
     // risolto una volta all'arrivo del parametro, non a ogni navigazione: se il valore c'è ed è inutilizzabile
-    // il resolver lo segnala nella console del browser e qui resta la destinazione predefinita
+    // viene segnalato nella console del browser e qui resta la destinazione predefinita
     private string _afterLoginUrl = DefaultReturnUrl;
 
     protected override void OnParametersSet()

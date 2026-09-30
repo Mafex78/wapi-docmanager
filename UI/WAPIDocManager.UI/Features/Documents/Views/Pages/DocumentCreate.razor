@@ -4,10 +4,12 @@
 @inject NavigationManager Navigation
 
 @*
-    Creazione documento: POST api/v1/documents (ruoli Editor, Admin).
-    Parte senza righe (una riga vuota bloccherebbe il salvataggio per validazione).
-    Il server crea il documento in Draft con data odierna; a salvataggio riuscito si apre il dettaglio del nuovo documento.
-    Route e link da AppRoutes (Shared/Navigation): /documents/new ha la precedenza su /documents/{Id} perché è un segmento fisso.
+    Creazione di un documento.
+    Il form parte senza righe: una riga vuota bloccherebbe subito il salvataggio, perché non supererebbe la
+    validazione.
+    Il server crea il documento in bozza con la data odierna, e a salvataggio riuscito si apre il suo dettaglio.
+    Nota sull'indirizzo: la pagina di creazione ha la precedenza su quella di dettaglio perché il suo ultimo
+    segmento è fisso, mentre l'altra ha un parametro.
 *@
 
 <PageTitle>@L["DocumentCreate_Title"] · @L["App_Name"]</PageTitle>

@@ -1,10 +1,13 @@
 @*
-    Routing e autorizzazione delle pagine.
-    - AuthorizeRouteView applica gli attributi [Authorize] delle pagine usando lo stato cascaded
-      (AddCascadingAuthenticationState in Program.cs, fornito da JwtAuthenticationStateProvider).
-    - NotAuthorized: utente anonimo → RedirectToLogin (conserva returnUrl); autenticato senza ruolo → AccessDenied.
-    - Layout predefinito MainLayout; le pagine possono sovrascriverlo con @layout (Login usa AuthLayout).
-    - FocusOnNavigate porta il focus sul primo h1 dopo ogni navigazione (accessibilità).
+    Instradamento e autorizzazione delle pagine.
+    - Gli attributi di autorizzazione dichiarati sulle pagine vengono applicati qui, leggendo lo stato di
+      autenticazione dell'applicazione.
+    - Chi non è autorizzato riceve due trattamenti diversi, ed è una distinzione voluta: l'utente anonimo viene
+      mandato ad autenticarsi, conservando l'indirizzo che voleva raggiungere; quello già autenticato ma senza il
+      ruolo necessario riceve un rifiuto esplicito, perché mandarlo di nuovo ad autenticarsi non risolverebbe nulla.
+    - Il layout predefinito è quello delle pagine autenticate; una pagina può sceglierne un altro, come fa quella di
+      accesso.
+    - Dopo ogni navigazione il fuoco della tastiera va sul titolo della nuova pagina, per l'accessibilità.
 *@
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">

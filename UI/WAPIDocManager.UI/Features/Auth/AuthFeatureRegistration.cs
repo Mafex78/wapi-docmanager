@@ -6,38 +6,30 @@ using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Auth;
 
-/// <summary>
-/// Slice "Autenticazione": login dell'utente e creazione della sessione
-/// </summary>
-/// <remarks>
-/// <para>
-/// CONTENUTO DELLO SLICE
-/// <list type="bullet">
-///   <item><c>Pages/Login.razor</c> – unica pagina anonima dell'app ([AllowAnonymous]); rotta in <c>Shared/Navigation/AppRoutes</c>.</item>
-///   <item><c>Models/LoginModel</c> – modello del form, senza attributi: le regole stanno in Validators.</item>
-///   <item><c>Validators/LoginModelValidator</c> – regole FluentValidation, registrate nella DI e usate dal
-///         componente &lt;FluentValidator /&gt; della pagina.</item>
-///   <item><c>Services/IAuthService</c> + <c>AuthApiService</c> – chiamata a <c>POST /api/v1/auth/login</c> di WAPIIdentity
-///         (endpoint anonimo: il typed HttpClient NON monta BearerTokenHandler); <c>JwtPayloadReader</c> legge i ruoli dal token.</item>
-///   <item><c>Contracts/LoginRequest</c>, <c>LoginResponse</c> – forme di trasporto, con gli operatori di conversione.</item>
-/// </list>
-/// </para>
-/// <para>
-/// La sessione prodotta dal login (<c>UserSession</c>) NON sta in questo slice ma in <c>Shared/Authentication</c>:
-/// la usano anche l'handler del token e lo stato di autenticazione, quindi è materiale condiviso.
-/// </para>
-/// </remarks>
+/// Slice "Autenticazione": accesso dell'utente e creazione della sessione.
+/// Mappa dello slice, da cui conviene partire per capirlo:
+///   Login                 unica pagina anonima dell'applicazione;
+///   LoginModel            modello del form, senza attributi di validazione: le regole stanno nel validatore;
+///   LoginModelValidator   regole del form, risolte dalle dipendenze e applicate dal componente di validazione;
+///   IAuthService          l'accesso vero e proprio, con la sessione che ne risulta;
+///   JwtPayloadReader      estrae i ruoli dal payload del token;
+///   LoginRequest,
+///   LoginResponse         forme di trasporto, con gli operatori di conversione da e verso il modello.
+/// Le forme di trasporto sono copie lato client di quelle del servizio: client e server non condividono progetti,
+/// per tenere autonomi i due gruppi di lavoro. Se cambiano là, vanno aggiornate qui e nei test del servizio.
+/// La sessione prodotta dall'accesso non sta in questo slice ma fra i componenti condivisi, perché la usano anche
+/// il gestore del token e lo stato di autenticazione.
 public static class AuthFeatureRegistration
 {
     public static IServiceCollection AddAuthFeature(this IServiceCollection services, IConfiguration configuration)
     {
         ApiOptions apiOptions = configuration.ReadApiOptions();
 
-        // login: endpoint anonimo, nessun token da allegare
+        // accesso: endpoint anonimo, nessun token da allegare
         services.AddHttpClient<IAuthService, AuthApiService>(client =>
             client.BaseAddress = apiOptions.IdentityBaseAddress());
 
-        // regole del form: risolte dalla DI dal componente <FluentValidator /> (Blazilla); senza stato, quindi Singleton
+        // regole del form: risolte dalle dipendenze dal componente di validazione; senza stato, quindi Singleton
         services.AddSingleton<IValidator<LoginModel>, LoginModelValidator>();
 
         return services;

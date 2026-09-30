@@ -2,11 +2,9 @@ using WAPIDocManager.UI.Features.Documents.Entities;
 
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Body di <c>POST api/v1/documents/{id}/generation</c> (<c>WAPIDocument.Application/Dto/Document/DocumentGenerateFromRequest.cs</c>).
-/// </summary>
+/// Body di POST api/v1/documents/{id}/generation.
 public record DocumentGenerateFromRequest
 {
-    /// <summary>Tipologia del documento da generare.</summary>
+    /// Tipologia del documento da generare.
     public DocumentType DocumentType { get; init; }
 }

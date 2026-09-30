@@ -2,17 +2,14 @@ using WAPIDocManager.UI.Features.Documents.Entities;
 
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Link a un altro documento (<c>WAPIDocument.Application/Dto/Document/DocumentLinkDto.cs</c>).
-/// </summary>
-/// <remarks>Espone solo l'Id del documento collegato, non il tipo di link (System/User).</remarks>
+/// Collegamento verso un altro documento, come arriva nelle risposte.
+/// Porta solo l'identificativo del documento collegato: non dice se il collegamento è stato creato a mano o dalla
+/// generazione, né come si chiama quel documento.
 public record DocumentLinkDto
 {
     public string TargetDocumentId { get; init; } = string.Empty;
 
-    /// <summary>
-    /// DTO → link del client.
-    /// </summary>
+    /// Dalla risposta al collegamento dell'applicazione.
     public static explicit operator DocumentLink(DocumentLinkDto link)
     {
         return new DocumentLink

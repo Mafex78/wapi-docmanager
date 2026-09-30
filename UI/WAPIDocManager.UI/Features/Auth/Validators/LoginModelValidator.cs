@@ -4,14 +4,10 @@ using WAPIDocManager.UI.Shared.Validation;
 
 namespace WAPIDocManager.UI.Features.Auth.Validators;
 
-/// <summary>
-/// Regole del form di login, allineate a <c>WAPIIdentity.Application/Validators/LoginRequestValidator.cs</c>
-/// </summary>
-/// <remarks>
-/// I messaggi sono CHIAVI di <see cref="ValidationKeys"/>, non testi: la traduzione avviene alla resa in
-/// <c>Shared/Forms/FieldValidationMessage</c>. Una chiave nuova va aggiunta in entrambi i file .resx.
-/// Registrato nella DI da <c>AuthFeatureRegistration</c> e risolto dal componente &lt;FluentValidator /&gt;.
-/// </remarks>
+/// Regole del form di accesso, allineate a quelle applicate dal servizio su POST api/v1/auth/login:
+/// allentarle qui fa passare il form e poi fallire la chiamata.
+/// I messaggi non sono testi ma CHIAVI di risorsa: la traduzione avviene nel momento in cui il messaggio viene
+/// mostrato. Una chiave nuova va aggiunta in entrambi i file di risorse.
 public sealed class LoginModelValidator : AbstractValidator<LoginModel>
 {
     public LoginModelValidator()

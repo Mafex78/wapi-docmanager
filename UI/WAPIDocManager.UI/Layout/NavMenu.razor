@@ -1,10 +1,11 @@
 @*
-    Menu laterale. Le voci sono filtrate per ruolo con AuthorizeView (costanti AppRoles), come gli attributi delle pagine.
-    - Match="NavLinkMatch.All": evita che "Documenti" risulti attivo anche su /documents/new.
-    - OnNavigate: il layout lo usa per chiudere la sidebar su mobile.
-    - Icone SVG inline: non è inclusa nessuna libreria di icone (di Bootstrap si usa solo il CSS).
-    Per aggiungere una pagina: NavLink con classe app-nav-link e href da AppRoutes (Shared/Navigation),
-    dentro AuthorizeView se richiede un ruolo.
+    Menu laterale. Le voci sono filtrate per ruolo con gli stessi criteri degli attributi delle pagine: chi non può
+    entrare in una pagina non ne vede nemmeno la voce.
+    - Il confronto sull'indirizzo è esatto, altrimenti la voce dei documenti risulterebbe attiva anche stando sulla
+      pagina di creazione.
+    - La segnalazione della navigazione serve al layout per richiudere il menu sugli schermi stretti.
+    - Le icone sono disegnate qui: non è inclusa nessuna libreria di icone.
+    Per aggiungere una voce servono il collegamento e, se la pagina richiede un ruolo, il filtro corrispondente.
 *@
 <nav class="app-nav" aria-label="@L["App_Name"]">
     <div class="app-nav-section">@L["Nav_Section_Documents"]</div>

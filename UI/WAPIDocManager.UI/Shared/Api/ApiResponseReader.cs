@@ -3,16 +3,12 @@ using System.Text.Json;
 
 namespace WAPIDocManager.UI.Shared.Api;
 
-/// <summary>
-/// Lettura delle risposte HTTP: deserializza i 2xx e converte gli errori in <see cref="ApiException"/>
-/// </summary>
-/// <remarks>
-/// Punto unico di gestione degli errori HTTP per tutti i servizi API: ogni nuovo metodo dei servizi deve passare da qui
-/// (<see cref="ReadAsync{T}"/> se la risposta ha un body, <see cref="EnsureSuccessAsync"/> altrimenti, es. DELETE 204).
-/// </remarks>
+/// Lettura delle risposte HTTP: deserializza quelle riuscite e trasforma gli errori in eccezione.
+/// È il punto unico di gestione degli errori HTTP: ogni nuovo metodo dei servizi deve passare da qui, con la lettura
+/// completa quando la risposta ha un body, o con la sola verifica dello status quando non ce l'ha.
 public static class ApiResponseReader
 {
-    /// <summary>Verifica lo status e deserializza il body; un body vuoto su 2xx è considerato errore.</summary>
+    /// Verifica lo status e deserializza il body. Su una risposta riuscita un body vuoto è considerato un errore.
     public static async Task<T> ReadAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         await EnsureSuccessAsync(response, cancellationToken);
@@ -22,7 +18,7 @@ public static class ApiResponseReader
         return result ?? throw new ApiException(response.StatusCode, "Empty response body.");
     }
 
-    /// <summary>Solleva <see cref="ApiException"/> (con il detail del ProblemDetails, se presente) per ogni status non 2xx.</summary>
+    /// Solleva l'eccezione, con il messaggio del server se presente, per ogni status non riuscito.
     public static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (response.IsSuccessStatusCode)
@@ -35,8 +31,8 @@ public static class ApiResponseReader
         throw new ApiException(response.StatusCode, detail);
     }
 
-    // Estrae il messaggio: Detail (GlobalExceptionHandler) oppure gli Errors concatenati (ValidationProblemDetails).
-    // Body non JSON o malformato → null: l'errore non deve mai mascherare lo status code originale.
+    // Estrae il messaggio: il dettaglio dell'errore, oppure gli errori di validazione concatenati.
+    // Body non JSON o malformato = nessun messaggio: un errore di lettura non deve mai mascherare lo status originale.
     private static async Task<string?> TryReadDetailAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         string? mediaType = response.Content.Headers.ContentType?.MediaType;

@@ -7,18 +7,12 @@ using WAPIDocManager.UI.Shared.Authentication;
 
 namespace WAPIDocManager.UI.Features.Documents.Views.Pages;
 
-/// <summary>
-/// Codice della pagina lista documenti.
-/// </summary>
-/// <remarks>
-/// Markup e descrizione dei flussi in <c>DocumentList.razor</c> (le due parti formano la stessa classe).
-/// La logica (ricerca, filtri, paginazione, eliminazione) è in <see cref="DocumentListViewModel"/>, testabile senza Blazor.
-/// Qui restano solo i ruoli dell'utente (dallo stato di autenticazione) e i testi localizzati dei tooltip.
-/// </remarks>
+/// Codice della pagina dell'elenco documenti: markup e descrizione dei flussi stanno nel file affiancato, e le due
+/// parti formano la stessa classe.
+/// Ricerca, filtri, paginazione ed eliminazione stanno nel ViewModel. Qui restano soltanto i ruoli dell'utente, che
+/// arrivano dallo stato di autenticazione, e i testi che spiegano perché un pulsante è disattivato.
 public partial class DocumentList
 {
-    // ViewModel arriva da Blazing.Mvvm.Components.MvvmComponentBase<DocumentListViewModel>,
-    // dichiarata con @inherits nel .razor
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     private IReadOnlyCollection<RoleType> _roles = Array.Empty<RoleType>();
@@ -28,12 +22,12 @@ public partial class DocumentList
         await base.OnInitializedAsync();
 
         _roles = (await AuthenticationStateTask).User.GetRoles();
-        // dal comando e non dal metodo: è l'esecuzione del comando a valorizzare IsRunning e quindi a
-        // disabilitare Cerca, Azzera e Pager durante il caricamento
+        // si passa dal comando e non dal metodo: è l'esecuzione del comando a disattivare ricerca, azzeramento e
+        // paginazione mentre il caricamento è in corso
         await ViewModel.LoadCommand.ExecuteAsync(null);
     }
 
-    // tooltip del pulsante Modifica disabilitato (il ruolo ha la precedenza sullo stato, vedi DocumentPermissions)
+    // spiegazione mostrata sul pulsante Modifica disattivato; il ruolo mancante ha la precedenza sullo stato
     private string EditDenialMessage(PermissionDenialReason reason, DocumentStatus status)
     {
         return reason == PermissionDenialReason.MissingRole
@@ -41,7 +35,7 @@ public partial class DocumentList
             : L["Permission_EditInvalidStatus", L.Label(status)];
     }
 
-    // tooltip del pulsante Elimina disabilitato
+    // spiegazione mostrata sul pulsante Elimina disattivato
     private string DeleteDenialMessage(PermissionDenialReason reason, DocumentStatus status)
     {
         return reason == PermissionDenialReason.MissingRole

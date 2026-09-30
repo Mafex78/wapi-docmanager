@@ -6,17 +6,11 @@ using WAPIDocManager.UI.Shared.Authentication;
 
 namespace WAPIDocManager.UI.Features.Auth.Services;
 
-/// <summary>
-/// Autenticazione su WAPIIdentity (POST api/v1/auth/login)
-/// </summary>
-/// <remarks>
-/// Typed HttpClient con BaseAddress = <c>Api:IdentityBaseUrl</c> e SENZA BearerTokenHandler (endpoint anonimo).
-/// Controller di riferimento: <c>WAPIIdentity/Controllers/AuthController.cs</c>.
-/// Conversioni negli operatori espliciti di <c>Contracts/Identity/LoginRequest</c> e <c>LoginResponse</c>.
-/// </remarks>
+/// L'endpoint di accesso è anonimo: a differenza di tutti gli altri, questo client HTTP non monta il gestore che
+/// allega il token alle richieste.
 public class AuthApiService : IAuthService
 {
-    /// <summary>Percorso relativo (senza slash iniziale, così si combina con la BaseAddress).</summary>
+    /// Percorso relativo, senza slash iniziale, così da combinarsi con l'indirizzo base del client HTTP.
     public const string LoginPath = "api/v1/auth/login";
 
     private readonly HttpClient _httpClient;
@@ -39,12 +33,12 @@ public class AuthApiService : IAuthService
             JsonDefaults.Options,
             cancellationToken);
 
-        // credenziali errate: il server risponde 401 → ApiException
+        // credenziali errate: il server risponde 401, che la lettura della risposta trasforma in eccezione
         LoginResponse login = await ApiResponseReader.ReadAsync<LoginResponse>(response, cancellationToken);
 
         UserSession session = (UserSession)login;
 
-        // solleva SessionChanged → JwtAuthenticationStateProvider notifica la UI
+        // il salvataggio solleva il cambio di sessione, che aggiorna lo stato di autenticazione dell'interfaccia
         await _sessionStore.SetAsync(session);
 
         return session;

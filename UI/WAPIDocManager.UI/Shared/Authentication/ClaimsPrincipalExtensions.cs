@@ -1,20 +1,15 @@
 using System.Security.Claims;
-using WAPIDocManager.UI.Features.Documents;
 
 namespace WAPIDocManager.UI.Shared.Authentication;
 
-/// <summary>
-/// Utility sul ClaimsPrincipal costruito da <see cref="JwtAuthenticationStateProvider"/>.
-/// </summary>
+/// Utility sull'identità dell'utente autenticato.
 public static class ClaimsPrincipalExtensions
 {
-    /// <summary>
-    /// Ruoli dell'utente come enum, da passare a <c>Features/Documents/DocumentPermissions</c>.
-    /// </summary>
-    /// <remarks>
-    /// Uso tipico nelle pagine: <c>_roles = (await AuthenticationStateTask).User.GetRoles();</c> in OnInitializedAsync,
-    /// con <c>[CascadingParameter] Task&lt;AuthenticationState&gt; AuthenticationStateTask</c>. Claim non riconosciuti vengono ignorati.
-    /// </remarks>
+    /// Ruoli dell'utente come enum, nella forma attesa dai controlli di permesso delle pagine.
+    /// I claim che non corrispondono a un ruolo noto vengono ignorati.
+    /// Uso tipico in una pagina, dentro OnInitializedAsync:
+    ///     _roles = (await AuthenticationStateTask).User.GetRoles();
+    /// dove AuthenticationStateTask è lo stato di autenticazione ricevuto come parametro a cascata.
     public static IReadOnlyCollection<RoleType> GetRoles(this ClaimsPrincipal user)
     {
         var roles = new List<RoleType>();

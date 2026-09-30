@@ -1,12 +1,13 @@
 @using System.Net
 
 @*
-    Messaggio di errore standard per le chiamate API.
-    - Error: il titolo localizzato dipende dal tipo di errore (ApiException per status code, HttpRequestException
-      = API spente o chiamata bloccata da CORS) e sotto viene mostrato il detail del server così com'è (in inglese).
-    - Message: testo personalizzato che sostituisce titolo e detail (es. credenziali errate nel login).
-    - OnDismiss: se valorizzato mostra il pulsante di chiusura (la pagina azzera il proprio errore).
-    Non renderizza nulla se Error e Message sono vuoti.
+    Messaggio di errore standard per le chiamate alle API. Non mostra nulla quando non c'è niente da segnalare.
+    Dall'errore si ricava un titolo tradotto, diverso a seconda dello status oppure dell'impossibilità di
+    raggiungere il servizio; sotto compare il messaggio del server così come arriva, quindi in inglese.
+    Un messaggio passato dall'esterno sostituisce entrambi, e serve quando la pagina sa spiegare meglio l'errore
+    all'utente — per esempio delle credenziali sbagliate.
+    Il pulsante di chiusura appare solo se il chiamante gestisce la chiusura, perché è la pagina a dover azzerare
+    il proprio errore.
 *@
 
 @if (Error is not null || !string.IsNullOrWhiteSpace(Message))
@@ -25,14 +26,10 @@
 }
 
 @code {
-    /// <summary>
-    /// Errore da mostrare (ApiException, HttpRequestException, ...)
-    /// </summary>
+    /// Errore da mostrare, qualunque sia la sua natura.
     [Parameter] public Exception? Error { get; set; }
 
-    /// <summary>
-    /// Messaggio che sostituisce il titolo ricavato dall'errore
-    /// </summary>
+    /// Testo che sostituisce il titolo ricavato dall'errore.
     [Parameter] public string? Message { get; set; }
 
     [Parameter] public EventCallback OnDismiss { get; set; }
@@ -58,6 +55,6 @@
         }
     }
 
-    // il detail restituito dalle API (in inglese) viene mostrato così come arriva
+    // il messaggio restituito dalle API è in inglese e viene mostrato così come arriva
     private string? Detail => string.IsNullOrWhiteSpace(Message) ? (Error as ApiException)?.Detail : null;
 }

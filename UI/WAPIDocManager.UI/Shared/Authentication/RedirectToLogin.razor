@@ -1,9 +1,10 @@
 @inject NavigationManager Navigation
 
 @*
-    Reindirizza l'utente anonimo alla pagina di login (usato in App.razor, NotAuthorized).
-    Passa l'URL corrente come returnUrl, che Login.razor valida prima di usarlo.
-    replace: true evita che il tasto Indietro riporti alla pagina protetta e quindi di nuovo al login.
+    Manda l'utente anonimo alla pagina di accesso conservando l'indirizzo che stava chiedendo, così da potervelo
+    riportare una volta entrato.
+    La navigazione sostituisce la voce nella cronologia: altrimenti il tasto Indietro riporterebbe alla pagina
+    protetta, e da lì di nuovo qui.
 *@
 
 @code {

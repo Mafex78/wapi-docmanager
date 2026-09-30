@@ -1,13 +1,8 @@
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Pagina di risultati (<c>Shared.Application/Dto/PageDto.cs</c>).
-/// </summary>
-/// <remarks>
-/// Nessun operatore di conversione: C# non permette a un tipo generico di dichiararne uno per una sua versione specifica
-/// (es. <c>PageDto&lt;DocumentResponse&gt;</c>). La conversione in <c>Features/Documents/Entities/PagedResult</c> è in
-/// <c>Services/DocumentApiService.FindPagedAsync</c>.
-/// </remarks>
+/// Pagina di risultati così come arriva dal server.
+/// È l'unica forma di trasporto senza operatore di conversione: il linguaggio non permette di dichiararne uno fra
+/// due tipi generici come questi, quindi la conversione è scritta a mano nel servizio che esegue la ricerca.
 public record PageDto<T>
 {
     public int PageSize { get; init; }

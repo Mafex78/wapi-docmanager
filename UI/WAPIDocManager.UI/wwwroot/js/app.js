@@ -1,14 +1,12 @@
-// Preferenze utente lato browser (tema e lingua) usate dai componenti Blazor via JS interop
-//
-// Chiamanti:
-// - Shared/Components/ThemeToggle.razor: getTheme / setTheme
-// - Shared/Components/CultureSelector.razor: setCulture (seguito dal reload della pagina)
-// - Shared/Localization/AppCultures.cs: getCulture / setDocumentLanguage, all'avvio in Program.cs (prima di RunAsync:
-//   per questo il file è caricato in index.html prima di blazor.webassembly.js)
-// Persistenza nel localStorage (preferenza del browser, non dell'utente): la sessione JWT sta invece nel
-// sessionStorage (Shared/Authentication/SessionStorageUserSessionStore). La chiave del tema deve coincidere con
-// quella dello script inline di index.html. Gli accessi allo storage sono protetti da try/catch perché il browser
-// può bloccarli (es. navigazione privata o cookie disabilitati).
+// Preferenze del browser — tema e lingua — lette e scritte dall'applicazione.
+// Sono salvate nell'archivio permanente perché appartengono al browser e non all'utente: cambiando utente sulla
+// stessa macchina restano, mentre la sessione di accesso, che appartiene all'utente, sta in un archivio che si
+// svuota chiudendo la scheda.
+// La chiave del tema deve coincidere con quella usata dallo script che applica il tema al caricamento della pagina,
+// prima che l'applicazione parta: è quello a evitare il lampeggio di tema chiaro su chi ha scelto lo scuro. Per la
+// stessa ragione questo file viene caricato prima dell'applicazione.
+// Ogni accesso all'archivio è protetto, perché il browser può negarlo: succede in navigazione privata o con i dati
+// dei siti disabilitati, e in quel caso l'applicazione deve funzionare comunque, con le impostazioni predefinite.
 window.wapiPreferences = (function () {
     var themeKey = 'wapidocmanager.theme';
     var cultureKey = 'wapidocmanager.culture';

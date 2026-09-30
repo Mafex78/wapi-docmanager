@@ -1,13 +1,11 @@
 namespace WAPIDocManager.UI.Features.Documents.Entities;
 
-/// <summary>
 /// Collegamento verso un altro documento.
-/// </summary>
-/// <remarks>
-/// <c>DocumentLinkDto</c> delle API espone solo l'Id del documento collegato (non il tipo di link System/User),
-/// quindi per mostrarne numero, tipo e stato la pagina di dettaglio esegue un GET per ogni link.
-/// I link User sono bidirezionali; i link System sono creati dalla generazione (sorgente → generato e viceversa).
-/// </remarks>
+/// Le API restituiscono soltanto l'identificativo del documento collegato, non il suo numero né il suo stato: è la
+/// ragione per cui la pagina di dettaglio esegue una lettura aggiuntiva per ciascun collegamento, per poterne
+/// mostrare qualcosa di leggibile.
+/// I collegamenti creati a mano sono bidirezionali; quelli creati dalla generazione legano il documento di partenza
+/// a quello generato, in entrambi i versi.
 public record DocumentLink
 {
     public string TargetDocumentId { get; init; } = string.Empty;

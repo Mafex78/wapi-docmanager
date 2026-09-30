@@ -1,19 +1,11 @@
 namespace WAPIDocManager.UI.Features.Documents.Entities;
 
-/// <summary>
 /// Stato del ciclo di vita del documento.
-/// </summary>
-/// <remarks>
-/// <para>
-/// I valori numerici DEVONO restare identici a <c>WAPIDocument.Domain/Entities/Documents/DocumentStatus.cs</c>:
-/// gli enum viaggiano come numeri e il body di <c>PUT api/v1/documents/{id}/status</c> è il solo valore numerico.
-/// </para>
-/// <para>
-/// Transizioni ammesse: <see cref="DocumentRules.GetNextStatuses"/>.
-/// Etichette localizzate: chiavi <c>DocumentStatus_{Valore}</c> (badge) e <c>StatusAction_{Valore}</c> (pulsanti di avanzamento).
-/// Colore del badge: classe CSS <c>app-badge-{valore in minuscolo}</c> in <c>wwwroot/css/app.css</c>.
-/// </para>
-/// </remarks>
+/// I valori numerici DEVONO restare identici a quelli del server: gli enum viaggiano come numeri, e il corpo della
+/// richiesta di cambio stato è il solo valore numerico.
+/// Le etichette tradotte si ricavano dal nome del valore, con due chiavi per ciascuno: una per il contrassegno e una
+/// per il pulsante che porta a quello stato. Il colore del contrassegno è a sua volta una classe CSS costruita dal
+/// nome in minuscolo.
 public enum DocumentStatus
 {
     Draft = 0,      // incompleto

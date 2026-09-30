@@ -13,8 +13,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <!--
-    Inglese: risorse satellite caricate quando la cultura dell'interfaccia è en-* (vedi Shared/Localization/AppCultures).
-    Deve contenere le stesse chiavi di SharedResource.resx (convenzioni documentate in quel file).
+    Inglese: risorse caricate quando la lingua dell'interfaccia è l'inglese.
+    Deve contenere le stesse chiavi del file italiano, dove sono documentate anche le convenzioni sui nomi.
   -->
   <data name="Action_Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="Error_UnexpectedHint" xml:space="preserve"><value>Something went wrong on this page: retry or open another section from the menu.</value></data>

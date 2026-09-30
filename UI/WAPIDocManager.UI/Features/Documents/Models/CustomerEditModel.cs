@@ -2,14 +2,10 @@ using WAPIDocManager.UI.Features.Documents.Entities;
 
 namespace WAPIDocManager.UI.Features.Documents.Models;
 
-/// <summary>
-/// Dati cliente nel form documento.
-/// </summary>
-/// <remarks>
-/// Nessuna validazione, come nel backend in creazione/modifica: Name e VatNumber sono richiesti solo per
-/// portare il documento in Ready (<c>DocumentRules.IsComplete</c>). I valori vuoti vengono inviati come null
-/// e quelli valorizzati con trim (operatore esplicito di <c>Features/Documents/Contracts/CustomerDto</c>).
-/// </remarks>
+/// Dati del cliente dentro il form del documento.
+/// Non hanno regole di validazione, come sul server: ragione sociale e partita IVA diventano obbligatorie solo per
+/// far avanzare il documento oltre la bozza, non per salvarlo. Inviando, i campi vuoti diventano null e quelli
+/// compilati vengono ripuliti dagli spazi.
 public class CustomerEditModel
 {
     public string? Name { get; set; }
@@ -17,9 +13,7 @@ public class CustomerEditModel
     public string? VatNumber { get; set; }
     public string? Address { get; set; }
 
-    /// <summary>
-    /// Cliente del documento letto dalle API → dati del form.
-    /// </summary>
+    /// Dal cliente letto dalle API ai dati del form.
     public static explicit operator CustomerEditModel(Customer customer)
     {
         return new CustomerEditModel

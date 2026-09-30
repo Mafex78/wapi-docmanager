@@ -1,27 +1,15 @@
 namespace WAPIDocManager.UI.Shared.Navigation;
 
-/// <summary>
-/// Route dell'applicazione: unica fonte per i template delle pagine e per i link.
-/// </summary>
-/// <remarks>
-/// <para>
-/// <see cref="RouteTemplates"/> si usa nelle pagine con <c>@attribute [Route(AppRoutes.RouteTemplates.X)]</c> al posto di <c>@page</c>,
-/// che accetta solo stringhe letterali: <c>@page</c> genera proprio un <c>RouteAttribute</c> e il router lo legge allo stesso modo.
-/// </para>
-/// <para>
-/// Le altre costanti e i metodi producono link RELATIVI a <c>&lt;base href&gt;</c> (senza slash iniziale), da usare in
-/// <c>href</c>, <c>NavLink</c> e <c>NavigationManager.NavigateTo</c>: così l'app funziona anche se pubblicata sotto un sotto-percorso.
-/// </para>
-/// <para>
-/// Per aggiungere una pagina: template in <see cref="RouteTemplates"/>, costante o metodo per il link qui sotto
-/// ed eventuale voce in <c>Layout/NavMenu.razor</c>.
-/// </para>
-/// </remarks>
+/// Indirizzi dell'applicazione: unica fonte sia per le rotte delle pagine sia per i collegamenti che le raggiungono.
+/// Le rotte si dichiarano nelle pagine con l'attributo, e non con la direttiva, perché quella accetta soltanto
+/// stringhe letterali: per il router il risultato è identico.
+/// Le altre costanti e i metodi producono collegamenti RELATIVI all'indirizzo base, senza slash iniziale: così
+/// l'applicazione continua a funzionare anche se pubblicata sotto un sotto-percorso.
+/// Per aggiungere una pagina servono la rotta qui sotto, la costante o il metodo che costruisce il collegamento, ed
+/// eventualmente una voce nel menu laterale.
 public static class AppRoutes
 {
-    /// <summary>
-    /// Template delle pagine: slash iniziale, parametri tra graffe con lo stesso nome della proprietà [Parameter] della pagina.
-    /// </summary>
+    /// Rotte delle pagine: slash iniziale, e parametri fra graffe con lo stesso nome della proprietà che li riceve.
     public static class RouteTemplates
     {
         public const string Home = "/";
@@ -32,7 +20,7 @@ public static class AppRoutes
         public const string DocumentEdit = $"/{PageRelativeUrls.Documents}/{{Id}}/edit";
         public const string UserRegister = $"/{PageRelativeUrls.UserRegister}";
     }
-    
+
     // Definisce le stringhe "pulite" (senza slash) come costanti di base
     public static class PageRelativeUrls
     {
@@ -42,18 +30,13 @@ public static class AppRoutes
         public const string UserRegister = "users/register";
     }
 
-    /// <summary>Dettaglio documento (Id codificato per l'URL).</summary>
+    /// Dettaglio di un documento, con l'identificativo codificato per l'indirizzo.
     public static string GetDocumentDetail(string id) => $"{PageRelativeUrls.Documents}/{Uri.EscapeDataString(id)}";
 
-    /// <summary>
-    /// Modifica documento (Id codificato per l'URL)
-    /// </summary>
-    /// <param name="id">ID del documento</param>
-    /// <param name="returnUrl">
-    /// Pagina a cui tornare con Indietro/Annulla, quando la modifica è aperta da un punto diverso dal dettaglio
-    /// (es. dalla lista). Omesso: la modifica torna al dettaglio del documento.
-    /// Il valore è validato da <see cref="SafeReturnUrl"/> prima dell'uso, come il returnUrl del login.
-    /// </param>
+    /// Modifica di un documento.
+    /// L'indirizzo di ritorno serve quando la modifica viene aperta da un punto diverso dal dettaglio, per esempio
+    /// dall'elenco; omesso, Indietro riporta al dettaglio del documento. Viene validato prima dell'uso, perché
+    /// arriva dalla query string.
     public static string GetDocumentEdit(string id, string? returnUrl = null)
     {
         string url = $"{GetDocumentDetail(id)}/edit";
@@ -63,10 +46,8 @@ public static class AppRoutes
             : $"{url}?returnUrl={Uri.EscapeDataString(returnUrl)}";
     }
 
-    /// <summary>
-    /// Login con l'indirizzo a cui tornare dopo l'accesso (senza parametro se vuoto).
-    /// </summary>
-    /// <remarks>Il valore viene validato da <c>Features/Auth/Views/Pages/Login.razor</c> prima di essere usato (protezione open redirect).</remarks>
+    /// Pagina di accesso con l'indirizzo a cui tornare una volta entrati, omesso se l'indirizzo è vuoto.
+    /// Anche questo valore viene validato prima dell'uso, per non rimbalzare l'utente fuori dall'applicazione.
     public static string LoginWithReturnUrl(string? returnUrl)
     {
         return string.IsNullOrEmpty(returnUrl)

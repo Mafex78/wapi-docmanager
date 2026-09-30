@@ -4,10 +4,12 @@
 @inject IUserService UserService
 
 @*
-    Registrazione utente: POST api/v1/users/register su WAPIIdentity (solo ruolo Admin).
-    - Ruoli come checkbox legate manualmente a RegisterUserModel.Roles (Blazor non ha un InputCheckbox per le liste).
-    - @key="_model" sull'EditForm: dopo la registrazione si crea un nuovo modello e il form riparte pulito (anche la validazione).
-    - Email già esistente: 400 dal server, messaggio mostrato in ApiErrorAlert.
+    Registrazione di un utente, riservata agli amministratori.
+    - I ruoli sono caselle di spunta legate a mano all'elenco del modello, perché non esiste un campo pronto per
+      legare più valori a una lista.
+    - Il form è identificato dal modello: dopo una registrazione riuscita se ne crea uno nuovo e il form riparte
+      pulito, messaggi di validazione compresi.
+    - Un'email già registrata viene rifiutata dal server, e il suo messaggio compare nell'avviso di errore.
 *@
 
 <PageTitle>@L["UserRegister_Title"] · @L["App_Name"]</PageTitle>

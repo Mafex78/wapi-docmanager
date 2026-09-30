@@ -1,24 +1,23 @@
 @attribute [Route(AppRoutes.RouteTemplates.Documents)]
 @attribute [Authorize(Roles = AppRoles.Readers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
-@* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
+@* la classe base fornisce il ViewModel e ridisegna la pagina a ogni sua notifica *@
 @inherits Blazing.Mvvm.Components.MvvmComponentBase<DocumentListViewModel>
 
 @*
-    Lista documenti: GET api/v1/documents (ruoli Viewer, Editor, Admin).
-    - Logica in DocumentListViewModel (stessa cartella della view): ricerca, filtri, paginazione, eliminazione.
-      Qui restano markup, permessi e testi.
-    - Filtri: il form è legato a ViewModel.Filter, che è l'istanza condivisa di DocumentListState, quindi i filtri restano
-      tornando dal dettaglio. "Cerca" riparte da pagina 1, "Azzera filtri" sostituisce l'istanza.
-    - Tipologie e stati sono chip (pulsanti toggle) che aggiungono o rimuovono valori dalle liste del filtro.
-    - Azioni per riga secondo DocumentPermissions (ruoli dell'utente × stato del documento): Modifica ed Elimina sono
-      sempre presenti; se non consentite sono disabilitate e il motivo (ruolo di sola lettura o stato diverso da Bozza/Pronto)
-      compare nel tooltip. Il title sta sul wrapper .app-disabled-action perché i pulsanti disabilitati non ricevono
-      eventi del mouse; Modifica disabilitata è un <button> e non un link (un <a> non è disabilitabile).
-    - Eliminazione con modale di conferma; dopo l'eliminazione, se la pagina corrente resta vuota si torna all'ultima disponibile.
-    - Numero documento abbreviato (GUID): valore completo nel title del link.
-    - Route e link da AppRoutes (Shared/Navigation).
-    - Codice del componente (ruoli e tooltip) in DocumentList.razor.cs.
+    Elenco dei documenti. Ricerca, filtri, paginazione ed eliminazione stanno nel ViewModel; qui restano markup,
+    permessi e testi. Ruoli e spiegazioni dei pulsanti disattivati stanno nel file di codice affiancato.
+    - I filtri sono legati all'istanza condivisa che sopravvive alla navigazione, quindi tornando dal dettaglio si
+      ritrova la ricerca di prima. Cerca riparte dalla prima pagina, Azzera sostituisce l'istanza.
+    - Tipologie e stati sono pulsanti che accendono e spengono un valore del filtro, non elenchi a scelta singola.
+    - Le azioni di riga sono sempre visibili: quando non sono consentite restano disattivate e spiegano il perché,
+      invece di sparire. Un pulsante che compare e scompare è più disorientante di uno inerte che si giustifica.
+    - La spiegazione è appesa al contenitore e non al pulsante, perché un pulsante disattivato non riceve gli eventi
+      del mouse e il suggerimento non comparirebbe mai. Per la stessa ragione la modifica non consentita è un
+      pulsante e non un collegamento: un collegamento non si può disattivare.
+    - L'eliminazione chiede conferma; se dopo averla eseguita la pagina corrente resta vuota, si torna all'ultima
+      disponibile.
+    - Il numero del documento è mostrato abbreviato, con il valore completo come descrizione del collegamento.
 *@
 
 <PageTitle>@L["Documents_Title"] · @L["App_Name"]</PageTitle>
@@ -99,7 +98,7 @@
         </div>
 
         <div class="app-form-actions">
-            @* disabilitati mentre la ricerca è in corso: la condizione sta nel comando, non ripetuta qui *@
+            @* disattivati mentre la ricerca è in corso: la condizione la conosce il comando, non va ripetuta qui *@
             <button type="button" class="btn btn-outline-secondary" disabled="@(!ViewModel.LoadCommand.CanExecute(null))" @onclick="ViewModel.ResetAsync">@L["Action_Reset"]</button>
             <button type="submit" class="btn btn-primary" disabled="@(!ViewModel.LoadCommand.CanExecute(null))">@L["Action_Search"]</button>
         </div>

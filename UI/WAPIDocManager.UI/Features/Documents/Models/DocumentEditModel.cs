@@ -1,52 +1,28 @@
 using WAPIDocManager.UI.Features.Documents.Entities;
-using WAPIDocManager.UI.Shared.Validation;
 
 namespace WAPIDocManager.UI.Features.Documents.Models;
 
-/// <remarks>Forma di FORM: vedi le tre forme documentate in <c>Features/Documents/Contracts/DocumentResponse.cs</c>.</remarks>
-/// <summary>
-/// Modello del form di creazione/modifica documento
-/// </summary>
-/// <remarks>
-/// <para>
-/// Condiviso da <c>Features/Documents/Views/Pages/DocumentCreate.razor</c> e <c>DocumentEdit.razor</c> tramite il componente <c>DocumentForm</c>.
-/// Conversione verso le API: operatori espliciti di <c>Features/Documents/Contracts/DocumentCreateRequest</c> e
-/// <c>DocumentUpdateRequest</c>, che aggiungono la valuta EUR.
-/// </para>
-/// <para>
-/// Differenze tra i due casi: in creazione si usa <see cref="Type"/> (la data la imposta il server);
-/// in modifica si usa <see cref="Date"/> (il tipo non è modificabile).
-/// </para>
-/// </remarks>
+/// Modello del form di creazione e modifica del documento, condiviso dalle due pagine attraverso lo stesso
+/// componente di form.
+/// Un solo modello per due casi d'uso che differiscono in due punti: in creazione si sceglie la tipologia, e la data
+/// la decide il server; in modifica si cambia la data, e la tipologia non è più modificabile.
 public class DocumentEditModel
 {
-    /// <summary>
-    /// Tipologia (usata solo in creazione)
-    /// </summary>
+    /// Tipologia, usata solo in creazione.
     public DocumentType Type { get; set; } = DocumentType.Quote;
 
-    /// <summary>
-    /// Data documento (usata solo in modifica: in creazione la imposta il server)
-    /// </summary>
-    /// <remarks>Solo la parte data è significativa: viene inviata come mezzanotte UTC.</remarks>
+    /// Data del documento, usata solo in modifica. Conta solo la parte di data: viene inviata come mezzanotte UTC.
     public DateTime Date { get; set; } = DateTime.UtcNow.Date;
 
     public CustomerEditModel Customer { get; set; } = new();
 
-    /// <summary>
-    /// Righe del documento: ogni riga è validata da DocumentLineEditModelValidator, richiamato con RuleForEach
-    /// da <c>Validators/DocumentEditModelValidator</c>.
-    /// </summary>
+    /// Righe del documento, ciascuna validata singolarmente dalle regole del form.
     public List<DocumentLineEditModel> Lines { get; set; } = new();
 
-    /// <summary>
-    /// Anteprima del totale documento (il valore definitivo è calcolato dal server)
-    /// </summary>
+    /// Anteprima del totale mentre si compila: il valore definitivo lo calcola comunque il server.
     public decimal Total => Math.Round(Lines.Sum(line => line.Total), 2);
 
-    /// <summary>
-    /// Precompila il form di modifica a partire dal documento letto dalle API: <c>(DocumentEditModel)document</c>.
-    /// </summary>
+    /// Precompila il form a partire dal documento letto dalle API.
     public static explicit operator DocumentEditModel(Document document)
     {
         return new DocumentEditModel

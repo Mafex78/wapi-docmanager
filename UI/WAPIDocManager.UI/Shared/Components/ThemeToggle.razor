@@ -1,10 +1,12 @@
 @inject IJSRuntime JS
 
 @*
-    Pulsante di cambio tema chiaro/scuro.
-    Il tema è l'attributo data-bs-theme su <html>: il valore iniziale lo imposta lo script inline di index.html
-    (preferenza salvata o tema di sistema), qui lo si legge e lo si cambia tramite window.wapiPreferences (wwwroot/js/app.js),
-    che lo salva nel localStorage. Tutti i colori reagiscono via CSS (token in app.css), senza rerender dei componenti.
+    Pulsante di passaggio fra tema chiaro e scuro.
+    Il tema è un attributo sul documento, impostato già al caricamento della pagina dalla preferenza salvata, o in
+    sua assenza dal tema di sistema. Qui lo si legge e lo si cambia, e il nuovo valore viene salvato fra le
+    preferenze del browser.
+    Il cambio non ridisegna nessun componente: tutti i colori sono definiti in CSS e reagiscono da soli
+    all'attributo.
 *@
 
 <button type="button" class="app-icon-btn" title="@Label" aria-label="@Label" @onclick="ToggleAsync">

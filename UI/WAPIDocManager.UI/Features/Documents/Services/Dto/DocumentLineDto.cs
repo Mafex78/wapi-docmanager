@@ -2,22 +2,17 @@ using WAPIDocManager.UI.Features.Documents.Entities;
 
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Riga nelle risposte (<c>WAPIDocument.Application/Dto/Document/DocumentLineDto.cs</c>).
-/// </summary>
-/// <remarks>Se il DTO cambia sul server va aggiornato qui.</remarks>
+/// Riga di documento come arriva nelle risposte.
 public record DocumentLineDto
 {
     public string? Description { get; init; }
     public decimal Quantity { get; init; }
     public decimal UnitPrice { get; init; }
 
-    /// <summary>Totale riga calcolato dal server.</summary>
+    /// Totale di riga calcolato dal server.
     public decimal Total { get; init; }
 
-    /// <summary>
-    /// DTO → riga del documento del client (totale compreso).
-    /// </summary>
+    /// Dalla risposta alla riga dell'applicazione, totale compreso.
     public static explicit operator DocumentLine(DocumentLineDto line)
     {
         return new DocumentLine

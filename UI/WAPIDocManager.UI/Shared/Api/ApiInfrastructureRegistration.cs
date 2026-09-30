@@ -1,78 +1,57 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Shared.Authentication;
 
 namespace WAPIDocManager.UI.Shared.Api;
 
-/// <summary>
-/// Registrazione DI dell'infrastruttura HTTP condivisa da tutte le funzionalità
-/// </summary>
-/// <remarks>
-/// <para>
-/// Contenuto di <c>Shared/Api</c>: <see cref="ApiOptions"/> (URL base delle due API, sezione "Api" di
-/// wwwroot/appsettings.json), <see cref="BearerTokenHandler"/> (header Authorization e logout su token scaduto/401),
-/// <see cref="ApiResponseReader"/> (risposte non 2xx → <see cref="ApiException"/>), <see cref="JsonDefaults"/> e
-/// <see cref="ProblemDetailsDto"/>.
-/// </para>
-/// <para>
-/// REGOLA DI Shared/: qui entra solo ciò che DUE O PIÙ slice usano davvero. Finché un tipo serve a una sola
-/// funzionalità resta dentro il suo slice; si promuove qui quando compare il secondo utilizzatore (ed è la norma,
-/// non un'eccezione). Il percorso inverso — riportare in uno slice ciò che è rimasto usato da uno solo — vale uguale.
-/// </para>
-/// <para>
-/// Chiamata da <c>Program.cs</c> PRIMA delle registrazioni degli slice, che dipendono da
-/// <see cref="BearerTokenHandler"/> e dagli URL base.
-/// </para>
-/// </remarks>
+/// Registrazione dell'infrastruttura HTTP condivisa da tutte le funzionalità: indirizzi dei servizi, sessione
+/// utente, sorgente del tempo e gestore del token.
+/// Va chiamata PRIMA delle registrazioni degli slice, che dipendono dal gestore del token e dagli indirizzi base.
+/// REGOLA DEI COMPONENTI CONDIVISI: qui entra solo ciò che DUE O PIÙ funzionalità usano davvero. Finché un tipo
+/// serve a una sola funzionalità resta dentro la sua, e si promuove qui quando compare il secondo utilizzatore —
+/// che è la norma, non un'eccezione. Il percorso inverso vale uguale: ciò che è rimasto usato da una sola
+/// funzionalità torna dentro quella.
 public static class ApiInfrastructureRegistration
 {
-    /// <summary>Registra opzioni delle API, sessione utente, TimeProvider e handler del token.</summary>
     public static IServiceCollection AddApiInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)
     {
         services.AddSingleton(configuration.ReadApiOptions());
 
-        // TimeProvider iniettato per rendere testabile il controllo di scadenza del token
+        // la sorgente del tempo è iniettata per rendere testabile il controllo di scadenza del token
         services.TryAddSingleton(TimeProvider.System);
 
-        // Singleton: stessa istanza per componenti e DelegatingHandler (risolti da IHttpClientFactory in uno scope separato)
+        // Singleton: la stessa istanza deve servire i componenti e i gestori delle richieste HTTP, che vengono
+        // risolti in uno scope di dipendenze separato
         services.AddSingleton<IUserSessionStore, SessionStorageUserSessionStore>();
         services.AddTransient<BearerTokenHandler>();
 
         return services;
     }
 
-    /// <summary>
-    /// URL base dell'API Identity, con lo slash finale.
-    /// </summary>
-    /// <remarks>Usato dalle registrazioni degli slice Auth e Users.</remarks>
+    /// Indirizzo base del servizio di autenticazione, con lo slash finale.
     public static Uri IdentityBaseAddress(this ApiOptions options)
     {
         return ToBaseAddress(options.IdentityBaseUrl);
     }
 
-    /// <summary>URL base dell'API Document, con lo slash finale.</summary>
+    /// Indirizzo base del servizio documenti, con lo slash finale.
     public static Uri DocumentBaseAddress(this ApiOptions options)
     {
         return ToBaseAddress(options.DocumentBaseUrl);
     }
 
-    /// <summary>
-    /// Legge la sezione "Api" della configurazione.
-    /// </summary>
-    /// <remarks>
-    /// Usata anche dalle registrazioni degli slice, che devono impostare il BaseAddress del proprio typed HttpClient
-    /// al momento della registrazione (prima che il container sia costruito).
-    /// </remarks>
+    /// Legge la sezione di configurazione degli indirizzi.
+    /// Serve anche alle registrazioni delle singole funzionalità, che devono fissare l'indirizzo base del proprio
+    /// client HTTP al momento della registrazione, quando il contenitore delle dipendenze non è ancora costruito.
     public static ApiOptions ReadApiOptions(this IConfiguration configuration)
     {
         return configuration.GetSection(ApiOptions.SectionName).Get<ApiOptions>() ?? new ApiOptions();
     }
 
-    // Lo slash finale è indispensabile: senza, i percorsi relativi ("api/v1/...") sostituirebbero l'ultimo segmento dell'URL base.
+    // Lo slash finale è indispensabile: senza, un percorso relativo sostituirebbe l'ultimo segmento dell'indirizzo base.
     private static Uri ToBaseAddress(string url)
     {
         if (string.IsNullOrWhiteSpace(url))

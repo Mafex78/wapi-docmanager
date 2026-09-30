@@ -4,15 +4,10 @@ using WAPIDocManager.UI.Shared.Validation;
 
 namespace WAPIDocManager.UI.Features.Documents.Validators;
 
-/// <summary>
-/// Regole del form dei filtri della lista documenti
-/// </summary>
-/// <remarks>
-/// L'unico vincolo è la dimensione pagina, che il server rifiuta oltre <see cref="DocumentFilter.MaxPageSize"/>.
-/// Nella UI il valore arriva da una select con opzioni fisse, quindi la regola è una rete di sicurezza:
-/// prima della migrazione a FluentValidation l'attributo [Range] era presente ma inerte, perché quel form
-/// non montava alcun componente di validazione.
-/// </remarks>
+/// Regole del form dei filtri dell'elenco documenti.
+/// L'unico vincolo è la dimensione della pagina, che il server rifiuta oltre il massimo consentito. Nell'interfaccia
+/// il valore arriva da un elenco a scelta fissa, quindi questa regola è una rete di sicurezza per il giorno in cui
+/// quel campo diventasse libero.
 public sealed class DocumentFilterValidator : AbstractValidator<DocumentFilter>
 {
     public DocumentFilterValidator()

@@ -2,26 +2,13 @@ using System.Net;
 
 namespace WAPIDocManager.UI.Shared.Api;
 
-/// <summary>
-/// Errore restituito da una chiamata alle API (status code + detail del ProblemDetails)
-/// </summary>
-/// <remarks>
-/// <para>
-/// Sollevata da <c>Shared/Api/ApiResponseReader</c> per ogni risposta non 2xx e da
-/// <c>Shared/Api/BearerTokenHandler</c> (401) quando il token è già scaduto.
-/// </para>
-/// <para>
-/// Mappatura degli status code lato server (<c>Shared.Application/GlobalExceptionHandler.cs</c>):
-/// 400 = ArgumentException / ValidationException / InvalidOperationException (detail = messaggio, in inglese);
-/// 401 = UnauthorizedAccessException (es. credenziali errate) o JWT non valido;
-/// 403 = ruolo non autorizzato; 404 = KeyNotFoundException; 500 = altro (detail vuoto).
-/// </para>
-/// <para>
-/// Nella UI il componente <c>Shared/Components/ApiErrorAlert</c> sceglie il titolo localizzato in base a <see cref="StatusCode"/>
-/// e mostra <see cref="Detail"/> così com'è. Le pagine intercettano sempre <c>ApiException</c> e <c>HttpRequestException</c>
-/// (quest'ultima = API non raggiungibili o bloccate da CORS).
-/// </para>
-/// </remarks>
+/// Errore restituito da una chiamata alle API: lo status e il messaggio del server.
+/// Viene sollevata per ogni risposta non riuscita, e anche prima di partire quando il token è già scaduto.
+/// Significato degli status, come li produce il server: 400 argomento non valido, validazione fallita oppure
+/// operazione non ammessa nello stato corrente, con il messaggio in chiaro (in inglese); 401 credenziali errate o
+/// token non valido; 403 ruolo non autorizzato; 404 risorsa inesistente; 500 tutto il resto, senza messaggio.
+/// Le pagine intercettano sempre questa eccezione insieme a quella di rete: la seconda significa API non
+/// raggiungibili, oppure richiesta bloccata dal controllo di origine del browser.
 public class ApiException : Exception
 {
     public ApiException(HttpStatusCode statusCode, string? detail)
@@ -35,6 +22,6 @@ public class ApiException : Exception
 
     public HttpStatusCode StatusCode { get; }
 
-    /// <summary>Messaggio restituito dal server (null se assente o vuoto).</summary>
+    /// Messaggio restituito dal server, null se assente o vuoto.
     public string? Detail { get; }
 }

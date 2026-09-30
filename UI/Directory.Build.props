@@ -8,8 +8,8 @@
         I .csproj mantengono solo ciò che è specifico del progetto (SDK Blazor, proprietà WebAssembly,
         ProjectReference, pacchetti non comuni).
 
-        Il progetto di test è uno solo (Tests/WAPIDocManager.UI.Tests): le sue proprietà specifiche stanno nel suo
-        .csproj. Se un giorno ne comparisse un secondo, un Tests/Directory.Build.props dovrebbe importare ESPLICITAMENTE
+        Il progetto di test è uno solo (UI.Tests/WAPIDocManager.UI.Tests): le sue proprietà specifiche stanno nel suo
+        .csproj. Se un giorno ne comparisse un secondo, un UI.Tests/Directory.Build.props dovrebbe importare ESPLICITAMENTE
         questo file con $([MSBuild]::GetPathOfFileAbove(...)), altrimenti MSBuild si ferma al primo file trovato.
         Le versioni dei pacchetti stanno in Directory.Packages.props (gestione centralizzata NuGet).
     -->

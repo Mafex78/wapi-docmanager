@@ -6,24 +6,14 @@ using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Documents.Services;
 
-/// <summary>
-/// Integrazione con gli endpoint di WAPIDocument (api/v1/documents)
-/// </summary>
-/// <remarks>
-/// <para>
-/// Typed HttpClient con BaseAddress = <c>Api:DocumentBaseUrl</c> e BearerTokenHandler.
-/// Controller di riferimento: <c>WAPIDocument/Controllers/DocumentsController.cs</c> (route <c>api/v{version}/documents</c>, versione 1.0).
-/// </para>
-/// <para>
-/// Schema di ogni metodo: body costruito con l'operatore esplicito del contratto (es. <c>(DocumentCreateRequest)model</c>) →
-/// chiamata HTTP → <see cref="ApiResponseReader"/> (errori in ApiException) → conversione nel modello del client
-/// con l'operatore del contratto di risposta (es. <c>(Document)result</c>).
-/// Documentazione dei singoli endpoint su <see cref="IDocumentService"/>.
-/// </para>
-/// </remarks>
+/// Chiamate agli endpoint dei documenti.
+/// Ogni metodo segue lo stesso schema: il corpo della richiesta si ottiene con un cast dal modello alla forma di
+/// trasporto, si chiama il servizio, la lettura della risposta trasforma gli errori in eccezione, e infine un altro
+/// cast riporta il risultato nella forma usata dall'applicazione.
+/// Cosa fa ciascuna operazione è documentato sull'interfaccia, non qui.
 public class DocumentApiService : IDocumentService
 {
-    /// <summary>Percorso relativo (senza slash iniziale, così si combina con la BaseAddress).</summary>
+    /// Percorso relativo, senza slash iniziale, così da combinarsi con l'indirizzo base del client HTTP.
     public const string BasePath = "api/v1/documents";
 
     private readonly HttpClient _httpClient;
@@ -62,7 +52,8 @@ public class DocumentApiService : IDocumentService
 
         PageDto<DocumentResponse> page = await ApiResponseReader.ReadAsync<PageDto<DocumentResponse>>(response, cancellationToken);
 
-        // conversione qui e non in un operatore: PageDto<T> è generico (vedi Contracts/Common/PageDto)
+        // conversione scritta qui e non come operatore: la pagina è un tipo generico, e un operatore di conversione
+        // non può essere dichiarato fra due tipi generici come questi
         return new PagedResult<Document>
         {
             Items = page.Items?.Select(item => (Document)item).ToList() ?? new List<Document>(),
@@ -88,7 +79,7 @@ public class DocumentApiService : IDocumentService
     /// <inheritdoc />
     public async Task<Document> UpdateStatusAsync(string id, DocumentStatus newStatus, CancellationToken cancellationToken = default)
     {
-        // il body è il valore numerico dell'enum ([FromBody] DocumentStatus)
+        // il corpo della richiesta è il solo valore numerico dello stato
         using HttpResponseMessage response = await _httpClient.PutAsJsonAsync(
             $"{DocumentPath(id)}/status",
             newStatus,

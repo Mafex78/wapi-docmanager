@@ -4,30 +4,17 @@ using CommunityToolkit.Mvvm.Input;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Services;
-using WAPIDocManager.UI.Features.Documents.Views.Pages;
-using WAPIDocManager.UI.Features.Documents;
 using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 
-/// <summary>
-/// Logica della pagina lista documenti (MVVM): ricerca, filtri, paginazione ed eliminazione.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Usato da <c>WAPIDocManager.UI/Features/Documents/Views/Pages/DocumentList.razor</c>, che si limita a mostrare lo stato
-/// e a inoltrare i comandi. Nel componente restano ruoli utente, permessi (<c>DocumentPermissions</c>) e testi localizzati.
-/// </para>
-/// <para>
-/// Registrato Transient: ogni visita alla pagina parte da uno stato pulito; i filtri vivono invece in
-/// <see cref="DocumentListState"/> (Scoped), così sopravvivono alla navigazione verso il dettaglio e ritorno.
-/// </para>
-/// <para>
-/// Nessuna dipendenza da Blazor: deriva da ViewModelBase (Blazing.Mvvm, che a sua volta è un ObservableObject di
-/// CommunityToolkit) e notifica i cambiamenti di proprietà; è MvvmComponentBase della libreria a tradurli in un
-/// ridisegno del componente. ViewModelBase rilancia anche le notifiche dei comandi [RelayCommand].
-/// </para>
-/// </remarks>
+/// Logica dell'elenco documenti: ricerca, filtri, paginazione ed eliminazione.
+/// La pagina si limita a mostrare questo stato e a inoltrare i comandi. Nel componente restano i ruoli dell'utente,
+/// i permessi e i testi tradotti, che sono materia di presentazione.
+/// Nasce a ogni visita, così l'elenco riparte pulito; i filtri invece vivono altrove e più a lungo, per sopravvivere
+/// all'andata e ritorno verso il dettaglio.
+/// Non dipende da Blazor: si limita a notificare i cambiamenti di stato, ed è la classe base del componente a
+/// tradurli in un ridisegno. Per questo è verificabile senza renderizzare nulla.
 public sealed partial class DocumentListViewModel : ViewModelBase
 {
     private readonly IDocumentService _documentService;
@@ -41,10 +28,10 @@ public sealed partial class DocumentListViewModel : ViewModelBase
         _listState = listState;
     }
 
-    /// <summary>Filtro condiviso con <see cref="DocumentListState"/>: il form della pagina lo modifica direttamente.</summary>
+    /// Filtro condiviso con lo stato che sopravvive alla navigazione: il form della pagina lo modifica direttamente.
     public DocumentFilter Filter => _listState.Filter;
 
-    // Stato di proprietà del ViewModel: setter privato + SetProperty (la pagina lo legge e basta)
+    // stato di cui il ViewModel è proprietario: la pagina lo legge e basta
     private PagedResult<Document> _result = new();
     private bool _isLoading = true;
     private bool _isDeleting;
@@ -55,32 +42,24 @@ public sealed partial class DocumentListViewModel : ViewModelBase
 
     public bool IsDeleting { get => _isDeleting; private set => SetProperty(ref _isDeleting, value); }
 
-    // Stato scritto dalla pagina: setter pubblico generato da [ObservableProperty]
+    // stato che anche la pagina scrive: il setter pubblico è generato dall'attributo
 
-    /// <summary>Errore dell'ultima chiamata; la pagina lo azzera quando l'utente chiude l'avviso.</summary>
+    /// Errore dell'ultima chiamata; la pagina lo azzera quando l'utente chiude l'avviso.
     [ObservableProperty]
     private Exception? _error;
 
-    /// <summary>Documento per cui è aperta la modale di conferma eliminazione (null = modale chiusa).</summary>
+    /// Documento per cui è aperta la richiesta di conferma dell'eliminazione; null significa nessuna richiesta aperta.
     [ObservableProperty]
     private Document? _documentToDelete;
 
-    /// <summary>
-    /// Esegue la ricerca con i filtri correnti (comando: <c>LoadCommand</c>)
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// È un comando e non un metodo pubblico perché <c>CanExecute</c> diventa false mentre è in esecuzione: è così
-    /// che il markup disabilita Cerca, Azzera e il Pager, che prima restavano cliccabili e potevano sovrapporre
-    /// più ricerche (vinceva l'ultima risposta arrivata, non l'ultima richiesta fatta).
-    /// </para>
-    /// <para>
-    /// <see cref="IsLoading"/> RESTA: nasce true e mostra lo spinner al primo render, mentre <c>IsRunning</c> del
-    /// comando parte false e si attiva solo quando la pagina esegue il comando in OnInitializedAsync.
-    /// Ogni chiamata interna deve passare da <c>LoadCommand.ExecuteAsync</c>: invocare il metodo direttamente
-    /// salterebbe IsRunning e quindi la guardia.
-    /// </para>
-    /// </remarks>
+    /// Esegue la ricerca con i filtri correnti.
+    /// È un comando e non un semplice metodo perché mentre è in esecuzione si dichiara non eseguibile: è così che i
+    /// pulsanti di ricerca, azzeramento e paginazione si disattivano da soli. Prima restavano cliccabili e si
+    /// potevano accavallare più ricerche, con il risultato che vinceva l'ultima risposta arrivata e non l'ultima
+    /// richiesta fatta.
+    /// L'indicatore di caricamento resta comunque necessario: nasce già acceso e copre il primissimo disegno della
+    /// pagina, mentre lo stato del comando si attiva solo quando la pagina lo esegue.
+    /// Ogni chiamata interna deve passare dal comando: invocare il metodo direttamente salterebbe la guardia.
     [RelayCommand]
     private async Task LoadAsync(CancellationToken cancellationToken)
     {
@@ -91,7 +70,7 @@ public sealed partial class DocumentListViewModel : ViewModelBase
         {
             Result = await _documentService.FindPagedAsync(Filter, cancellationToken);
 
-            // pagina oltre l'ultima (es. dopo un'eliminazione): torna all'ultima disponibile
+            // pagina oltre l'ultima, tipicamente dopo un'eliminazione: si torna all'ultima disponibile
             if (Result.Items.Count == 0 && Filter.Page > 1 && Result.TotalPages > 0)
             {
                 Filter.Page = Result.TotalPages;
@@ -109,14 +88,14 @@ public sealed partial class DocumentListViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Nuova ricerca dalla prima pagina.</summary>
+    /// Nuova ricerca, ripartendo dalla prima pagina.
     public Task SearchAsync()
     {
         Filter.Page = 1;
         return LoadCommand.ExecuteAsync(null);
     }
 
-    /// <summary>Azzera i filtri sostituendo l'istanza condivisa e ricarica.</summary>
+    /// Azzera i filtri sostituendo l'istanza condivisa, e ricarica.
     public Task ResetAsync()
     {
         _listState.Filter = new DocumentFilter();
@@ -129,7 +108,7 @@ public sealed partial class DocumentListViewModel : ViewModelBase
         return LoadCommand.ExecuteAsync(null);
     }
 
-    /// <summary>Elimina il documento in <see cref="DocumentToDelete"/> e ricarica la pagina corrente.</summary>
+    /// Elimina il documento per cui è stata chiesta conferma, e ricarica la pagina corrente.
     public async Task DeleteAsync()
     {
         if (DocumentToDelete is null)
@@ -156,13 +135,14 @@ public sealed partial class DocumentListViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Aggiunge o rimuove la tipologia dal filtro (chip della pagina). La ricerca resta a carico dell'utente.</summary>
+    /// Aggiunge o toglie la tipologia dal filtro. Non fa partire la ricerca: resta all'utente decidere quando,
+    /// così può comporre più criteri prima di cercare.
     public void ToggleType(DocumentType type)
     {
         Toggle(Filter.Types, type);
     }
 
-    /// <summary>Aggiunge o rimuove lo stato dal filtro (chip della pagina).</summary>
+    /// Aggiunge o toglie lo stato dal filtro, con lo stesso criterio.
     public void ToggleStatus(DocumentStatus status)
     {
         Toggle(Filter.Statuses, status);

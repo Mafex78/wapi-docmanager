@@ -1,41 +1,32 @@
 namespace WAPIDocManager.UI.Features.Documents.Entities;
 
-/// <remarks>Forma di LETTURA: vedi le tre forme documentate in <c>Features/Documents/Contracts/DocumentResponse.cs</c>.</remarks>
-/// <summary>
-/// Documento commerciale (preventivo, proforma, ordine di vendita) come letto dalle API.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Costruito con l'operatore esplicito di <c>Features/Documents/Contracts/DocumentResponse</c> a partire da tutte le risposte di WAPIDocument
-/// (read, create, update, status, generation), che hanno la stessa forma.
-/// </para>
-/// <para>
-/// Non contiene la valuta: vedi <see cref="DocumentCurrency"/>.
-/// È un record immutabile: le pagine lo sostituiscono con la risposta delle API o con <c>with { ... }</c>.
-/// </para>
-/// </remarks>
+/// Documento commerciale — preventivo, proforma, ordine di vendita — nella forma in cui l'applicazione lo legge.
+/// È la stessa per tutte le risposte delle API, che siano una lettura, una creazione, una modifica, un cambio di
+/// stato o una generazione: hanno tutte la medesima forma.
+/// È un record immutabile: le pagine non lo modificano, lo sostituiscono con la risposta delle API o con una copia
+/// che cambia i campi interessati.
+/// Non contiene la valuta, che è unica per tutta l'applicazione.
 public record Document
 {
-    /// <summary>ObjectId MongoDB (stringa): usato nelle route delle API e della UI.</summary>
+    /// Identificativo assegnato dal database, usato negli indirizzi delle API e delle pagine.
     public string Id { get; init; } = string.Empty;
 
-    /// <summary>Numero logico assegnato dal server: è un GUID (la UI ne mostra i primi 8 caratteri).</summary>
+    /// Numero logico assegnato dal server: è un GUID, e l'interfaccia ne mostra solo i primi caratteri.
     public string? Number { get; init; }
 
-    /// <summary>
-    /// Data documento (mezzanotte UTC)
-    /// </summary>
-    /// <remarks>Va mostrata senza conversione di fuso orario (niente ToLocalTime), altrimenti può slittare di un giorno.</remarks>
+    /// Data del documento, fissata a mezzanotte UTC. Va mostrata senza conversione di fuso, altrimenti in certi
+    /// fusi slitta al giorno prima.
     public DateTime Date { get; init; }
 
-    /// <summary>Mai null: se le API non restituiscono il cliente il mapper crea un'istanza vuota.</summary>
+    /// Mai null: se le API non restituiscono il cliente, la conversione ne crea uno vuoto, così le pagine non
+    /// devono difendersi.
     public Customer Customer { get; init; } = new();
 
     public DocumentType Type { get; init; }
     public DocumentStatus Status { get; init; }
     public IReadOnlyList<DocumentLine> Lines { get; init; } = new List<DocumentLine>();
 
-    /// <summary>Totale calcolato dal server (somma dei totali riga arrotondata a 2 decimali).</summary>
+    /// Totale calcolato dal server: la somma dei totali di riga, arrotondata a due decimali.
     public decimal Total { get; init; }
 
     public IReadOnlyList<DocumentLink> LinkedDocuments { get; init; } = new List<DocumentLink>();

@@ -5,14 +5,8 @@ using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Users.Services;
 
-/// <summary>
-/// Gestione utenti su WAPIIdentity (POST api/v1/users/register, solo Admin)
-/// </summary>
-/// <remarks>
-/// Typed HttpClient con BaseAddress = <c>Api:IdentityBaseUrl</c> e BearerTokenHandler (endpoint protetto).
-/// Controller di riferimento: <c>WAPIIdentity/Controllers/UsersController.cs</c>.
-/// Conversione del form nell'operatore esplicito di <c>Contracts/Identity/RegisterUserRequest</c>.
-/// </remarks>
+/// Chiamate di gestione degli utenti. L'endpoint è protetto, quindi questo client HTTP allega il token alle
+/// richieste.
 public class UserApiService : IUserService
 {
     public const string RegisterPath = "api/v1/users/register";

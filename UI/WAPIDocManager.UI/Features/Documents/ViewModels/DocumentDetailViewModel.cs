@@ -4,29 +4,19 @@ using CommunityToolkit.Mvvm.Input;
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
 using WAPIDocManager.UI.Features.Documents.Services;
-using WAPIDocManager.UI.Features.Documents.Views.Pages;
 using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 
-/// <summary>
-/// Logica della pagina di dettaglio documento (MVVM): caricamento, avanzamento di stato, generazione,
-/// collegamento, eliminazione e caricamento dei documenti collegati.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Usato da <c>WAPIDocManager.UI/Features/Documents/Views/Pages/DocumentDetail.razor</c>. Restano nel componente:
-/// ruoli e permessi, testi localizzati (vedi <see cref="Notification"/>) e la navigazione, che avviene in base
-/// all'esito di <see cref="DeleteAsync"/> e <see cref="GenerateAsync"/>.
-/// </para>
-/// <para>
-/// Registrato Transient: la navigazione tra documenti riusa la stessa istanza del componente, quindi il ricaricamento
-/// è governato dalla guardia sull'Id in <see cref="LoadAsync"/>.
-/// </para>
-/// </remarks>
+/// Logica del dettaglio del documento: lettura, avanzamento di stato, generazione, collegamento, eliminazione e
+/// lettura dei documenti collegati.
+/// Restano nella pagina i ruoli e i permessi, i testi tradotti e la navigazione, che dipende dall'esito delle azioni
+/// che restituiscono un valore.
+/// Passando da un documento all'altro il componente viene riusato: non nasce un'istanza nuova, e per questo la
+/// rilettura è governata da una guardia sull'identificativo già caricato.
 public sealed partial class DocumentDetailViewModel : ViewModelBase
 {
-    /// <summary>Risultati per pagina nella ricerca della modale di collegamento.</summary>
+    /// Risultati per pagina nella ricerca dei documenti da collegare.
     public const int AttachPageSize = 10;
 
     private readonly IDocumentService _documentService;
@@ -40,8 +30,8 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         _documentService = documentService;
     }
 
-    // Stato di proprietà del ViewModel: setter privato + SetProperty, così la pagina lo legge e basta.
-    // (non [ObservableProperty]: il generatore crea sempre un setter pubblico)
+    // stato di cui il ViewModel è proprietario: la pagina lo legge e basta.
+    // Scritto a mano e non generato dall'attributo, perché il generatore crea sempre un setter pubblico
     private Document? _document;
     private DocumentDetailNotification _notification;
     private DocumentStatus? _notificationStatus;
@@ -54,23 +44,23 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
 
     public DocumentDetailNotification Notification { get => _notification; private set => SetProperty(ref _notification, value); }
 
-    /// <summary>Stato raggiunto, valorizzato solo con <see cref="DocumentDetailNotification.StatusUpdated"/>.</summary>
+    /// Stato raggiunto, valorizzato solo quando la notifica riguarda un cambio di stato.
     public DocumentStatus? NotificationStatus { get => _notificationStatus; private set => SetProperty(ref _notificationStatus, value); }
 
     public bool IsLoading { get => _isLoading; private set => SetProperty(ref _isLoading, value); }
 
-    /// <summary>Caricamento dei documenti collegati: avviene dopo il caricamento della pagina, quindi la sua
-    /// notifica è ciò che fa comparire prima lo spinner e poi l'elenco.</summary>
+    /// I documenti collegati si leggono dopo il resto della pagina: è la notifica di questo valore a far comparire
+    /// prima l'indicatore di caricamento e poi l'elenco.
     public bool IsLoadingLinks { get => _isLoadingLinks; private set => SetProperty(ref _isLoadingLinks, value); }
 
-    /// <summary>Azione in corso: la pagina disabilita i pulsanti.</summary>
+    /// Azione in corso: la pagina disattiva i pulsanti.
     public bool IsBusy { get => _isBusy; private set => SetProperty(ref _isBusy, value); }
 
     public DocumentFilter AttachFilter { get => _attachFilter; private set => SetProperty(ref _attachFilter, value); }
 
-    // Stato che la pagina scrive direttamente dal markup (@bind, modali): setter pubblico generato da [ObservableProperty]
+    // stato che la pagina scrive direttamente dal markup: il setter pubblico è generato dall'attributo
 
-    /// <summary>Errore dell'ultima azione; la pagina lo azzera quando l'utente chiude l'avviso.</summary>
+    /// Errore dell'ultima azione; la pagina lo azzera quando l'utente chiude l'avviso.
     [ObservableProperty]
     private Exception? _error;
 
@@ -80,7 +70,7 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showGenerate;
 
-    /// <summary>Tipologia proposta per la generazione (modificabile dalla modale).</summary>
+    /// Tipologia proposta per la generazione, che l'utente può cambiare prima di confermare.
     [ObservableProperty]
     private DocumentType _generateType;
 
@@ -90,13 +80,9 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
     [ObservableProperty]
     private Exception? _attachError;
 
-    /// <summary>
     /// Candidati al collegamento: esclude il documento corrente e quelli già collegati.
-    /// </summary>
-    /// <remarks>
-    /// Metodo e non proprietà (S2365): a ogni chiamata filtra i risultati della ricerca e costruisce una nuova lista,
-    /// quindi il costo deve essere evidente a chi lo usa dal markup.
-    /// </remarks>
+    /// È un metodo e non una proprietà perché a ogni chiamata filtra i risultati e costruisce una lista nuova: il
+    /// costo deve essere visibile a chi lo usa dal markup, dove una proprietà sembrerebbe gratuita.
     public IReadOnlyList<Document> GetAttachCandidates()
     {
         return _attachResult.Items
@@ -105,19 +91,16 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
             .ToList();
     }
 
-    /// <summary>Documento collegato già letto dalle API, null se non disponibile (es. eliminato).</summary>
+    /// Documento collegato già letto, oppure null se non è stato possibile leggerlo, per esempio perché nel
+    /// frattempo è stato eliminato.
     public Document? TryGetLinkedDocument(string id)
     {
         return _linkedDocuments.GetValueOrDefault(id);
     }
 
-    /// <summary>
-    /// Righe dei documenti collegati: per ogni link, il documento già letto oppure null se non disponibile.
-    /// </summary>
-    /// <remarks>
-    /// Il markup itera su queste coppie invece di chiamare <see cref="TryGetLinkedDocument"/> dentro il ciclo:
-    /// il recupero resta nel ViewModel e la pagina si limita a mostrare (S3267).
-    /// </remarks>
+    /// Righe dei documenti collegati: per ciascun collegamento, il documento già letto oppure null.
+    /// Il markup scorre queste coppie invece di cercare il documento dentro il ciclo: il recupero resta qui e la
+    /// pagina si limita a mostrare.
     public IReadOnlyList<(DocumentLink Link, Document? Document)> GetLinkedRows()
     {
         if (Document is null)
@@ -136,10 +119,8 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         NotificationStatus = null;
     }
 
-    /// <summary>
-    /// Carica il documento e i suoi collegati. Ricarica solo se l'Id è cambiato: la pagina è riusata
-    /// quando si passa da un documento all'altro.
-    /// </summary>
+    /// Legge il documento e i suoi collegati. Rilegge solo se l'identificativo è cambiato, perché la pagina viene
+    /// riusata passando da un documento all'altro.
     public async Task LoadAsync(string id)
     {
         if (_loadedId == id)
@@ -182,8 +163,7 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         });
     }
 
-    /// <summary>Elimina il documento corrente.</summary>
-    /// <returns>true se eliminato: la pagina torna alla lista.</returns>
+    /// Elimina il documento corrente. Restituisce l'esito: dove andare dopo lo decide la pagina.
     public async Task<bool> DeleteAsync()
     {
         bool deleted = await RunAsync(async () => await _documentService.DeleteAsync(Document!.Id));
@@ -192,8 +172,8 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         return deleted;
     }
 
-    /// <summary>Genera un nuovo documento della tipologia in <see cref="GenerateType"/>.</summary>
-    /// <returns>Il documento generato, oppure null in caso di errore: la pagina naviga solo se non è null.</returns>
+    /// Genera un nuovo documento della tipologia scelta. Restituisce il documento generato, oppure null in caso di
+    /// errore: la pagina naviga solo se c'è qualcosa dove andare.
     public async Task<Document?> GenerateAsync()
     {
         Document? generated = null;
@@ -207,32 +187,23 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         return generated;
     }
 
-    /// <summary>Apre la modale di collegamento e carica la prima pagina di candidati.</summary>
+    /// Apre la ricerca dei documenti da collegare e ne carica la prima pagina.
     public async Task OpenAttachAsync()
     {
         ShowAttach = true;
         AttachFilter = new DocumentFilter { PageSize = AttachPageSize };
 
-        // via comando e non chiamata diretta: eseguendo il metodo si salterebbe IsRunning e lo spinner non comparirebbe
+        // si passa dal comando e non dal metodo: chiamandolo direttamente non risulterebbe in esecuzione,
+        // e l'indicatore di caricamento non comparirebbe
         await SearchAttachCommand.ExecuteAsync(null);
     }
 
-    /// <summary>
-    /// Ricerca dei candidati al collegamento (prova di conversione a comando)
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <c>[RelayCommand]</c> genera <c>SearchAttachCommand</c>, che espone <c>IsRunning</c> al posto della vecchia
-    /// proprietà AttachLoading e, avendo la concorrenza disabilitata per impostazione predefinita, restituisce
-    /// <c>CanExecute == false</c> mentre è in esecuzione: è così che la pagina disabilita il pulsante Cerca, che
-    /// prima non era disabilitato affatto e permetteva ricerche sovrapposte.
-    /// </para>
-    /// <para>
-    /// ATTENZIONE: <c>CanExecute</c> non è una guardia automatica — chiamare <c>ExecuteAsync</c> mentre il comando è
-    /// in corso esegue comunque il corpo (verificato). La protezione sta nel markup che rispetta CanExecute.
-    /// Il token di annullamento è fornito dal comando e viene passato alle API.
-    /// </para>
-    /// </remarks>
+    /// Ricerca dei documenti candidati al collegamento.
+    /// È un comando perché, mentre è in esecuzione, si dichiara non eseguibile: è così che il pulsante di ricerca si
+    /// disattiva da solo. Prima restava attivo e permetteva ricerche sovrapposte.
+    /// ATTENZIONE: la non eseguibilità non è una guardia automatica. Eseguire il comando mentre è già in corso ne
+    /// esegue comunque il corpo — verificato — quindi la protezione sta nel markup che la rispetta.
+    /// Il token di annullamento lo fornisce il comando stesso e viene passato alle API.
     [RelayCommand]
     private async Task SearchAttachAsync(CancellationToken cancellationToken)
     {
@@ -250,7 +221,7 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Collega il candidato al documento corrente (collegamento bidirezionale lato server).</summary>
+    /// Collega il candidato al documento corrente. Il collegamento vale in entrambi i versi.
     public async Task AttachAsync(Document candidate)
     {
         IsBusy = true;
@@ -275,7 +246,7 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         }
     }
 
-    // un GET per ogni link: il DTO dei collegamenti contiene solo l'Id
+    // una lettura per ogni collegamento: la risposta porta solo l'identificativo del documento collegato
     private async Task LoadLinkedDocumentsAsync()
     {
         _linkedDocuments.Clear();
@@ -285,8 +256,8 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
             return;
         }
 
-        // lo stato cambia fuori da un gestore di evento: la notifica di IsLoadingLinks (prima true, poi false
-        // al termine) è ciò che fa ridisegnare la pagina, prima con lo spinner e poi con l'elenco
+        // lo stato cambia fuori da un gestore di evento, quindi la pagina non si ridisegnerebbe da sola: è la
+        // notifica di questo valore, prima acceso e poi spento, a farlo
         IsLoadingLinks = true;
 
         Document?[] linkedDocuments = await Task.WhenAll(Document.LinkedDocuments
@@ -322,7 +293,8 @@ public sealed partial class DocumentDetailViewModel : ViewModelBase
         };
     }
 
-    // busy, azzeramento di errore e notifica, gestione degli errori previsti: comuni a tutte le azioni
+    // ciò che è comune a tutte le azioni: segnalare che si è occupati, azzerare errore e notifica precedenti,
+    // e trattare allo stesso modo gli errori previsti
     private async Task<bool> RunAsync(Func<Task> action)
     {
         IsBusy = true;

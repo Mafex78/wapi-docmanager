@@ -1,9 +1,10 @@
 @*
-    Using globali di tutti i componenti .razor (non valgono per i file C#, es. Shared/Forms/*.cs e le partial .razor.cs).
+    Dichiarazioni valide per tutti i componenti di markup. NON valgono per i componenti scritti in C#, né per il
+    codice separato delle pagine: là le dichiarazioni vanno ripetute nel file.
     Ogni namespace elencato deve contenere almeno un tipo, altrimenti la compilazione fallisce.
-    L = localizzatore dei testi (Resources/SharedResource*.resx), disponibile in ogni componente come @L["Chiave"].
+    L è il traduttore dei testi, disponibile in ogni componente.
     Struttura del progetto (vertical slice): Features/<Area>/ con tutto ciò che serve alla funzionalità
-    (Views/Pages, Views/Components, ViewModels, Entities, Models, Services, Contracts), Shared/ con ciò che serve
+    (Views/Pages, Views/Components, ViewModels, Entities, Models, Services, Services/Dto), Shared/ con ciò che serve
     a due o più funzionalità,
     Layout/ con layout e menu. Un namespace di slice elencato qui è visibile a TUTTI i componenti: aggiungerne uno
     significa rendere quella funzionalità raggiungibile da ovunque, quindi va fatto solo per i tipi usati in più aree.

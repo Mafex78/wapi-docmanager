@@ -1,28 +1,17 @@
-using WAPIDocManager.UI.Features.Documents.Models;
-
 namespace WAPIDocManager.UI.Features.Documents.Entities;
 
-/// <summary>
-/// Riga di un documento letto dalle API (sola lettura).
-/// </summary>
-/// <remarks>
-/// Per la riga in modifica nei form si usa <c>Features/Documents/Models/DocumentLineEditModel</c>.
-/// </remarks>
+/// Riga di un documento letto dalle API, in sola lettura. Per la riga in corso di modifica dentro un form esiste un
+/// modello a parte, mutabile.
 public record DocumentLine
 {
     public string? Description { get; init; }
     public decimal Quantity { get; init; }
     public decimal UnitPrice { get; init; }
 
-    /// <summary>
-    /// Totale riga calcolato dal server
-    /// </summary>
-    /// <remarks>Backend: <c>Math.Round(Quantity * UnitPrice, 2)</c> in <c>WAPIDocument.Domain/Entities/Documents/DocumentLine.cs</c>.</remarks>
+    /// Totale di riga calcolato dal server: quantità per prezzo, arrotondato a due decimali.
     public decimal Total { get; init; }
 
-    /// <summary>
-    /// Stessa regola di <c>DocumentLine.IsValid()</c> del backend: descrizione presente, quantità e prezzo maggiori di zero.
-    /// </summary>
+    /// Stessa regola applicata dal server: descrizione presente, quantità e prezzo maggiori di zero.
     public bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(Description) &&

@@ -3,26 +3,19 @@ using WAPIDocManager.UI.Features.Documents.Models;
 
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Body di <c>POST api/v1/documents</c> (<c>WAPIDocument.Application/Dto/Document/DocumentCreateRequest.cs</c>).
-/// </summary>
-/// <remarks>
-/// Senza data: il server imposta la data odierna, lo stato Draft e il numero (GUID).
-/// Se il DTO cambia sul server va aggiornato qui e nei test <c>DocumentApiServiceTests</c>.
-/// </remarks>
+/// Body di POST api/v1/documents.
+/// Non porta la data: sono il server ad assegnare data odierna, stato iniziale e numero.
 public record DocumentCreateRequest
 {
     public DocumentType Type { get; init; }
 
-    /// <summary>Sempre "EUR" dal client (vedi <c>DocumentCurrency</c>).</summary>
+    /// Il client invia sempre la stessa valuta.
     public string? Currency { get; init; }
 
     public CustomerDto? Customer { get; init; }
     public IList<DocumentLineRequest> DocumentLines { get; init; } = new List<DocumentLineRequest>();
 
-    /// <summary>
-    /// Form → body di creazione (valuta sempre EUR, vedi <see cref="DocumentCurrency"/>).
-    /// </summary>
+    /// Dal form al corpo della creazione.
     public static explicit operator DocumentCreateRequest(DocumentEditModel model)
     {
         return new DocumentCreateRequest

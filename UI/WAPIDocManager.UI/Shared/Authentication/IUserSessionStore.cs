@@ -1,31 +1,16 @@
-using WAPIDocManager.UI.Features.Auth.Services;
-using WAPIDocManager.UI.Shared.Api;
-
 namespace WAPIDocManager.UI.Shared.Authentication;
 
-/// <summary>
-/// Persistenza della sessione utente lato browser
-/// </summary>
-/// <remarks>
-/// <para>
-/// Implementazione: <c>Shared/Authentication/SessionStorageUserSessionStore</c> (sessionStorage, scelta concordata:
-/// la sessione vale solo per la scheda aperta).
-/// </para>
-/// <para>
-/// È il punto di coordinamento dell'autenticazione, condiviso da:
-/// <c>AuthApiService</c> (Set/Clear), <c>BearerTokenHandler</c> (Get, Clear su 401/scadenza)
-/// e <c>JwtAuthenticationStateProvider</c> (Get + ascolto di <see cref="SessionChanged"/>).
-/// Per questo deve essere registrato Singleton.
-/// </para>
-/// </remarks>
+/// Persistenza della sessione utente nel browser: chi ha fatto l'accesso, con quale token e per quanto ancora.
+/// Va registrata Singleton. Ci accedono sia l'interfaccia sia i gestori delle chiamate HTTP, che vengono risolti in
+/// uno scope di dipendenze separato: registrata Scoped, i due lati leggerebbero due sessioni diverse.
+/// L'archivio scelto vale per la singola scheda del browser, quindi la sessione non è condivisa fra schede.
 public interface IUserSessionStore
 {
-    /// <summary>
-    /// Sollevato a ogni login/logout (null = sessione terminata)
-    /// </summary>
+    /// Sollevato a ogni accesso e uscita; null significa sessione terminata.
+    /// È il segnale che tiene allineato lo stato di autenticazione dell'applicazione.
     event Action<UserSession?>? SessionChanged;
 
-    /// <summary>Restituisce la sessione salvata (null se assente o illeggibile).</summary>
+    /// Restituisce la sessione salvata, o null se assente o illeggibile.
     ValueTask<UserSession?> GetAsync();
 
     ValueTask SetAsync(UserSession session);

@@ -1,19 +1,20 @@
 @inherits LayoutComponentBase
-@* il logout è l'unico punto in cui il layout usa un servizio di uno slice: using locale, non in _Imports *@
+@* l'uscita è l'unico punto in cui il layout usa un servizio di una funzionalità: dichiarazione locale, non globale *@
 @using WAPIDocManager.UI.Features.Auth.Services
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 @*
-    Layout delle pagine autenticate (DefaultLayout di AuthorizeRouteView in App.razor).
-    - Sidebar con NavMenu: fissa su desktop, a scomparsa sotto 992px tramite la classe "nav-open" su .app-shell
-      (stili in wwwroot/css/app.css, sezione 4); il backdrop e la navigazione la richiudono.
-    - Top bar: lingua, tema, utente corrente (claim Name = email) e logout.
-    - Logout: pulisce la sessione locale e naviga subito al login.
-    - ErrorBoundary attorno a @Body: un'eccezione non gestita di una pagina (rendering, lifecycle o handler di evento)
-      mostra un messaggio al posto della pagina invece della barra gialla di Blazor, lasciando funzionanti menu e top bar.
-      Si azzera con "Riprova" e a ogni navigazione (OnParametersSet). Non riguarda gli errori API, che le pagine
-      gestiscono con ApiErrorAlert, né i task avviati senza await. L'eccezione resta registrata nella console del browser.
+    Layout di tutte le pagine autenticate.
+    - Menu laterale fisso sugli schermi grandi, a scomparsa su quelli stretti; si richiude toccando fuori o
+      navigando.
+    - Barra superiore: lingua, tema, utente corrente e uscita.
+    - L'uscita pulisce la sessione locale e porta subito alla pagina di accesso.
+    - Il contenuto della pagina è protetto da una barriera: un'eccezione non gestita mostra un messaggio al posto
+      della sola pagina, lasciando funzionanti menu e barra superiore, invece della banda d'errore predefinita che
+      blocca tutto. Si azzera riprovando e a ogni navigazione.
+      Non riguarda gli errori delle API, che ogni pagina gestisce da sé, né le operazioni avviate senza attenderne
+      l'esito. L'eccezione resta comunque scritta nella console del browser.
 *@
 
 <div class="app-shell @(_navOpen ? "nav-open" : null)">

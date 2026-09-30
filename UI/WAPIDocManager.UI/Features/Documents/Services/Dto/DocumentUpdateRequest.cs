@@ -3,32 +3,26 @@ using WAPIDocManager.UI.Features.Documents.Models;
 
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Body di <c>PUT api/v1/documents/{id}</c> (<c>WAPIDocument.Application/Dto/Document/DocumentUpdateRequest.cs</c>).
-/// </summary>
-/// <remarks>
-/// Sostituisce data, valuta, cliente e righe. Una lista righe vuota viene passata dal server come null al dominio.
-/// Il tipo del documento non è modificabile. Se il DTO cambia sul server va aggiornato qui.
-/// </remarks>
+/// Body di PUT api/v1/documents/{id}.
+/// Sostituisce per intero data, valuta, cliente e righe: non è un aggiornamento parziale, quindi ciò che non viene
+/// inviato viene perso. La tipologia del documento non è modificabile e infatti non compare.
 public record DocumentUpdateRequest
 {
-    /// <summary>Inviata come mezzanotte UTC ("yyyy-MM-ddT00:00:00Z"); il server ne usa solo anno/mese/giorno.</summary>
+    /// Inviata come mezzanotte UTC; il server ne considera solo anno, mese e giorno.
     public DateTime Date { get; init; }
 
-    /// <summary>Sempre "EUR": se null il server azzererebbe la valuta del documento.</summary>
+    /// Va sempre valorizzata: lasciandola vuota il server azzererebbe la valuta del documento.
     public string? Currency { get; init; }
 
     public CustomerDto? Customer { get; init; }
     public IList<DocumentLineRequest> DocumentLines { get; init; } = new List<DocumentLineRequest>();
 
-    /// <summary>
-    /// Form → body di modifica (data a mezzanotte UTC, valuta sempre EUR).
-    /// </summary>
+    /// Dal form al corpo della modifica.
     public static explicit operator DocumentUpdateRequest(DocumentEditModel model)
     {
         return new DocumentUpdateRequest
         {
-            // WAPIDocument normalizza la data a mezzanotte UTC
+            // la data viene normalizzata a mezzanotte UTC, come la conserva il server
             Date = DateTime.SpecifyKind(model.Date.Date, DateTimeKind.Utc),
             Currency = DocumentCurrency.Code,
             Customer = (CustomerDto)model.Customer,

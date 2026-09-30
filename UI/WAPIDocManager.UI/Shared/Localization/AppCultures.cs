@@ -1,32 +1,21 @@
 using System.Globalization;
 using Microsoft.JSInterop;
-using WAPIDocManager.UI;
 
 namespace WAPIDocManager.UI.Shared.Localization;
 
-/// <summary>
-/// Lingua selezionabile nell'interfaccia.
-/// </summary>
-/// <param name="Name">Nome della cultura .NET (es. it-IT), salvato nel localStorage.</param>
-/// <param name="DisplayName">Nome mostrato nel selettore, sempre nella lingua stessa.</param>
+/// Lingua selezionabile nell'interfaccia: il nome della cultura, che viene anche salvato fra le preferenze del
+/// browser, e il nome mostrato nel selettore, scritto sempre nella lingua stessa.
 public sealed record AppCulture(string Name, string DisplayName);
 
-/// <summary>
-/// Culture supportate dall'interfaccia (italiano predefinito)
-/// </summary>
-/// <remarks>
-/// <para>
-/// In Blazor WebAssembly la cultura si imposta prima di <c>host.RunAsync()</c> (Program.cs), che carica le satellite assembly
-/// dei .resx per la cultura corrente. Per questo il cambio lingua (Shared/Components/CultureSelector) salva la scelta e ricarica la pagina.
-/// </para>
-/// <para>
-/// Per aggiungere una lingua: una voce in <see cref="Supported"/>, il file <c>Resources/SharedResource.{lingua}.resx</c>
-/// con tutte le chiavi e la lingua in <c>SatelliteResourceLanguages</c> del csproj.
-/// </para>
-/// </remarks>
+/// Lingue supportate dall'interfaccia; l'italiano è quella predefinita.
+/// In WebAssembly la cultura va impostata prima che l'applicazione parta, perché è in quel momento che vengono
+/// caricate le risorse tradotte della lingua corrente. È la ragione per cui il cambio di lingua salva la scelta e
+/// ricarica la pagina, invece di limitarsi a ridisegnare i componenti.
+/// Per aggiungere una lingua servono tre cose: una voce qui, il file di risorse con tutte le chiavi tradotte, e la
+/// lingua fra quelle incluse nel bundle, dichiarate nel file di progetto.
 public static class AppCultures
 {
-    /// <summary>Usata alla prima visita o se la cultura salvata non è più supportata.</summary>
+    /// Usata alla prima visita, o quando la lingua salvata non è più fra quelle supportate.
     public const string Default = "it-IT";
 
     public static IReadOnlyList<AppCulture> Supported { get; } = new[]
@@ -35,9 +24,7 @@ public static class AppCultures
         new AppCulture("en-US", "English")
     };
 
-    /// <summary>
-    /// Applica la cultura salvata (window.wapiPreferences in wwwroot/js/app.js) a formati e testi dell'interfaccia.
-    /// </summary>
+    /// Applica la lingua salvata fra le preferenze del browser ai formati e ai testi dell'interfaccia.
     public static async Task ApplyStoredCultureAsync(IJSRuntime jsRuntime)
     {
         string? storedCulture = await jsRuntime.InvokeAsync<string?>("wapiPreferences.getCulture");
@@ -46,12 +33,12 @@ public static class AppCultures
             ? storedCulture!
             : Default;
 
-        // CurrentCulture: formati di date e numeri; CurrentUICulture: scelta del file .resx
+        // la cultura governa i formati di date e numeri, quella dell'interfaccia la scelta del file di risorse
         CultureInfo culture = CultureInfo.GetCultureInfo(cultureName);
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-        // aggiorna <html lang> (accessibilità, controllo ortografico del browser)
+        // aggiorna la lingua dichiarata dal documento: serve all'accessibilità e al controllo ortografico del browser
         await jsRuntime.InvokeVoidAsync("wapiPreferences.setDocumentLanguage", culture.TwoLetterISOLanguageName);
     }
 }

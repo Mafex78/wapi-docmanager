@@ -1,20 +1,10 @@
-using WAPIDocManager.UI.Features.Documents.Entities;
-
 namespace WAPIDocManager.UI.Features.Documents.Models;
 
-/// <summary>
-/// Campi ordinabili (nomi degli elementi MongoDB della collection documents)
-/// </summary>
-/// <remarks>
-/// <para>
-/// Il server ordina con <c>Builders&lt;T&gt;.Sort</c> sul nome passato (<c>Shared.Infrastructure/MongoGenericRepository.cs</c>);
-/// <c>WAPIDocument.Infrastructure/DocumentMap.cs</c> usa AutoMap, quindi i nomi sono quelli delle proprietà in PascalCase
-/// e i campi annidati usano il punto. Un nome errato non genera errori ma non ordina.
-/// </para>
-/// <para>
-/// Etichette nella UI: chiave risorsa <c>Sort_{nome senza punti}</c> (es. Sort_CustomerName).
-/// </para>
-/// </remarks>
+/// Campi su cui si può ordinare la ricerca.
+/// I nomi non sono liberi: devono coincidere con quelli dei campi memorizzati sul server, che corrispondono alle
+/// proprietà scritte in PascalCase, con il punto per scendere dentro un oggetto annidato. Un nome sbagliato non
+/// produce alcun errore, semplicemente non ordina — ed è la ragione per cui esistono queste costanti invece di
+/// stringhe sparse.
 public static class DocumentSortFields
 {
     public const string Date = "Date";
@@ -24,6 +14,6 @@ public static class DocumentSortFields
     public const string Type = "Type";
     public const string Status = "Status";
 
-    /// <summary>Tutti i campi, nell'ordine in cui compaiono nel menu "Ordina per".</summary>
+    /// Tutti i campi, nell'ordine in cui compaiono nel menu di ordinamento.
     public static IReadOnlyList<string> All { get; } = new[] { Date, Number, CustomerName, Type, Status, Total };
 }

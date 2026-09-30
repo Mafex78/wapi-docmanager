@@ -6,26 +6,17 @@ using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Users;
 
-/// <summary>
-/// Slice "Utenti": registrazione di un nuovo utente, riservata agli Admin
-/// </summary>
-/// <remarks>
-/// <para>
-/// CONTENUTO DELLO SLICE
-/// <list type="bullet">
-///   <item><c>Pages/UserRegister.razor</c> – form di registrazione, protetto da [Authorize(Roles = AppRoles.Admin)].</item>
-///   <item><c>Models/RegisterUserModel</c> – modello del form (email, password, ruoli), senza attributi.</item>
-///   <item><c>Validators/RegisterUserModelValidator</c> – regole FluentValidation registrate nella DI.</item>
-///   <item><c>Services/IUserService</c> + <c>UserApiService</c> – <c>POST /api/v1/users/register</c> di WAPIIdentity
-///         (endpoint protetto: il typed HttpClient monta BearerTokenHandler).</item>
-///   <item><c>Contracts/RegisterUserRequest</c>, <c>RegisterUserResponse</c> – forme di trasporto.</item>
-/// </list>
-/// </para>
-/// <para>
-/// I ruoli assegnabili sono <c>RoleType</c>, che vive in <c>Shared/Authentication</c> perché serve anche ai permessi
-/// dei documenti e alla barra superiore.
-/// </para>
-/// </remarks>
+/// Slice "Utenti": registrazione di un nuovo utente, riservata a chi ha ruolo di amministratore.
+/// Mappa dello slice:
+///   UserRegister              form di registrazione, accessibile ai soli amministratori;
+///   RegisterUserModel         modello del form, senza regole di validazione al suo interno;
+///   RegisterUserModelValidator  le regole, risolte dalle dipendenze;
+///   IUserService              la chiamata di registrazione; l'endpoint è protetto, quindi questo client HTTP monta
+///                             il gestore che allega il token;
+///   RegisterUserRequest,
+///   RegisterUserResponse      forme di trasporto, copie lato client di quelle del servizio.
+/// I ruoli assegnabili non stanno qui ma fra i componenti condivisi, perché servono anche ai permessi sui documenti
+/// e alla barra superiore.
 public static class UsersFeatureRegistration
 {
     public static IServiceCollection AddUsersFeature(this IServiceCollection services, IConfiguration configuration)
@@ -36,7 +27,7 @@ public static class UsersFeatureRegistration
                 client.BaseAddress = apiOptions.IdentityBaseAddress())
             .AddHttpMessageHandler<BearerTokenHandler>();
 
-        // regole del form: risolte dalla DI dal componente <FluentValidator /> (Blazilla); senza stato, quindi Singleton
+        // regole del form: risolte dalle dipendenze dal componente di validazione; senza stato, quindi Singleton
         services.AddSingleton<IValidator<RegisterUserModel>, RegisterUserModelValidator>();
 
         return services;

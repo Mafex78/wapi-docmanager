@@ -4,14 +4,9 @@ using WAPIDocManager.UI.Shared.Validation;
 
 namespace WAPIDocManager.UI.Features.Documents.Validators;
 
-/// <summary>
-/// Regole di una riga documento, allineate a
-/// <c>WAPIDocument.Application/Validators/DocumentCreateUpdateRequestDocumentLineValidator.cs</c>
-/// </summary>
-/// <remarks>
-/// <see cref="IRuleBuilderOptions{T,TProperty}"/> <c>PrecisionScale</c> sostituisce l'attributo DecimalPrecision
-/// scritto a mano: precisione totale e scala sono gli stessi vincoli che il server applica sul decimale.
-/// </remarks>
+/// Regole di una riga di documento, allineate a quelle applicate dal server.
+/// I vincoli di precisione e scala sui decimali sono gli stessi che il server impone: allentarli qui farebbe
+/// passare il form e poi fallire il salvataggio.
 public sealed class DocumentLineEditModelValidator : AbstractValidator<DocumentLineEditModel>
 {
     public DocumentLineEditModelValidator()

@@ -4,18 +4,17 @@
    personalizzazione di Bootstrap 5.3 e stili di tutti i componenti.
 
    Regole:
-   - NON creare file .razor.css: lo scoped CSS è disabilitato nel csproj
-     (ScopedCssEnabled=false) e tutti gli stili stanno in questo file.
+   - NON creare fogli di stile per singolo componente: quel meccanismo è
+     disattivato nel progetto, e tutti gli stili stanno in questo file.
    - Colori sempre tramite token --app-*: ogni nuovo token va definito
      sia in ":root, [data-bs-theme=light]" sia in "[data-bs-theme=dark]".
-   - Il tema è l'attributo data-bs-theme su <html>, gestito dallo script
-     inline di index.html e da wwwroot/js/app.js (ThemeToggle).
+   - Il tema è un attributo sul documento, impostato al caricamento della
+     pagina e poi cambiato dal relativo pulsante.
    - Classi applicative con prefisso "app-"; i componenti Bootstrap si
      personalizzano ridefinendo le loro variabili --bs-* (sezione 3):
      le variabili globali come --bs-primary non cambiano .btn-primary.
-   - Il file è caricato DOPO lib/bootstrap/css/bootstrap.min.css
-     (index.html): a parità di specificità vincono le regole di questo file.
-
+   - Il file è caricato DOPO quello di Bootstrap: a parità di specificità
+     vincono quindi le regole scritte qui.
    Indice:
    1. Design token (light/dark) e mappatura sulle variabili Bootstrap
    2. Base

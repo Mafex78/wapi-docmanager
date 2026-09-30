@@ -1,8 +1,6 @@
 namespace WAPIDocManager.UI.Features.Users.Services.Dto;
 
-/// <summary>
-/// Risposta della registrazione (<c>WAPIIdentity.Application/Dto/RegisterUserResponse.cs</c>): Id dell'utente creato.
-/// </summary>
+/// Risposta di POST api/v1/users/register: l'identificativo dell'utente creato.
 public record RegisterUserResponse
 {
     public string? Id { get; init; }

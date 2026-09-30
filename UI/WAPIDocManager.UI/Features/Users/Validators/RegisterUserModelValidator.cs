@@ -4,14 +4,9 @@ using WAPIDocManager.UI.Shared.Validation;
 
 namespace WAPIDocManager.UI.Features.Users.Validators;
 
-/// <summary>
-/// Regole del form di registrazione utente, allineate a
-/// <c>WAPIIdentity.Application/Validators/RegisterUserRequestValidator.cs</c>
-/// </summary>
-/// <remarks>
-/// I ruoli non hanno regole: il backend accetta anche una lista vuota.
-/// Messaggi come chiavi di <see cref="ValidationKeys"/>, tradotte alla resa da <c>FieldValidationMessage</c>.
-/// </remarks>
+/// Regole del form di registrazione, allineate a quelle applicate dal servizio su POST api/v1/users/register.
+/// I ruoli non hanno regole: anche nessun ruolo è una scelta legittima.
+/// I messaggi non sono testi ma chiavi di risorsa, tradotte nel momento in cui vengono mostrate.
 public sealed class RegisterUserModelValidator : AbstractValidator<RegisterUserModel>
 {
     public RegisterUserModelValidator()

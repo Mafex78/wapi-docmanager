@@ -3,19 +3,12 @@ using WAPIDocManager.UI.Features.Documents.Models;
 
 namespace WAPIDocManager.UI.Features.Documents.Validators;
 
-/// <summary>
-/// Regole del form di creazione/modifica documento: delega ai validator del cliente e delle righe
-/// </summary>
-/// <remarks>
-/// <para>
-/// <c>SetValidator</c> e <c>RuleForEach</c> sostituiscono l'attributo NestedValidation e il motore di validazione
-/// del grafo scritti a mano: è FluentValidation a percorrere l'oggetto annidato e la collezione, e gli errori
-/// arrivano all'EditContext con il percorso corretto (es. <c>Lines[0].Quantity</c>).
-/// </para>
-/// <para>
-/// Il documento non ha regole proprie: data e tipologia sono sempre valorizzate dal form, il totale è calcolato.
-/// </para>
-/// </remarks>
+/// Regole del form di creazione e modifica: il documento in sé non ne ha, perché data e tipologia sono sempre
+/// valorizzate dal form e il totale è calcolato. Si limita quindi a delegare alle regole del cliente e a quelle
+/// delle singole righe.
+/// È la libreria di validazione a percorrere l'oggetto annidato e la collezione, e gli errori arrivano al form già
+/// attribuiti al campo giusto, riga per riga: è la ragione per cui i messaggi compaiono accanto all'input
+/// sbagliato e non in fondo alla pagina.
 public sealed class DocumentEditModelValidator : AbstractValidator<DocumentEditModel>
 {
     public DocumentEditModelValidator()

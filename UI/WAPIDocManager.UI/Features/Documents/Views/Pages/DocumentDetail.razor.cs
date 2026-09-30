@@ -8,20 +8,14 @@ using WAPIDocManager.UI.Shared.Navigation;
 
 namespace WAPIDocManager.UI.Features.Documents.Views.Pages;
 
-/// <summary>
-/// Codice della pagina di dettaglio documento.
-/// </summary>
-/// <remarks>
-/// Markup e descrizione dei flussi in <c>DocumentDetail.razor</c> (le due parti formano la stessa classe).
-/// La logica è in <see cref="DocumentDetailViewModel"/>, testabile senza Blazor. Qui restano: ruoli dell'utente,
-/// testi localizzati (titolo e messaggio di esito), navigazione dopo eliminazione e generazione, e il ridisegno
-/// richiesto dal ViewModel durante il caricamento dei documenti collegati.
-/// </remarks>
+/// Codice della pagina di dettaglio del documento: markup e descrizione dei flussi stanno nel file affiancato, e le
+/// due parti formano la stessa classe.
+/// La logica sta nel ViewModel. Qui restano i ruoli dell'utente, i testi tradotti di titolo ed esito, e la
+/// navigazione che segue l'eliminazione e la generazione.
+/// Il ridisegno della pagina non va richiesto a mano: è la classe base ad ascoltare i cambiamenti del ViewModel e a
+/// provocarlo.
 public sealed partial class DocumentDetail
 {
-    // ViewModel arriva da Blazing.Mvvm.Components.MvvmComponentBase<DocumentDetailViewModel>, dichiarata con
-    // @inherits nel .razor: è la base a iscriversi a PropertyChanged e a chiamare StateHasChanged, mentre le
-    // notifiche dei comandi (IsRunning) arrivano dal ViewModelBase di Blazing, che le rilancia.
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
     [Parameter] public string Id { get; set; } = string.Empty;
@@ -34,7 +28,7 @@ public sealed partial class DocumentDetail
         ? L["Document_Details"]
         : $"{L.Label(ViewModel.Document.Type)} {DisplayFormat.ShortNumber(ViewModel.Document.Number)}";
 
-    // testo dell'avviso verde: il ViewModel segnala solo cosa è accaduto (DocumentDetailNotification)
+    // testo dell'avviso di esito: il ViewModel segnala solo che cosa è accaduto, non come dirlo
     private string? NotificationMessage => ViewModel.Notification switch
     {
         DocumentDetailNotification.StatusUpdated => L["Detail_StatusUpdated", L.Label(ViewModel.NotificationStatus!.Value)].Value,
@@ -49,7 +43,8 @@ public sealed partial class DocumentDetail
         _roles = (await AuthenticationStateTask).User.GetRoles();
     }
 
-    // navigare da un documento all'altro riusa questa istanza: il ViewModel ricarica solo se l'Id è cambiato
+    // passando da un documento all'altro questa istanza viene riusata: è il ViewModel a rileggere solo se
+    // l'identificativo è cambiato
     protected override async Task OnParametersSetAsync()
     {
         await ViewModel.LoadAsync(Id);

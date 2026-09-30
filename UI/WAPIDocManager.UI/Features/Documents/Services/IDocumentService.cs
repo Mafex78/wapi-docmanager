@@ -1,62 +1,39 @@
 using WAPIDocManager.UI.Features.Documents.Entities;
 using WAPIDocManager.UI.Features.Documents.Models;
-using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Features.Documents.Services;
 
-/// <summary>
-/// Operazioni sui documenti: una per ogni endpoint di <c>WAPIDocument/Controllers/DocumentsController.cs</c>.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Implementazione: <c>Features/Documents/Services/DocumentApiService</c> (typed HttpClient verso DocumentBaseUrl con BearerTokenHandler).
-/// </para>
-/// <para>
-/// Ruoli richiesti dalle API: lettura (GET) Viewer, Editor, Admin; scrittura (tutto il resto) Editor, Admin.
-/// Tutti i metodi sollevano <c>ApiException</c> per le risposte non 2xx
-/// (400 con il messaggio del dominio, es. stato non valido; 404 documento inesistente).
-/// </para>
-/// </remarks>
+/// Operazioni sui documenti, una per ciascun endpoint esposto dalle API.
+/// Ruoli richiesti: la lettura è aperta a tutti i ruoli, tutto il resto solo a chi ha diritti di scrittura.
+/// Ogni metodo solleva un'eccezione per le risposte non riuscite: 400 porta con sé il messaggio del server, per
+/// esempio quando l'operazione non è ammessa nello stato corrente, e 404 significa documento inesistente.
 public interface IDocumentService
 {
-    /// <summary>
-    /// <c>POST api/v1/documents</c>: crea il documento in stato Draft con data odierna (assegnata dal server) e valuta EUR.
-    /// </summary>
+    /// Crea il documento in bozza. La data la assegna il server, e la valuta è sempre la stessa.
     Task<Document> CreateAsync(DocumentEditModel model, CancellationToken cancellationToken = default);
 
-    /// <summary><c>GET api/v1/documents/{id}</c>.</summary>
     Task<Document> GetByIdAsync(string id, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// <c>GET api/v1/documents</c> con filtri, ordinamento e paginazione in query string (PageSize massimo 20).
-    /// </summary>
+    /// Ricerca con filtri, ordinamento e paginazione.
     Task<PagedResult<Document>> FindPagedAsync(DocumentFilter filter, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// <c>PUT api/v1/documents/{id}</c>: consentito solo in Draft/Ready; in Ready il server rivalida il documento.
-    /// </summary>
-    /// <remarks>Il tipo del documento non è modificabile: <see cref="DocumentEditModel.Type"/> viene ignorato.</remarks>
+    /// Salva le modifiche. È consentito solo finché il documento è in bozza o pronto, e in quest'ultimo caso il
+    /// server rivalida l'intero documento. La tipologia non è modificabile e viene ignorata.
     Task<Document> UpdateAsync(string id, DocumentEditModel model, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// <c>PUT api/v1/documents/{id}/status</c>: avanza lo stato secondo <see cref="DocumentRules.GetNextStatuses"/>.
-    /// </summary>
+    /// Fa avanzare il documento allo stato indicato, che deve essere uno di quelli raggiungibili da quello corrente.
     Task<Document> UpdateStatusAsync(string id, DocumentStatus newStatus, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// <c>DELETE api/v1/documents/{id}</c>: consentito solo in Draft/Ready; il server rimuove anche i link dai documenti collegati (transazione).
-    /// </summary>
+    /// Elimina il documento, consentito solo finché è in bozza o pronto. Il server toglie anche i collegamenti che
+    /// altri documenti avevano verso questo, in un'unica transazione.
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// <c>POST api/v1/documents/{id}/generation</c>: crea un nuovo documento Draft copiando cliente e righe, collegato al sorgente.
-    /// </summary>
-    /// <returns>Il documento generato (non il sorgente).</returns>
+    /// Crea un nuovo documento in bozza copiando cliente e righe da quello indicato, e collegando i due.
+    /// Restituisce il documento generato, non quello di partenza.
     Task<Document> GenerateFromAsync(string id, DocumentType targetType, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// <c>POST api/v1/documents/{id}/attachments</c>: collega manualmente due documenti (link bidirezionale, transazione).
-    /// </summary>
-    /// <returns>I link aggiornati del documento <paramref name="id"/>. Collegare due volte lo stesso documento restituisce 400.</returns>
+    /// Collega due documenti a mano; il collegamento vale in entrambi i versi.
+    /// Restituisce i collegamenti aggiornati del documento di partenza. Collegare due volte lo stesso documento
+    /// viene rifiutato dal server.
     Task<IReadOnlyList<DocumentLink>> AttachAsync(string id, string documentIdToAttach, CancellationToken cancellationToken = default);
 }

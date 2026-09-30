@@ -3,19 +3,15 @@ using WAPIDocManager.UI.Shared.Authentication;
 
 namespace WAPIDocManager.UI.Features.Users.Services.Dto;
 
-/// <summary>
-/// Body di <c>POST api/v1/users/register</c> (<c>WAPIIdentity.Application/Dto/RegisterUserRequest.cs</c>), ruoli come numeri.
-/// </summary>
-/// <remarks>Se il DTO cambia sul server va aggiornato qui e nei test di UserApiService.</remarks>
+/// Body di POST api/v1/users/register. I ruoli viaggiano come numeri.
 public record RegisterUserRequest
 {
     public string Email { get; init; } = string.Empty;
     public string Password { get; init; } = string.Empty;
     public IList<RoleType> Roles { get; init; } = new List<RoleType>();
 
-    /// <summary>
-    /// Form di registrazione → body (email con trim, valori null come stringa vuota, ruoli senza duplicati).
-    /// </summary>
+    /// Dal form al corpo della richiesta: email ripulita dagli spazi, campi non compilati inviati come stringa
+    /// vuota, ruoli senza duplicati.
     public static explicit operator RegisterUserRequest(RegisterUserModel model)
     {
         return new RegisterUserRequest

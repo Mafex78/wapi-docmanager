@@ -1,19 +1,18 @@
 @attribute [Route(AppRoutes.RouteTemplates.DocumentEdit)]
 @attribute [Authorize(Roles = AppRoles.Writers)]
 @using WAPIDocManager.UI.Features.Documents.ViewModels
-@* la base di Blazing.Mvvm inietta il ViewModel come ViewModel e ridisegna la pagina a ogni notifica *@
+@* la classe base fornisce il ViewModel e ridisegna la pagina a ogni sua notifica *@
 @inherits Blazing.Mvvm.Components.MvvmComponentBase<DocumentEditViewModel>
 @inject NavigationManager Navigation
 @inject ReturnUrlResolver ReturnUrlResolver
 
 @*
-    Modifica documento: GET per precompilare il form, poi PUT api/v1/documents/{id} (ruoli Editor, Admin).
-    - Logica in DocumentEditViewModel (stessa cartella della view): caricamento, modello del form, salvataggio.
-    - Consentita solo in Draft/Ready (DocumentRules.CanEdit): negli altri stati si mostra un avviso invece del form,
-      perché il server risponderebbe comunque 400.
-    - In Ready il server rivalida il documento: rimuovere cliente o righe obbligatorie produce un 400 mostrato nella pagina.
-    - Il documento viene ricaricato a ogni cambio di Id (OnParametersSetAsync); dopo il salvataggio si torna al dettaglio.
-    - Route e link da AppRoutes (Shared/Navigation).
+    Modifica di un documento: prima lo si legge per precompilare il form, poi lo si salva.
+    - La modifica è consentita solo finché il documento è in bozza o pronto. Negli altri stati si mostra un avviso
+      al posto del form, perché il server rifiuterebbe comunque il salvataggio.
+    - Su un documento già pronto il server rivalida tutto: togliere il cliente o le righe obbligatorie fa fallire il
+      salvataggio, e l'errore viene mostrato nella pagina.
+    - Il documento viene riletto a ogni cambio di identificativo; dopo il salvataggio si va al dettaglio.
 *@
 
 <PageTitle>@L["DocumentEdit_Title"] · @L["App_Name"]</PageTitle>
@@ -58,15 +57,13 @@ else
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Pagina da cui si è aperta la modifica, passata da chi crea il link (oggi la lista documenti).
-    /// Assente quando si arriva dal dettaglio, che è anche la destinazione predefinita.
-    /// </summary>
+    /// Pagina da cui la modifica è stata aperta, dichiarata da chi ha costruito il collegamento.
+    /// È assente quando si arriva dal dettaglio, che è anche la destinazione predefinita.
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
 
-    // Indietro e Annulla tornano dove si era. Il valore arriva dalla query string, quindi è validato all'arrivo
-    // dal resolver (stessa protezione del returnUrl del login), una volta sola invece che a ogni render.
-    // Il salvataggio invece porta sempre al dettaglio, perché dopo aver salvato si vuole vedere il documento aggiornato.
+    // Indietro e Annulla riportano da dove si è arrivati. Il valore viene dalla query string, quindi è validato
+    // all'arrivo del parametro, una volta sola invece che a ogni ridisegno.
+    // Il salvataggio invece porta sempre al dettaglio: dopo aver salvato si vuole vedere il documento aggiornato.
     private string _backUrl = string.Empty;
 
     protected override async Task OnParametersSetAsync()

@@ -1,14 +1,8 @@
-using WAPIDocManager.UI.Features.Documents.Services;
-
 namespace WAPIDocManager.UI.Features.Documents.Models;
 
-/// <summary>
 /// Direzione di ordinamento.
-/// </summary>
-/// <remarks>
-/// Inviata come stringa "asc"/"desc" (<c>DocumentQueryStringBuilder</c>); il server ordina in modo decrescente
-/// solo se il valore è "desc" (case-insensitive). Etichette: chiave risorsa <c>SortDirection_{Valore}</c>.
-/// </remarks>
+/// Viaggia come stringa "asc" oppure "desc", e il server ordina in modo decrescente solo riconoscendo la seconda:
+/// qualunque altro valore vale come crescente.
 public enum SortDirection
 {
     Asc = 0,

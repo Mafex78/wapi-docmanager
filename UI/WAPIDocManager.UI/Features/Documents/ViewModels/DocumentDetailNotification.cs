@@ -1,19 +1,15 @@
 namespace WAPIDocManager.UI.Features.Documents.ViewModels;
 
-/// <summary>
-/// Esito positivo dell'ultima azione sul dettaglio documento.
-/// </summary>
-/// <remarks>
-/// Il ViewModel non conosce i testi: la pagina traduce il valore nella chiave corrispondente
-/// (<c>Detail_StatusUpdated</c>, <c>Detail_Attached</c>) e lo azzera con <c>ClearNotification()</c>.
-/// </remarks>
+/// Esito positivo dell'ultima azione sul dettaglio del documento.
+/// Il ViewModel non conosce i testi mostrati all'utente: restituisce che cosa è successo, e la pagina decide come
+/// dirlo e quando toglierlo. È la stessa ragione per cui la traduzione non entra nei ViewModel.
 public enum DocumentDetailNotification
 {
     None = 0,
 
-    /// <summary>Stato del documento aggiornato (il nuovo stato è in <c>NotificationStatus</c>).</summary>
+    /// Stato del documento aggiornato; qual è il nuovo stato lo dice una proprietà a parte.
     StatusUpdated = 1,
 
-    /// <summary>Documento collegato a un altro documento.</summary>
+    /// Documento collegato a un altro documento.
     Attached = 2
 }

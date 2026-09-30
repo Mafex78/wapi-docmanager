@@ -3,7 +3,7 @@
 # Scrive wwwroot/appsettings.json all'avvio del container, prima che nginx parta.
 #
 # In Blazor WebAssembly la configurazione non è incorporata nell'eseguibile: è un file che il browser scarica
-# (vedi WAPIDocManager.UI/Shared/Api/ApiOptions.cs). Riscriverlo qui permette di usare la STESSA immagine
+# prima di partire. Riscriverlo qui permette di usare la STESSA immagine
 # con API diverse, cambiando solo le variabili d'ambiente, senza ricompilare.
 #
 # Variabili (con i valori di sviluppo come default):

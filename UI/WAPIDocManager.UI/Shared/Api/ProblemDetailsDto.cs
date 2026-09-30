@@ -1,13 +1,9 @@
 namespace WAPIDocManager.UI.Shared.Api;
 
-/// <summary>
-/// Corpo delle risposte di errore (<c>application/problem+json</c>).
-/// </summary>
-/// <remarks>
-/// Due origini lato server: <c>Shared.Application/GlobalExceptionHandler.cs</c> (Title sempre "Error", messaggio in <see cref="Detail"/>)
-/// e la validazione automatica di [ApiController] sul model binding (ValidationProblemDetails, messaggi in <see cref="Errors"/>).
-/// Letto da <c>Http/ApiResponseReader</c>.
-/// </remarks>
+/// Corpo delle risposte di errore, nel formato application/problem+json.
+/// Il server lo produce in due modi: la gestione centralizzata delle eccezioni mette il messaggio nel dettaglio e
+/// lascia un titolo generico; la validazione automatica dei parametri in ingresso mette invece i messaggi
+/// nell'elenco degli errori, raggruppati per campo.
 public record ProblemDetailsDto
 {
     public string? Type { get; init; }
@@ -15,8 +11,6 @@ public record ProblemDetailsDto
     public int? Status { get; init; }
     public string? Detail { get; init; }
 
-    /// <summary>
-    /// Presente nei ValidationProblemDetails (model binding / validazione automatica)
-    /// </summary>
+    /// Valorizzato solo quando l'errore viene dalla validazione dei parametri in ingresso.
     public Dictionary<string, string[]>? Errors { get; init; }
 }

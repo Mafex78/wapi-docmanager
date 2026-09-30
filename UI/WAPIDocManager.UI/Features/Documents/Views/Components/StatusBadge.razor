@@ -1,7 +1,8 @@
 @*
-    Badge colorato dello stato documento.
-    La classe è app-badge-{stato in minuscolo}: i colori sono definiti in app.css (sezione 5) tramite i token --app-status-*
-    per entrambi i temi. Un nuovo stato richiede la classe CSS, i token light/dark e la chiave DocumentStatus_{Valore}.
+    Contrassegno colorato dello stato del documento.
+    La classe CSS è costruita dal nome dello stato in minuscolo, e i colori sono definiti nel foglio di stile per
+    entrambi i temi. Aggiungere uno stato richiede quindi tre cose oltre al valore: la classe, i due colori e la
+    chiave di traduzione.
 *@
 <span class="app-badge @($"app-badge-{Status.ToString().ToLowerInvariant()}")">@L.Label(Status)</span>
 

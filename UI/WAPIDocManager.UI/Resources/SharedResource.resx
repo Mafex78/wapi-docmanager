@@ -13,18 +13,21 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <!--
-    Italiano (lingua predefinita): risorse neutre, usate per ogni cultura che non ha un file dedicato.
+    Italiano, la lingua predefinita: sono le risorse usate per ogni lingua che non ha un file dedicato.
+
     Convenzioni delle chiavi:
-      Area_Nome                  testi di pagine e componenti (es. Documents_Title, Action_Save, Field_Email)
+      Area_Nome                  testi di pagine e componenti, per esempio Documents_Title o Action_Save
       DocumentType_{Valore}, DocumentStatus_{Valore}, RoleType_{Valore}, SortDirection_{Valore}
-                                 etichette degli enum (Shared/Localization/LocalizerExtensions.Label)
-      StatusAction_{Valore}      pulsante che porta il documento nello stato indicato
-      Sort_{Campo}               campi di ordinamento (DocumentSortFields senza punti)
-      Validation_*               messaggi di validazione (Shared/Validation/ValidationKeys)
-      Error_*                    titoli degli errori API per status code (Shared/Components/ApiErrorAlert)
-                                 e dell'ErrorBoundary (Layout/MainLayout)
-    {0} = segnaposto valorizzato con L["Chiave", valore].
-    Ogni chiave va mantenuta allineata in SharedResource.en.resx: una chiave mancante viene mostrata così com'è.
+                                 etichette dei valori degli enum, costruite dal nome del valore
+      StatusAction_{Valore}      testo del pulsante che porta il documento in quello stato: è un invito ad agire,
+                                 quindi diverso dall'etichetta dello stato
+      Sort_{Campo}               campi di ordinamento, con i punti tolti dal nome
+      Validation_*               messaggi di validazione dei form
+      Error_*                    titoli degli errori, sia quelli restituiti dalle API sia quello della barriera che
+                                 intercetta le eccezioni non gestite
+    Il segnaposto {0} viene valorizzato passando il valore accanto alla chiave.
+
+    Ogni chiave va tenuta allineata nel file inglese: una chiave mancante viene mostrata all'utente così com'è.
   -->
   <data name="Action_Retry" xml:space="preserve"><value>Riprova</value></data>
   <data name="Error_UnexpectedHint" xml:space="preserve"><value>Si è verificato un problema in questa pagina: riprova oppure apri un'altra sezione dal menu.</value></data>

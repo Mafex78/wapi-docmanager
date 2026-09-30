@@ -2,9 +2,9 @@
 @inject NavigationManager Navigation
 
 @*
-    Selettore della lingua (culture in Shared/Localization/AppCultures.Supported).
-    Salva la scelta nel localStorage (window.wapiPreferences.setCulture) e ricarica la pagina: la cultura viene applicata
-    all'avvio in Program.cs. La sessione JWT nel sessionStorage sopravvive al reload; i filtri della lista no.
+    Selettore della lingua.
+    Salva la scelta fra le preferenze del browser e ricarica la pagina, perché la lingua si applica solo all'avvio
+    dell'applicazione. La sessione sopravvive al ricaricamento; i filtri dell'elenco documenti no.
 *@
 
 <select class="form-select form-select-sm app-culture-select" aria-label="@L["Culture_Label"]" value="@CultureInfo.CurrentUICulture.Name" @onchange="ChangeAsync">

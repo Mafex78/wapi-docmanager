@@ -440,7 +440,7 @@ dotnet_diagnostic.S2094.severity = none
 dotnet_diagnostic.S3218.severity = none
 
 # Progetti di test: convenzioni proprie di xUnit/Moq, diverse da quelle del codice di produzione.
-[Tests/**/*.cs]
+[UI.Tests/**/*.cs]
 # CA1707: i nomi dei test seguono lo schema Metodo_Scenario_RisultatoAtteso, gli underscore sono voluti.
 dotnet_diagnostic.CA1707.severity = none
 # CA1861: array costanti passati come argomento; è una regola di prestazioni, in un test non ha effetto utile.

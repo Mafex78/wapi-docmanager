@@ -7,20 +7,13 @@ using WAPIDocManager.UI;
 
 namespace WAPIDocManager.UI.Shared.Forms;
 
-/// <summary>
-/// Mostra i messaggi di validazione di un campo traducendo le chiavi con IStringLocalizer
-/// </summary>
-/// <remarks>
-/// <para>
-/// Sostituisce il ValidationMessage standard nei form che usano <c>&lt;FluentValidator /&gt;</c> (Blazilla):
-/// i validator scrivono nell'EditContext la CHIAVE del messaggio e qui viene tradotta.
-/// Uso: <c>&lt;FieldValidationMessage For="() =&gt; line.Quantity" /&gt;</c>; funziona anche per elementi di collezioni
-/// perché il FieldIdentifier è creato dall'espressione (istanza della riga + nome proprietà).
-/// </para>
-/// <para>
-/// Componente scritto in C# (non .razor): gli @inject di _Imports.razor non valgono qui, per questo il localizzatore è iniettato con [Inject].
-/// </para>
-/// </remarks>
+/// Mostra i messaggi di validazione di un campo traducendoli.
+/// Sostituisce il componente standard perché le regole dei form non scrivono un testo ma una CHIAVE di risorsa: la
+/// traduzione va fatta qui, nel momento in cui il messaggio compare.
+/// Funziona anche per gli elementi di una collezione, come le righe di un documento, perché il campo da osservare
+/// viene ricavato dall'espressione passata: da lì arrivano sia l'oggetto sia il nome della proprietà.
+/// È scritto in C# e non come componente di markup: per questo il traduttore va iniettato esplicitamente, dato che
+/// le iniezioni globali dei componenti di markup qui non valgono.
 public sealed class FieldValidationMessage<TValue> : ComponentBase, IDisposable
 {
     private EditContext? _editContext;

@@ -1,8 +1,8 @@
 @*
-    Finestra modale con il markup di Bootstrap ma senza bootstrap.js (non incluso): la visibilità è gestita
-    interamente dal chiamante con IsOpen, che deve rimetterlo a false in OnClose.
-    ChildContent = corpo, FooterContent = pulsanti (opzionale). Escape e la X chiamano OnClose.
-    Limiti: nessun focus trap e nessun blocco dello scroll della pagina sottostante.
+    Finestra modale: usa il markup e gli stili di Bootstrap, ma non il suo JavaScript, che non è incluso nel
+    progetto. La visibilità è quindi interamente nelle mani del chiamante, che deve richiuderla da sé quando la
+    finestra segnala la chiusura — sia dal tasto Esc sia dalla X.
+    Limiti noti: il fuoco della tastiera può uscire dalla finestra, e la pagina sottostante resta scorrevole.
 *@
 @if (IsOpen)
 {
@@ -35,9 +35,7 @@
 
     [Parameter] public string? Title { get; set; }
 
-    /// <summary>
-    /// Dimensione Bootstrap opzionale: sm, lg, xl
-    /// </summary>
+    /// Dimensione opzionale della finestra: sm, lg oppure xl.
     [Parameter] public string? Size { get; set; }
 
     [Parameter] public RenderFragment? ChildContent { get; set; }

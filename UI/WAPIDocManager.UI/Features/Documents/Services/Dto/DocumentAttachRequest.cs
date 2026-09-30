@@ -1,10 +1,8 @@
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Body di <c>POST api/v1/documents/{id}/attachments</c> (<c>WAPIDocument.Application/Dto/Document/DocumentAttachRequest.cs</c>).
-/// </summary>
+/// Body di POST api/v1/documents/{id}/attachments.
 public record DocumentAttachRequest
 {
-    /// <summary>Id del documento da collegare a quello indicato nella route.</summary>
+    /// Identificativo del documento da collegare a quello indicato nell'indirizzo.
     public string Id { get; init; } = string.Empty;
 }

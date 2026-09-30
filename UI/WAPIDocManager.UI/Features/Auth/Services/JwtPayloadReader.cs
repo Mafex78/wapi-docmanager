@@ -3,28 +3,18 @@ using WAPIDocManager.UI.Shared.Authentication;
 
 namespace WAPIDocManager.UI.Features.Auth.Services;
 
-/// <summary>
-/// Lettura dei ruoli dal payload del JWT emesso da WAPIIdentity (nessuna verifica della firma: la fa il server)
-/// </summary>
-/// <remarks>
-/// <para>
-/// <c>WAPIIdentity.Infrastructure/JwtTokenService.cs</c> aggiunge un claim <c>ClaimTypes.Role</c> per ogni ruolo;
-/// <c>JwtSecurityTokenHandler</c> lo scrive nel payload con il nome breve <c>"role"</c> (outbound claim type map):
-/// stringa se il ruolo è uno solo, array se sono più di uno. Si accetta anche il nome lungo per sicurezza.
-/// </para>
-/// <para>
-/// Implementazione manuale (base64url + System.Text.Json) per non aggiungere System.IdentityModel.Tokens.Jwt al bundle WebAssembly.
-/// I ruoli servono solo alla UI: un token manomesso verrebbe comunque rifiutato dalle API.
-/// </para>
-/// </remarks>
+/// Legge i ruoli dal payload del token, senza verificarne la firma: quella la verifica il server a ogni chiamata.
+/// Il token porta un claim di ruolo per ciascun ruolo dell'utente, scritto nel payload con il nome breve "role":
+/// una stringa sola se il ruolo è uno, un array se sono più d'uno. Per prudenza si accetta anche il nome lungo.
+/// La lettura è fatta a mano, con base64url e il lettore JSON di sistema, per non aggiungere al bundle WebAssembly
+/// l'intera libreria dei token: qui i ruoli servono solo a decidere cosa mostrare, e un token manomesso verrebbe
+/// comunque rifiutato dalle API.
 public static class JwtPayloadReader
 {
     private const string RoleClaim = "role";
     private const string RoleClaimLongName = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
 
-    /// <summary>
-    /// Restituisce i ruoli noti presenti nel token (senza duplicati); token malformato o ruoli sconosciuti → ignorati.
-    /// </summary>
+    /// Ruoli noti presenti nel token, senza duplicati. Token malformato e ruoli sconosciuti vengono ignorati.
     public static IReadOnlyList<RoleType> ReadRoles(string token)
     {
         // formato JWT: header.payload.signature
@@ -74,7 +64,7 @@ public static class JwtPayloadReader
         }
     }
 
-    // Il claim contiene il NOME del ruolo (RoleType.ToString() lato server).
+    // Il claim contiene il NOME del ruolo, non il suo numero.
     // Enum.IsDefined scarta i valori numerici non validi che Enum.TryParse accetterebbe (es. "99").
     private static void AddRole(JsonElement element, List<RoleType> roles)
     {

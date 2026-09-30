@@ -1,26 +1,17 @@
-using WAPIDocManager.UI.Features.Documents.Services;
-
 namespace WAPIDocManager.UI.Features.Documents.Entities;
 
-/// <summary>
-/// Pagina di risultati di una ricerca paginata.
-/// </summary>
-/// <remarks>
-/// Equivalente lato client di <c>Shared.Application/Dto/PageDto.cs</c> (mappato da <c>Features/Documents/Services/DocumentApiService.FindPagedAsync</c>).
-/// </remarks>
+/// Pagina di risultati di una ricerca paginata, nella forma usata dall'applicazione.
 public record PagedResult<T>
 {
-    /// <summary>Elementi della pagina corrente (mai null).</summary>
+    /// Elementi della pagina corrente, mai null.
     public IReadOnlyList<T> Items { get; init; } = new List<T>();
 
-    /// <summary>
-    /// Pagina corrente (prima = 1)
-    /// </summary>
+    /// Pagina corrente; la prima è la numero 1, come nelle API.
     public int CurrentPage { get; init; }
 
     public int PageSize { get; init; }
 
-    /// <summary>Totale elementi che soddisfano il filtro (su tutte le pagine).</summary>
+    /// Totale degli elementi che soddisfano il filtro, contando tutte le pagine.
     public int TotalItems { get; init; }
 
     public int TotalPages { get; init; }

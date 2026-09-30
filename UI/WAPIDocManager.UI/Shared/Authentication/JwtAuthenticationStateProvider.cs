@@ -1,26 +1,16 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using WAPIDocManager.UI.Shared.Api;
 
 namespace WAPIDocManager.UI.Shared.Authentication;
 
-/// <summary>
-/// Stato di autenticazione ricavato dalla sessione JWT salvata nel browser
-/// </summary>
-/// <remarks>
-/// <para>
-/// Flusso: login, logout o 401 → <see cref="IUserSessionStore.SessionChanged"/> → NotifyAuthenticationStateChanged →
-/// AuthorizeRouteView e AuthorizeView si aggiornano (in App.razor l'utente anonimo viene mandato a RedirectToLogin).
-/// </para>
-/// <para>
-/// Claims prodotti: NameIdentifier = UserId; Name ed Email = email (mostrata nella top bar); un claim Role per ogni ruolo
-/// con il nome dell'enum, letto da [Authorize(Roles)], AuthorizeView Roles e <see cref="ClaimsPrincipalExtensions.GetRoles"/>.
-/// </para>
-/// <para>
-/// La scadenza del token è verificata all'avvio dell'app (qui) e a ogni chiamata API (BearerTokenHandler):
-/// non esiste un timer che disconnette l'utente inattivo.
-/// </para>
-/// </remarks>
+/// Stato di autenticazione dell'applicazione, ricavato dalla sessione salvata nel browser.
+/// Accesso, uscita e token rifiutato sollevano tutti il cambio di sessione, che da qui diventa una notifica di stato:
+/// le pagine protette e le parti di interfaccia legate ai ruoli si aggiornano da sole, e l'utente anonimo finisce
+/// alla pagina di accesso.
+/// Claim prodotti: identificativo utente, nome ed email (è l'email quella mostrata nella barra in alto) e un claim
+/// di ruolo per ogni ruolo, con il nome dell'enum.
+/// La scadenza del token viene verificata all'avvio dell'applicazione e prima di ogni chiamata alle API: non esiste
+/// un timer che disconnette l'utente inattivo.
 public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
 {
     // un valore qualsiasi purché non vuoto: senza authenticationType ClaimsIdentity.IsAuthenticated è false
@@ -40,9 +30,7 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         _sessionStore.SessionChanged += OnSessionChanged;
     }
 
-    /// <summary>
-    /// Chiamato da CascadingAuthenticationState all'avvio; gli aggiornamenti successivi arrivano tramite OnSessionChanged.
-    /// </summary>
+    /// Chiamato una volta all'avvio; gli aggiornamenti successivi arrivano dall'evento di cambio sessione.
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         UserSession? session = await _sessionStore.GetAsync();
@@ -52,7 +40,7 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
             return Anonymous;
         }
 
-        // sessione rimasta nel sessionStorage oltre la scadenza (es. reload dopo più di un'ora)
+        // sessione rimasta nell'archivio del browser oltre la scadenza, per esempio un ricaricamento dopo più di un'ora
         if (session.IsExpired(_timeProvider.GetUtcNow().UtcDateTime))
         {
             await _sessionStore.ClearAsync();

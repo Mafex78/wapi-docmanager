@@ -3,13 +3,7 @@ using WAPIDocManager.UI.Features.Documents.Models;
 
 namespace WAPIDocManager.UI.Features.Documents.Services.Dto;
 
-/// <summary>
-/// Cliente (<c>WAPIDocument.Application/Dto/CustomerDto.cs</c>), usato sia nei body sia nelle risposte.
-/// </summary>
-/// <remarks>
-/// Copia lato client del DTO del backend (il client non può referenziare WAPIDocument.Application):
-/// se cambia sul server va aggiornato qui. JSON camelCase (vedi Http/JsonDefaults).
-/// </remarks>
+/// Cliente, nella forma che viaggia sia nelle richieste sia nelle risposte.
 public record CustomerDto
 {
     public string? Name { get; init; }
@@ -17,9 +11,8 @@ public record CustomerDto
     public string? VatNumber { get; init; }
     public string? Address { get; init; }
 
-    /// <summary>
-    /// Form → DTO: il cliente viene sempre inviato (mai null), con i campi vuoti a null e gli altri con trim.
-    /// </summary>
+    /// Dal form alla richiesta: il cliente viene sempre inviato, mai omesso, con i campi vuoti azzerati e gli altri
+    /// ripuliti dagli spazi.
     public static explicit operator CustomerDto(CustomerEditModel customer)
     {
         return new CustomerDto
@@ -31,9 +24,7 @@ public record CustomerDto
         };
     }
 
-    /// <summary>
-    /// DTO → cliente del client.
-    /// </summary>
+    /// Dalla risposta al cliente dell'applicazione.
     public static explicit operator Customer(CustomerDto customer)
     {
         return new Customer

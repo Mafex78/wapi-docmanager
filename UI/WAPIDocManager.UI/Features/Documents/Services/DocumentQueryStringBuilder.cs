@@ -3,23 +3,16 @@ using WAPIDocManager.UI.Features.Documents.Models;
 
 namespace WAPIDocManager.UI.Features.Documents.Services;
 
-/// <summary>
-/// Query string di GET api/v1/documents (binding [FromQuery] di DocumentFindPagedByFilterRequest:
-/// le liste sono parametri ripetuti, gli enum valori numerici)
-/// </summary>
-/// <remarks>
-/// <para>
-/// I nomi dei parametri sono i nomi delle proprietà di <c>DocumentFindPagedByFilterRequest</c> / <c>FilterPagingDto</c>
-/// (il model binding è case-insensitive). Esempio: <c>Page=1&amp;PageSize=20&amp;SortBy=Date&amp;SortDirection=desc&amp;DocumentTypes=0&amp;DocumentTypes=2</c>.
-/// </para>
-/// <para>
-/// L'ordine dei parametri è fisso ed è verificato dai test (<c>DocumentQueryStringBuilderTests</c>, <c>DocumentApiServiceTests</c>).
-/// I parametri opzionali vuoti vengono omessi; i valori numerici usano la cultura invariante.
-/// </para>
-/// </remarks>
+/// Costruisce la query string della ricerca documenti.
+/// I nomi dei parametri devono corrispondere a quelli attesi dal server, che li riconosce senza distinguere
+/// maiuscole e minuscole. Le liste viaggiano come parametro ripetuto, una volta per valore, e gli enum come numeri.
+/// I parametri opzionali vuoti vengono omessi, e i numeri usano sempre il formato invariante, altrimenti la cultura
+/// dell'utente cambierebbe il separatore decimale e il server non capirebbe.
+/// L'ordine dei parametri è fisso ed è fissato dai test: non è un requisito del server, ma rende le verifiche
+/// leggibili.
 public static class DocumentQueryStringBuilder
 {
-    /// <summary>Restituisce la query string senza il "?" iniziale.</summary>
+    /// Restituisce la query string senza il punto interrogativo iniziale.
     public static string Build(DocumentFilter filter)
     {
         var parameters = new List<string>
@@ -45,7 +38,7 @@ public static class DocumentQueryStringBuilder
             parameters.Add($"CustomerName={Uri.EscapeDataString(filter.CustomerName.Trim())}");
         }
 
-        // liste: un parametro ripetuto per ogni valore (binding di IList<enum> in ASP.NET Core)
+        // liste: un parametro ripetuto per ogni valore, che è la forma che il server sa ricomporre
         parameters.AddRange(filter.Types
             .Distinct()
             .Select(type => $"DocumentTypes={((int)type).ToString(CultureInfo.InvariantCulture)}"));
